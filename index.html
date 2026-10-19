@@ -3,1338 +3,1214 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SAGMA ECHO - Digital Twin Studio</title>
+  <title>SAGMA ECHO - Industrial Milling 3D Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
-       SAGMA ECHO - APPROVED GREEN & WHITE LIGHT THEME DESIGN TOKENS
+       SAGMA ECHO - INDUSTRIAL BRAND TOKENS & NVIDIA CAD THEME
        ============================================================ */
     :root {
-      --bg-canvas: #EAF0EB;
-      --bg-panel: rgba(255, 255, 255, 0.94);
-      --bg-panel-solid: #FFFFFF;
-      --bg-card: #FFFFFF;
-      --bg-card-subtle: #F4F8F5;
-      --bg-hover: #EBF4EE;
-      
+      /* SAGMA Brand Identity */
       --brand-green: #005A36;
       --brand-green-dark: #00462A;
       --brand-emerald: #0D6E45;
       --brand-green-tint: #E6F3EC;
-      --brand-glow: rgba(0, 90, 54, 0.18);
+      --brand-glow: rgba(0, 90, 54, 0.22);
       
+      /* Surface & Canvas Tokens (Default: SAGMA Engineering Sage) */
+      --bg-canvas: #EAF0EB;
+      --bg-canvas-dark: #0d1319;
+      --bg-panel: rgba(255, 255, 255, 0.95);
+      --bg-panel-solid: #FFFFFF;
+      --bg-panel-dark: rgba(18, 25, 22, 0.94);
+      --bg-card: #FFFFFF;
+      --bg-card-subtle: #F4F8F5;
+      --bg-hover: #EBF4EE;
+      
+      /* Dark Bar & Header Surface */
+      --header-bg: #14281E;
+      --header-text: #FFFFFF;
+      --header-border: rgba(255, 255, 255, 0.12);
+      
+      /* Typography Colors */
       --text-main: #14281E;
       --text-muted: #4A6356;
       --text-light: #7E968A;
       
-      --border-hairline: rgba(0, 90, 54, 0.12);
-      --border-card: #D7E2DA;
-      --border-strong: #CBD7CE;
+      /* Engineering Status Accents */
+      --status-active: #16A34A;
+      --status-warning: #D97706;
+      --status-danger: #DC2626;
+      --status-cad: #0284C7;
       
-      --amber: #D97706;
-      --amber-bg: #FEF3C7;
-      --amber-border: #FCD34D;
-      --red: #DC2626;
-      --red-bg: #FEE2E2;
-      --red-border: #FCA5A5;
-      --sensor-green: #16A34A;
-      --sensor-bg: #DCFCE7;
+      /* Borders & Glassmorphism */
+      --border-subtle: #D0DDD6;
+      --border-focus: #005A36;
+      --glass-blur: blur(16px);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 14px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.14);
+      --shadow-glow: 0 0 20px rgba(13, 110, 69, 0.25);
       
-      --shadow-sm: 0 2px 8px rgba(0, 45, 25, 0.04);
-      --shadow-soft: 0 8px 28px rgba(0, 90, 54, 0.08);
-      --shadow-elevated: 0 16px 40px rgba(0, 45, 25, 0.12);
-      
-      --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
-      --font-mono: 'DM Mono', monospace;
-      
+      /* Radii */
       --radius-sm: 6px;
       --radius-md: 10px;
       --radius-lg: 14px;
       --radius-full: 9999px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-user-select: none;
-      user-select: none;
+    /* Studio Dark Viewport Override */
+    body.studio-dark-mode {
+      --bg-canvas: #0d1319;
+      --bg-panel: rgba(20, 28, 24, 0.92);
+      --bg-panel-solid: #141c18;
+      --bg-card: #18221d;
+      --bg-card-subtle: #1d2a23;
+      --bg-hover: #23342b;
+      --text-main: #EAF0EB;
+      --text-muted: #9EBAAB;
+      --text-light: #6E887A;
+      --border-subtle: #2A3C33;
     }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
-      font-family: var(--font-sans);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg-canvas);
       color: var(--text-main);
       overflow: hidden;
-      width: 100vw;
       height: 100vh;
+      width: 100vw;
+      user-select: none;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    /* 3D Canvas Area */
-    #viewport-container {
+    /* ============================================================
+       TOP NAVIGATION BAR
+       ============================================================ */
+    header {
       position: absolute;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
+      right: 0;
+      height: 64px;
+      background: var(--header-bg);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 100;
+      border-bottom: 1px solid var(--header-border);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-emblem {
+      height: 40px;
+      width: 40px;
+      border-radius: var(--radius-sm);
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .brand-emblem img {
+      height: 34px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .brand-titles {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-title span.badge-echo {
+      background: linear-gradient(135deg, #16A34A, #0D6E45);
+      color: #FFFFFF;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.05em;
+    }
+
+    .brand-sub {
+      font-size: 0.72rem;
+      color: #9EBAAB;
+      letter-spacing: 0.02em;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: 'DM Sans', sans-serif;
+      text-decoration: none;
+    }
+
+    .btn-header {
+      background: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+    .btn-header:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .btn-primary {
+      background: var(--brand-emerald);
+      color: #FFFFFF;
+      border-color: #108655;
+    }
+    .btn-primary:hover {
+      background: #108655;
+      box-shadow: 0 2px 8px rgba(16, 134, 85, 0.4);
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, #005A36, #0D6E45);
+      color: #FFFFFF;
+      border-color: #16A34A;
+      box-shadow: 0 2px 10px rgba(0, 90, 54, 0.3);
+    }
+    .btn-accent:hover {
+      box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Language Selector */
+    .lang-dropdown-wrapper {
+      position: relative;
+    }
+    .lang-select {
+      background: rgba(255, 255, 255, 0.12);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 7px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+    }
+    .lang-select option {
+      background: #14281E;
+      color: #FFFFFF;
+      padding: 6px;
+    }
+
+    /* LOTO State Banner */
+    .loto-indicator {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      background: rgba(22, 163, 74, 0.2);
+      color: #4ADE80;
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      cursor: pointer;
+      font-family: 'DM Mono', monospace;
+    }
+    .loto-indicator.locked {
+      background: rgba(220, 38, 38, 0.2);
+      color: #F87171;
+      border-color: rgba(248, 113, 113, 0.4);
+    }
+    .loto-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4ADE80;
+      box-shadow: 0 0 8px #4ADE80;
+    }
+    .loto-indicator.locked .loto-dot {
+      background: #F87171;
+      box-shadow: 0 0 8px #F87171;
+    }
+
+    /* ============================================================
+       CANVAS CONTAINER & 3D VIEWPORT STAGE
+       ============================================================ */
+    #viewport-container {
+      position: absolute;
+      top: 64px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
     }
 
     #three-canvas {
       width: 100%;
       height: 100%;
       display: block;
+      outline: none;
     }
 
-    /* 3D Projected Callout Badges */
-    #callout-container {
+    /* Telemetry HUD (NVIDIA-Style Overlay) */
+    .telemetry-hud {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 5;
-      overflow: hidden;
-    }
-
-    .callout-badge {
-      position: absolute;
-      transform: translate(-50%, -50%);
+      top: 18px;
+      left: 20px;
+      background: var(--bg-panel);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      box-shadow: var(--shadow-md);
       pointer-events: auto;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
-      background: var(--bg-panel);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1.5px solid var(--brand-emerald);
-      border-radius: var(--radius-full);
-      box-shadow: var(--shadow-soft);
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      white-space: nowrap;
+      max-width: 320px;
+      z-index: 20;
     }
 
-    .callout-badge:hover {
-      transform: translate(-50%, -50%) scale(1.08);
-      background: #FFFFFF;
-      border-color: var(--brand-green);
-      box-shadow: 0 10px 32px var(--brand-glow);
-    }
-
-    .callout-tag {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      background: var(--brand-green);
-      color: #FFFFFF;
-      padding: 2px 6px;
-      border-radius: var(--radius-full);
-    }
-
-    .callout-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-main);
-    }
-
-    .callout-pulse {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--brand-emerald);
-      box-shadow: 0 0 0 0 rgba(13, 110, 69, 0.7);
-      animation: pulse-dot 2s infinite;
-    }
-
-    @keyframes pulse-dot {
-      0% { box-shadow: 0 0 0 0 rgba(13, 110, 69, 0.7); }
-      70% { box-shadow: 0 0 0 8px rgba(13, 110, 69, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(13, 110, 69, 0); }
-    }
-
-    /* ============================================================
-       TOP HEADER NAV
-       ============================================================ */
-    .app-header {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      right: 16px;
-      height: 56px;
-      background: var(--bg-panel);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--border-hairline);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-soft);
+    .telemetry-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
-      z-index: 10;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 6px;
     }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
+    .telemetry-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--brand-green);
+      letter-spacing: -0.01em;
+    }
+    body.studio-dark-mode .telemetry-title {
+      color: #4ADE80;
     }
 
-    .brand-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
+    .telemetry-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      background: var(--brand-green-tint);
+      color: var(--brand-green);
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
     }
 
-    .brand-logo-img {
-      height: 32px;
-      width: auto;
-      object-fit: contain;
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px 12px;
+      font-size: 0.72rem;
+      font-family: 'DM Mono', monospace;
     }
-
-    .brand-text-block {
+    .telemetry-item {
       display: flex;
       flex-direction: column;
     }
-
-    .brand-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--brand-green-dark);
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-    }
-
-    .brand-subtitle {
-      font-size: 9px;
-      font-weight: 700;
-      color: var(--brand-emerald);
-      letter-spacing: 0.1em;
+    .telemetry-label {
+      color: var(--text-light);
+      font-size: 0.64rem;
       text-transform: uppercase;
-      font-family: var(--font-mono);
     }
-
-    .header-divider {
-      width: 1px;
-      height: 24px;
-      background: var(--border-hairline);
-    }
-
-    /* Machine Selector Pill */
-    .machine-selector-wrapper {
-      position: relative;
-    }
-
-    .machine-selector-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      background: var(--bg-card-subtle);
-      border: 1px solid var(--border-card);
-      border-radius: var(--radius-full);
-      font-family: var(--font-sans);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--brand-green-dark);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .machine-selector-btn:hover {
-      background: var(--bg-hover);
-      border-color: var(--brand-green);
-    }
-
-    .machine-selector-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--sensor-green);
-    }
-
-    /* Navigation Action Buttons */
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .header-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 12px;
-      background: #FFFFFF;
-      border: 1px solid var(--border-card);
-      border-radius: var(--radius-md);
-      font-family: var(--font-sans);
-      font-size: 12px;
+    .telemetry-val {
       font-weight: 600;
       color: var(--text-main);
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: var(--shadow-sm);
     }
 
-    .header-btn:hover {
-      background: var(--bg-hover);
-      border-color: var(--brand-emerald);
-      color: var(--brand-green);
-      transform: translateY(-1px);
-    }
-
-    .header-btn.active {
-      background: var(--brand-green-tint);
-      border-color: var(--brand-green);
-      color: var(--brand-green-dark);
-    }
-
-    .header-btn svg {
-      width: 15px;
-      height: 15px;
-    }
-
-    /* Primary CTA Button */
-    .btn-primary {
-      background: var(--brand-green);
-      color: #FFFFFF;
-      border-color: var(--brand-green-dark);
-    }
-
-    .btn-primary:hover {
-      background: var(--brand-green-dark);
-      color: #FFFFFF;
-      box-shadow: 0 4px 14px var(--brand-glow);
-    }
-
-    /* ============================================================
-       TOP RIGHT TELEMETRY PILL
-       ============================================================ */
-    .metrics-pill {
+    /* 3D Viewport Controls Toolbar */
+    .viewport-toolbar {
       position: absolute;
-      top: 84px;
-      right: 16px;
-      background: var(--bg-panel);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border-hairline);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-soft);
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      z-index: 10;
-      font-family: var(--font-mono);
-      font-size: 11px;
-    }
-
-    .metric-item {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .metric-label {
-      font-size: 9px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-weight: 500;
-    }
-
-    .metric-value {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--brand-green-dark);
-    }
-
-    /* ============================================================
-       BOTTOM HUD DOCK
-       ============================================================ */
-    .bottom-dock {
-      position: absolute;
-      bottom: 20px;
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
       background: var(--bg-panel);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--border-hairline);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-elevated);
-      padding: 10px 18px;
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 6px 14px;
       display: flex;
       align-items: center;
-      gap: 20px;
-      z-index: 10;
+      gap: 12px;
+      box-shadow: var(--shadow-lg);
+      z-index: 25;
     }
 
-    .preset-group {
+    .tool-group {
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .preset-btn {
-      padding: 6px 11px;
-      background: #FFFFFF;
-      border: 1px solid var(--border-card);
-      border-radius: var(--radius-sm);
-      font-size: 12px;
+    .tool-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-main);
+      padding: 7px 11px;
+      border-radius: var(--radius-full);
+      font-size: 0.76rem;
       font-weight: 600;
-      color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      font-family: 'DM Sans', sans-serif;
     }
-
-    .preset-btn:hover {
+    .tool-btn:hover {
       background: var(--bg-hover);
       color: var(--brand-green);
-      border-color: var(--brand-emerald);
+    }
+    .tool-btn.active {
+      background: var(--brand-green-tint);
+      color: var(--brand-green);
+      border-color: rgba(0, 90, 54, 0.25);
+    }
+    body.studio-dark-mode .tool-btn.active {
+      background: rgba(74, 222, 128, 0.15);
+      color: #4ADE80;
+      border-color: rgba(74, 222, 128, 0.3);
     }
 
-    .preset-btn.active {
-      background: var(--brand-green);
-      color: #FFFFFF;
-      border-color: var(--brand-green-dark);
-    }
-
-    .dock-divider {
+    .tool-divider {
       width: 1px;
-      height: 24px;
-      background: var(--border-hairline);
+      height: 22px;
+      background: var(--border-subtle);
     }
 
-    /* Exploded View Control */
-    .explode-control {
+    /* Explode Slider */
+    .slider-container {
       display: flex;
       align-items: center;
-      gap: 10px;
-    }
-
-    .explode-label {
-      font-size: 12px;
+      gap: 8px;
+      font-size: 0.74rem;
       font-weight: 600;
       color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      font-family: 'DM Mono', monospace;
+    }
+    .explode-range {
+      width: 90px;
+      height: 5px;
+      accent-color: var(--brand-green);
+      cursor: pointer;
     }
 
-    .explode-slider {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 110px;
-      height: 6px;
+    /* Material Selector Dropdown in Toolbar */
+    .material-select {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius-full);
-      background: var(--border-strong);
+      padding: 5px 10px;
+      font-size: 0.74rem;
+      font-weight: 600;
       outline: none;
       cursor: pointer;
-    }
-
-    .explode-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--brand-green);
-      border: 2px solid #FFFFFF;
-      box-shadow: var(--shadow-sm);
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-
-    .explode-slider::-webkit-slider-thumb:hover {
-      transform: scale(1.2);
-    }
-
-    .explode-val {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--brand-green-dark);
-      min-width: 32px;
+      font-family: 'DM Sans', sans-serif;
     }
 
     /* ============================================================
-       SLIDE-IN SIDEBAR: SYLLABUS MECHANICAL INSPECTOR
+       DEDICATED MACHINE SPACE SIDE DRAWER (Spec & Telemetry)
        ============================================================ */
-    .inspector-card {
+    .machine-spec-drawer {
       position: absolute;
-      top: 84px;
-      left: 16px;
-      width: 340px;
-      max-height: calc(100vh - 120px);
+      top: 64px;
+      right: 0;
+      bottom: 0;
+      width: 440px;
       background: var(--bg-panel);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--border-hairline);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-elevated);
-      padding: 18px;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      overflow-y: auto;
-      transform: translateX(0);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s;
-    }
-
-    .inspector-card.hidden {
-      transform: translateX(-380px);
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .inspector-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .inspector-tags {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-
-    .tag-badge {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: var(--radius-sm);
-      text-transform: uppercase;
-    }
-
-    .tag-badge.primary {
-      background: var(--brand-green);
-      color: #FFFFFF;
-    }
-
-    .tag-badge.subtle {
-      background: var(--brand-green-tint);
-      color: var(--brand-green-dark);
-    }
-
-    .inspector-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--brand-green-dark);
-      line-height: 1.25;
-    }
-
-    .inspector-close-btn {
-      background: none;
-      border: none;
-      font-size: 18px;
-      color: var(--text-muted);
-      cursor: pointer;
-      line-height: 1;
-      padding: 2px;
-    }
-
-    .inspector-close-btn:hover {
-      color: var(--text-main);
-    }
-
-    .inspector-body {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--text-main);
-    }
-
-    .inspector-section-label {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 4px;
-    }
-
-    .inspector-text-block {
-      background: var(--bg-card-subtle);
-      border: 1px solid var(--border-card);
-      border-radius: var(--radius-md);
-      padding: 10px 12px;
-      font-size: 12px;
-    }
-
-    .inspector-safety-block {
-      background: var(--amber-bg);
-      border: 1px solid var(--amber-border);
-      border-radius: var(--radius-md);
-      padding: 10px 12px;
-      font-size: 12px;
-      color: #92400E;
-    }
-
-    .inspector-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 6px;
-    }
-
-    .inspector-btn {
-      flex: 1;
-      padding: 7px 10px;
-      background: #FFFFFF;
-      border: 1px solid var(--border-card);
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-main);
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-    }
-
-    .inspector-btn:hover {
-      background: var(--bg-hover);
-      border-color: var(--brand-emerald);
-      color: var(--brand-green);
-    }
-
-    /* ============================================================
-       MODALS: LIBRARY, CALCULATIONS, LOTO
-       ============================================================ */
-    .modal-backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(14, 28, 20, 0.45);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
-    }
-
-    .modal-backdrop.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .modal-window {
-      background: #FFFFFF;
-      border: 1px solid var(--border-hairline);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-elevated);
-      width: 90%;
-      max-width: 820px;
-      max-height: 85vh;
+      backdrop-filter: var(--glass-blur);
+      border-left: 1px solid var(--border-subtle);
+      box-shadow: -4px 0 24px rgba(0,0,0,0.1);
+      z-index: 30;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      transform: scale(0.96) translateY(10px);
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .machine-spec-drawer.open {
+      transform: translateX(0);
     }
 
-    .modal-backdrop.open .modal-window {
-      transform: scale(1) translateY(0);
-    }
-
-    .modal-header {
-      padding: 16px 22px;
-      background: var(--bg-card-subtle);
-      border-bottom: 1px solid var(--border-card);
+    .drawer-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      background: var(--bg-card-subtle);
     }
-
-    .modal-title-group {
+    .drawer-title-group {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
     }
-
-    .modal-title-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: var(--radius-sm);
-      background: var(--brand-green);
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-    }
-
-    .modal-title {
-      font-size: 17px;
+    .drawer-title {
+      font-size: 1rem;
       font-weight: 700;
-      color: var(--brand-green-dark);
+      color: var(--brand-green);
     }
-
-    .modal-close-btn {
+    body.studio-dark-mode .drawer-title {
+      color: #4ADE80;
+    }
+    .drawer-oem {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+    }
+    .drawer-close {
       background: none;
       border: none;
-      font-size: 22px;
-      color: var(--text-muted);
+      font-size: 1.4rem;
+      color: var(--text-light);
       cursor: pointer;
       line-height: 1;
       padding: 4px;
     }
-
-    .modal-close-btn:hover {
+    .drawer-close:hover {
       color: var(--text-main);
     }
 
-    .modal-content {
-      padding: 22px;
-      overflow-y: auto;
+    .drawer-tabs {
       display: flex;
-      flex-direction: column;
-      gap: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+    }
+    .drawer-tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .drawer-tab:hover {
+      color: var(--brand-green);
+    }
+    .drawer-tab.active {
+      color: var(--brand-green);
+      border-bottom-color: var(--brand-green);
+      background: var(--bg-hover);
+    }
+    body.studio-dark-mode .drawer-tab.active {
+      color: #4ADE80;
+      border-bottom-color: #4ADE80;
     }
 
-    /* Library Cards Grid */
-    .library-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
       gap: 16px;
     }
 
-    .library-card {
-      background: #FFFFFF;
-      border: 1.5px solid var(--border-card);
+    .spec-section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-light);
+      margin-bottom: 8px;
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    .spec-table tr {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .spec-table td {
+      padding: 8px 4px;
+    }
+    .spec-table td.label {
+      color: var(--text-muted);
+      width: 45%;
+    }
+    .spec-table td.value {
+      font-weight: 600;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-main);
+    }
+
+    /* Embedded PDF Viewer Frame */
+    .pdf-viewer-card {
+      border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
       overflow: hidden;
+      background: #FFFFFF;
       display: flex;
       flex-direction: column;
-      transition: all 0.2s;
+      height: 380px;
+      box-shadow: var(--shadow-sm);
     }
-
-    .library-card:hover {
-      border-color: var(--brand-emerald);
-      box-shadow: var(--shadow-soft);
-      transform: translateY(-2px);
-    }
-
-    .library-card.active-card {
-      border-color: var(--brand-green);
-      background: var(--brand-green-tint);
-    }
-
-    .card-thumb-wrap {
-      width: 100%;
-      height: 120px;
-      background: var(--bg-canvas);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .card-thumb-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .card-badge {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      font-family: var(--font-mono);
-      font-size: 9px;
-      font-weight: 700;
-      padding: 3px 6px;
-      border-radius: var(--radius-sm);
-      background: rgba(0, 0, 0, 0.75);
+    .pdf-viewer-bar {
+      padding: 8px 12px;
+      background: #14281E;
       color: #FFFFFF;
-    }
-
-    .card-content {
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      flex: 1;
-    }
-
-    .card-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--brand-green-dark);
-      line-height: 1.2;
-    }
-
-    .card-desc {
-      font-size: 11px;
-      color: var(--text-muted);
-      line-height: 1.4;
-      flex: 1;
-    }
-
-    .card-meta {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-light);
-      padding-top: 6px;
-      border-top: 1px solid var(--border-card);
+      font-size: 0.74rem;
+      font-family: 'DM Mono', monospace;
     }
-
-    .card-select-btn {
+    .pdf-viewer-frame {
+      flex: 1;
       width: 100%;
-      padding: 8px;
-      margin-top: 6px;
-      background: var(--brand-green);
-      color: #FFFFFF;
       border: none;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
     }
 
-    .card-select-btn:hover {
-      background: var(--brand-green-dark);
-    }
-
-    .library-card.active-card .card-select-btn {
-      background: var(--brand-emerald);
-      cursor: default;
-    }
-
-    /* Custom Upload Drop Zone */
-    .upload-zone {
-      border: 2px dashed var(--brand-emerald);
-      border-radius: var(--radius-md);
-      background: var(--brand-green-tint);
-      padding: 24px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
+    /* ============================================================
+       EQUIPMENT LIBRARY MODAL (6 MILLING CATEGORIES)
+       ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 20, 15, 0.65);
+      backdrop-filter: blur(8px);
+      z-index: 150;
+      display: none;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
+      padding: 24px;
+    }
+    .modal-overlay.open {
+      display: flex;
     }
 
-    .upload-zone:hover, .upload-zone.dragover {
-      background: #D9EFE3;
+    .modal-container {
+      background: var(--bg-panel-solid);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 1100px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      overflow: hidden;
+      animation: modalSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalSlide {
+      from { opacity: 0; transform: translateY(16px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card-subtle);
+    }
+    .modal-title-group h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--brand-green);
+    }
+    body.studio-dark-mode .modal-title-group h2 {
+      color: #4ADE80;
+    }
+    .modal-title-group p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .library-filter-bar {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      background: var(--bg-card);
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 9px 14px 9px 36px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      background: var(--bg-card-subtle);
+      color: var(--text-main);
+      outline: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .search-input:focus {
+      border-color: var(--brand-emerald);
+      background: var(--bg-card);
+    }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 0.85rem;
+    }
+
+    /* Category Filter Pills */
+    .category-pills {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      width: 100%;
+    }
+    .cat-pill {
+      white-space: nowrap;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 0.74rem;
+      font-weight: 600;
+      background: var(--bg-card-subtle);
+      color: var(--text-muted);
+      border: 1px solid var(--border-subtle);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .cat-pill:hover {
+      border-color: var(--brand-green);
+      color: var(--brand-green);
+    }
+    .cat-pill.active {
+      background: var(--brand-green);
+      color: #FFFFFF;
       border-color: var(--brand-green);
     }
 
-    .upload-zone-icon {
-      font-size: 28px;
-      color: var(--brand-green);
+    .modal-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
     }
 
-    .upload-zone-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--brand-green-dark);
-    }
-
-    .upload-zone-desc {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    /* Calculations Grid */
-    .calc-layout {
+    .fleet-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 18px;
     }
 
-    .calc-inputs, .calc-outputs {
+    .machine-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      position: relative;
+    }
+    .machine-card:hover {
+      border-color: var(--brand-emerald);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .machine-card.selected {
+      border-color: var(--brand-green);
+      box-shadow: 0 0 0 2px var(--brand-green);
     }
 
-    .calc-row {
+    .card-thumb-area {
+      height: 140px;
+      background: var(--bg-card-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .card-thumb-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .machine-card:hover .card-thumb-area img {
+      transform: scale(1.04);
+    }
+
+    .card-cad-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-family: 'DM Mono', monospace;
+    }
+    .badge-ready { background: #16A34A; color: #FFFFFF; }
+    .badge-mesh { background: #D97706; color: #FFFFFF; }
+    .badge-spec { background: #0284C7; color: #FFFFFF; }
+
+    .card-body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+    .card-oem-tag {
+      font-size: 0.68rem;
+      font-family: 'DM Mono', monospace;
+      color: var(--brand-emerald);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .card-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
+    .card-desc {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-footer {
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-light);
+    }
+
+    /* ============================================================
+       UNIVERSAL MACHINE FILE UPLOADER MODAL
+       ============================================================ */
+    .dropzone {
+      border: 2px dashed var(--brand-emerald);
+      border-radius: var(--radius-md);
+      padding: 32px 20px;
+      text-align: center;
+      background: var(--brand-green-tint);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 20px;
+    }
+    body.studio-dark-mode .dropzone {
+      background: rgba(13, 110, 69, 0.12);
+    }
+    .dropzone:hover, .dropzone.drag-active {
+      border-color: var(--brand-green);
+      background: #D8EADE;
+      transform: scale(0.995);
+    }
+    .drop-icon {
+      font-size: 2.2rem;
+      color: var(--brand-green);
+      margin-bottom: 10px;
+    }
+    .drop-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--brand-green);
+    }
+    .drop-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .form-group {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
-
-    .calc-label-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      font-weight: 600;
+    .form-group.full {
+      grid-column: span 2;
     }
-
-    .calc-val-pill {
-      font-family: var(--font-mono);
-      color: var(--brand-green);
-    }
-
-    .calc-range-slider {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 6px;
-      background: var(--border-strong);
-      border-radius: var(--radius-full);
-      outline: none;
-    }
-
-    .calc-range-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--brand-green);
-      cursor: pointer;
-    }
-
-    .output-card-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .output-card {
-      background: var(--bg-card-subtle);
-      border: 1px solid var(--border-card);
-      border-radius: var(--radius-md);
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .output-label {
-      font-size: 10px;
+    .form-label {
+      font-size: 0.76rem;
       font-weight: 600;
       color: var(--text-muted);
-      text-transform: uppercase;
     }
-
-    .output-val {
-      font-family: var(--font-mono);
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--brand-green-dark);
-    }
-
-    .output-unit {
-      font-size: 11px;
-      color: var(--text-light);
-      margin-left: 2px;
-    }
-
-    /* LOTO State Machine UI */
-    .loto-container {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .loto-status-banner {
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .loto-status-banner.running {
-      background: var(--sensor-bg);
-      color: #166534;
-      border: 1px solid #86EFAC;
-    }
-
-    .loto-status-banner.stalled {
-      background: var(--red-bg);
-      color: #991B1B;
-      border: 1px solid var(--red-border);
-    }
-
-    .loto-status-banner.isolated {
-      background: var(--amber-bg);
-      color: #92400E;
-      border: 1px solid var(--amber-border);
-    }
-
-    .loto-step-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .loto-step-btn {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px;
-      background: #FFFFFF;
-      border: 1px solid var(--border-card);
-      border-radius: var(--radius-md);
-      font-family: var(--font-sans);
-      font-size: 13px;
-      font-weight: 600;
+    .form-input, .form-select {
+      padding: 8px 12px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      background: var(--bg-card);
       color: var(--text-main);
+      outline: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--brand-green);
+    }
+
+    .upload-progress-box {
+      margin-top: 16px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .progress-bar-bg {
+      height: 8px;
+      background: var(--border-subtle);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #16A34A, #0D6E45);
+      transition: width 0.3s ease;
+    }
+    .progress-text {
+      font-size: 0.74rem;
+      font-family: 'DM Mono', monospace;
+      color: var(--brand-green);
+      font-weight: 600;
+    }
+
+    /* 3D Callout Badges */
+    .callout-badge {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      background: var(--brand-green);
+      color: #FFFFFF;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: var(--radius-full);
+      box-shadow: 0 4px 12px rgba(0, 90, 54, 0.4);
       cursor: pointer;
-      text-align: left;
-      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      pointer-events: auto;
+      border: 1.5px solid #FFFFFF;
+      z-index: 15;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s;
     }
-
-    .loto-step-btn:hover:not(:disabled) {
-      background: var(--bg-hover);
-      border-color: var(--brand-emerald);
-      color: var(--brand-green-dark);
-    }
-
-    .loto-step-btn:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .loto-log-box {
-      background: #14281E;
-      color: #86EFAC;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 12px;
-      border-radius: var(--radius-md);
-      max-height: 140px;
-      overflow-y: auto;
-      line-height: 1.6;
+    .callout-badge:hover, .callout-badge.active {
+      transform: translate(-50%, -50%) scale(1.15);
+      background: #16A34A;
+      box-shadow: 0 6px 18px rgba(22, 163, 74, 0.6);
     }
 
     /* Loading Overlay */
     #loading-overlay {
       position: absolute;
-      top: 0;
+      top: 64px;
       left: 0;
-      width: 100%;
-      height: 100%;
+      right: 0;
+      bottom: 0;
       background: rgba(234, 240, 235, 0.85);
       backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      z-index: 50;
+      z-index: 90;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 16px;
-      transition: opacity 0.3s;
+      transition: opacity 0.3s ease;
     }
-
-    #loading-overlay.fade-out {
-      opacity: 0;
-      pointer-events: none;
+    body.studio-dark-mode #loading-overlay {
+      background: rgba(13, 19, 25, 0.88);
     }
-
     .spinner {
-      width: 44px;
-      height: 44px;
-      border: 4px solid var(--border-strong);
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--border-subtle);
       border-top-color: var(--brand-green);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .loading-text {
-      font-family: var(--font-sans);
-      font-size: 14px;
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-msg {
+      font-size: 0.9rem;
       font-weight: 700;
-      color: var(--brand-green-dark);
+      color: var(--brand-green);
+      font-family: 'DM Mono', monospace;
     }
   </style>
 </head>
 <body>
 
-  <!-- Loading State Screen -->
-  <div id="loading-overlay">
-    <div class="spinner"></div>
-    <div class="loading-text" id="loading-msg">INITIALIZING SAGMA ECHO DIGITAL TWIN...</div>
-  </div>
-
-  <!-- 3D Canvas Viewport -->
-  <div id="viewport-container">
-    <canvas id="three-canvas"></canvas>
-    <div id="callout-container"></div>
-  </div>
-
-  <!-- Top Navigation Header -->
-  <header class="app-header">
-    <div class="header-left">
-      <div class="brand-group">
-        <img src="assets/sagma_logo.png" alt="SAGMA Logo" class="brand-logo-img">
-        <div class="brand-text-block">
-          <div class="brand-title">SAGMA ECHO</div>
-          <div class="brand-subtitle">DIGITAL TWIN STUDIO</div>
-        </div>
+  <!-- ============================================================
+       TOP HEADER & WORKSPACE NAVIGATION
+       ============================================================ -->
+  <header>
+    <div class="brand-group">
+      <div class="brand-emblem">
+        <img src="assets/sagma_logo.png" alt="SAGMA" onerror="this.src='assets/sagma_emblem.png'">
       </div>
-
-      <div class="header-divider"></div>
-
-      <!-- Quick Machine Switcher -->
-      <div class="machine-selector-wrapper">
-        <button class="machine-selector-btn" id="btn-machine-quick-switch" title="Switch Machine Twin">
-          <span class="machine-selector-dot"></span>
-          <span id="active-machine-name-label">Diagram 69(b) Bucket Elevator</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
+      <div class="brand-titles">
+        <div class="brand-title">
+          SAGMA ECHO
+          <span class="badge-echo">UNIFIED V2</span>
+        </div>
+        <div class="brand-sub" data-i18n="header.subtitle">SOUTHERN AFRICAN GRAIN MILLING ACADEMY</div>
       </div>
     </div>
 
-    <!-- Actions Bar -->
     <div class="header-actions">
-      <button class="header-btn" id="btn-open-library" title="Open Central Equipment Asset Library">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        <span>Equipment Library</span>
+      <!-- 5-Language Selector -->
+      <div class="lang-dropdown-wrapper">
+        <select id="langSelector" class="lang-select" title="Change Language">
+          <option value="en-ZA">English (ZA)</option>
+          <option value="af-ZA">Afrikaans</option>
+          <option value="zu-ZA">isiZulu</option>
+          <option value="st-ZA">Sesotho</option>
+          <option value="pt-MZ">Português (MZ)</option>
+        </select>
+      </div>
+
+      <!-- Equipment Library Hub Button -->
+      <button id="btnOpenLibrary" class="btn btn-header">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <span data-i18n="nav.library">Equipment Library</span>
       </button>
 
-      <button class="header-btn" id="btn-open-calc" title="SAGMA Module 8 Calculations Engine">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
-        <span>Calculations</span>
+      <!-- Universal Machine Uploader Button -->
+      <button id="btnOpenUploader" class="btn btn-accent">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        <span data-i18n="nav.upload">Upload Machine / CAD</span>
       </button>
 
-      <button class="header-btn" id="btn-open-loto" title="OSHA & SAGMA Module 2 Boot Choke LOTO Isolation">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <span>LOTO Safety</span>
+      <!-- Calculations Engine -->
+      <button id="btnOpenCalculations" class="btn btn-header">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg>
+        <span data-i18n="nav.calculations">Calculations</span>
       </button>
 
-      <div class="header-divider"></div>
-
-      <button class="header-btn active" id="btn-toggle-callouts" title="Toggle 3D Callout Badges (Key: L)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <span>3D Badges</span>
+      <!-- Studio Viewport Dark/Light Toggle -->
+      <button id="btnToggleStudioMode" class="btn btn-header" title="Toggle Studio Dark / Engineering Sage Viewport">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <span data-i18n="nav.studioMode">Studio Dark</span>
       </button>
 
-      <button class="header-btn" id="btn-reset-cam" title="Reset Camera View">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-        <span>Reset View</span>
-      </button>
+      <!-- LOTO Safety Simulator -->
+      <div id="lotoIndicator" class="loto-indicator" title="OSHA / SAGMA Safe Maintenance Lockout">
+        <div class="loto-dot"></div>
+        <span id="lotoStatusText" data-i18n="loto.active">LOTO: ACTIVE (OPERATIONAL)</span>
+      </div>
     </div>
   </header>
 
-  <!-- Top Right Model Telemetry Pill -->
-  <div class="metrics-pill">
-    <div class="metric-item">
-      <span class="metric-label">Nodes</span>
-      <span class="metric-value" id="telemetry-nodes">99 Parts</span>
-    </div>
-    <div class="metric-item">
-      <span class="metric-label">Size</span>
-      <span class="metric-value" id="telemetry-size">248 KB</span>
-    </div>
-    <div class="metric-item">
-      <span class="metric-label">Engine</span>
-      <span class="metric-value" id="telemetry-fps">60 FPS</span>
-    </div>
-  </div>
-
-  <!-- Syllabus Mechanical Inspector Card -->
-  <aside class="inspector-card hidden" id="inspector-card">
-    <div class="inspector-header">
-      <div>
-        <div class="inspector-tags">
-          <span class="tag-badge primary" id="insp-tag">01</span>
-          <span class="tag-badge subtle" id="insp-section">Head Assembly</span>
-        </div>
-        <div class="inspector-title" id="insp-title">Split Removable Upper Hood</div>
-      </div>
-      <button class="inspector-close-btn" id="btn-close-inspector">&times;</button>
-    </div>
-
-    <div class="inspector-body">
-      <div>
-        <div class="inspector-section-label">Syllabus Module Reference</div>
-        <div class="inspector-text-block" id="insp-source">SAGMA Diagram 69(b) [Header]</div>
-      </div>
-
-      <div>
-        <div class="inspector-section-label">Mechanical & Functional Description</div>
-        <div class="inspector-text-block" id="insp-desc">The entire upper housing is split longitudinally and can be removed for inspection, belt splicing, and pulley maintenance without disturbing the vertical casing legs.</div>
-      </div>
-
-      <div id="insp-safety-wrap">
-        <div class="inspector-section-label">Safety & LOTO Protocol</div>
-        <div class="inspector-safety-block" id="insp-safety">Ensure motor is locked out (LOTO) and mechanical belt clamp is locked before loosening hood clamps.</div>
-      </div>
-
-      <div class="inspector-actions">
-        <button class="inspector-btn" id="btn-insp-focus">Focus Camera</button>
-        <button class="inspector-btn" id="btn-insp-isolate">Isolate Component</button>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Bottom Navigation HUD -->
-  <footer class="bottom-dock">
-    <!-- Camera Elevation Presets -->
-    <div class="preset-group" id="camera-preset-bar">
-      <button class="preset-btn active" data-preset="full">Full Elevation</button>
-      <button class="preset-btn" data-preset="head">Head Drive</button>
-      <button class="preset-btn" data-preset="spout">Discharge</button>
-      <button class="preset-btn" data-preset="legs">Twin Legs</button>
-      <button class="preset-btn" data-preset="boot">Boot Tensioner</button>
-    </div>
-
-    <div class="dock-divider"></div>
-
-    <!-- Exploded View Radial Engine -->
-    <div class="explode-control">
-      <span class="explode-label">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
-        Explode
-      </span>
-      <input type="range" min="0" max="100" value="0" class="explode-slider" id="explode-slider">
-      <span class="explode-val" id="explode-val">0%</span>
-    </div>
-  </footer>
-
   <!-- ============================================================
-       MODAL 1: CENTRAL EQUIPMENT ASSET LIBRARY
+       3D VIEWPORT CONTAINER
        ============================================================ -->
-  <div class="modal-backdrop" id="modal-library">
-    <div class="modal-window">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <div class="modal-title-icon">🗄️</div>
-          <div>
-            <div class="modal-title">Central Equipment Asset Library</div>
-            <div style="font-size: 11px; color: var(--text-muted);">SAGMA ECHO Official Continuous Milling Fleet & Local Models</div>
-          </div>
-        </div>
-        <button class="modal-close-btn" id="btn-close-library" data-close="modal-library">&times;</button>
+  <div id="viewport-container">
+    <canvas id="three-canvas"></canvas>
+
+    <!-- Telemetry HUD Overlay -->
+    <div class="telemetry-hud">
+      <div class="telemetry-header">
+        <div class="telemetry-title" id="hudMachineName">Industrial Bucket Elevator</div>
+        <div class="telemetry-badge" id="hudMachineOEM">DIAGRAM 69(B)</div>
       </div>
-
-      <div class="modal-content">
-        <!-- Fleet Models Grid -->
-        <div class="library-grid" id="library-cards-container">
-          <!-- Populated dynamically by script.js -->
+      <div class="telemetry-grid">
+        <div class="telemetry-item">
+          <span class="telemetry-label" data-i18n="hud.fps">FPS / Render</span>
+          <span class="telemetry-val" id="hudFPS">60.0 FPS</span>
         </div>
-
-        <!-- Custom Upload Zone -->
-        <div class="upload-zone" id="library-upload-zone">
-          <div class="upload-zone-icon">📥</div>
-          <div class="upload-zone-title">Add Custom 3D Model to Local Library</div>
-          <div class="upload-zone-desc">Drag & Drop .GLB / .GLTF file here, or click to browse</div>
-          <input type="file" id="library-file-input" accept=".glb,.gltf" style="display:none">
+        <div class="telemetry-item">
+          <span class="telemetry-label" data-i18n="hud.triangles">Triangles</span>
+          <span class="telemetry-val" id="hudPolys">14,280</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label" data-i18n="hud.parts">Mesh Nodes</span>
+          <span class="telemetry-val" id="hudParts">99 parts</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label" data-i18n="hud.status">3D State</span>
+          <span class="telemetry-val" id="hudStatus" style="color: #16A34A;">PBR REAL-TIME</span>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ============================================================
-       MODAL 2: SAGMA CALCULATIONS ENGINE (MODULE 8 SEC 3)
-       ============================================================ -->
-  <div class="modal-backdrop" id="modal-calc">
-    <div class="modal-window">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <div class="modal-title-icon">📐</div>
-          <div>
-            <div class="modal-title">SAGMA Module 8 Calculations Engine</div>
-            <div style="font-size: 11px; color: var(--text-muted);">Authoritative Continuous Grain Elevation Throughput & Motor Sizing</div>
-          </div>
-        </div>
-        <button class="modal-close-btn" id="btn-close-calc" data-close="modal-calc">&times;</button>
+    <!-- 3D Callout Overlay Root -->
+    <div id="callout-overlay-root"></div>
+
+    <!-- Viewport Controls Toolbar -->
+    <div class="viewport-toolbar">
+      <div class="tool-group">
+        <button id="btnResetCam" class="tool-btn" title="Reset Camera Framing">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+          <span data-i18n="tools.reset">Reset</span>
+        </button>
+
+        <button id="btnToggleWireframe" class="tool-btn" title="Toggle Engineering Wireframe">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          <span data-i18n="tools.wireframe">Wireframe</span>
+        </button>
+
+        <button id="btnToggleCallouts" class="tool-btn active" title="Toggle 3D Hotspot Annotations">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span data-i18n="tools.hotspots">Hotspots</span>
+        </button>
       </div>
 
-      <div class="modal-content">
-        <div class="calc-layout">
-          <!-- Inputs Column -->
-          <div class="calc-inputs">
-            <div class="calc-row">
-              <div class="calc-label-row">
-                <span>Belt Speed (m/s)</span>
-                <span class="calc-val-pill" id="calc-val-speed">2.80 m/s</span>
-              </div>
-              <input type="range" id="calc-input-speed" min="0.8" max="4.0" step="0.1" value="2.80" class="calc-range-slider">
-            </div>
+      <div class="tool-divider"></div>
 
-            <div class="calc-row">
-              <div class="calc-label-row">
-                <span>Bucket Spacing / Pitch (m)</span>
-                <span class="calc-val-pill" id="calc-val-pitch">0.30 m</span>
-              </div>
-              <input type="range" id="calc-input-pitch" min="0.15" max="0.60" step="0.05" value="0.30" class="calc-range-slider">
-            </div>
+      <!-- Explode Assembly Slider -->
+      <div class="slider-container">
+        <span data-i18n="tools.explode">Explode</span>
+        <input type="range" id="explodeRange" class="explode-range" min="0" max="100" value="0">
+        <span id="explodeValText">0%</span>
+      </div>
 
-            <div class="calc-row">
-              <div class="calc-label-row">
-                <span>Grain Mass per Bucket (kg)</span>
-                <span class="calc-val-pill" id="calc-val-mass">3.50 kg</span>
-              </div>
-              <input type="range" id="calc-input-mass" min="0.5" max="10.0" step="0.5" value="3.50" class="calc-range-slider">
-            </div>
+      <div class="tool-divider"></div>
 
-            <div class="calc-row">
-              <div class="calc-label-row">
-                <span>Lifting Height (m)</span>
-                <span class="calc-val-pill" id="calc-val-height">9.63 m</span>
-              </div>
-              <input type="range" id="calc-input-height" min="5.0" max="35.0" step="0.5" value="9.63" class="calc-range-slider">
-            </div>
+      <!-- Material Preset Selector -->
+      <div class="tool-group">
+        <label for="materialPresetSelect" style="font-size:0.72rem; color:var(--text-muted); font-weight:600;" data-i18n="tools.shader">Shader:</label>
+        <select id="materialPresetSelect" class="material-select">
+          <option value="default" data-i18n="shader.default">Original Textures</option>
+          <option value="stainless" data-i18n="shader.stainless">Brushed Stainless</option>
+          <option value="castiron" data-i18n="shader.castiron">Cast Iron Industrial</option>
+          <option value="sagma_paint" data-i18n="shader.sagma">SAGMA Paint (#005A36)</option>
+          <option value="xray" data-i18n="shader.xray">X-Ray Diagnostic</option>
+        </select>
+      </div>
 
-            <div class="calc-row">
-              <div class="calc-label-row">
-                <span>Mechanical Efficiency (η)</span>
-                <span class="calc-val-pill" id="calc-val-eff">70%</span>
-              </div>
-              <input type="range" id="calc-input-eff" min="0.50" max="0.95" step="0.05" value="0.70" class="calc-range-slider">
-            </div>
+      <div class="tool-divider"></div>
+
+      <!-- Open Spec Drawer Trigger -->
+      <button id="btnOpenDrawer" class="tool-btn" title="Open Technical Specifications & OEM Manual">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <span data-i18n="tools.specs">Specs & PDF</span>
+      </button>
+    </div>
+
+    <!-- Dedicated Machine Space Side Drawer -->
+    <div id="machineDrawer" class="machine-spec-drawer">
+      <div class="drawer-header">
+        <div class="drawer-title-group">
+          <div class="drawer-title" id="drawerMachineTitle">Industrial Bucket Elevator</div>
+          <div class="drawer-oem" id="drawerMachineOEM">DIAGRAM 69(B) - SAGMA AUTHORITATIVE</div>
+        </div>
+        <button id="btnCloseDrawer" class="drawer-close" title="Close Drawer">&times;</button>
+      </div>
+
+      <div class="drawer-tabs">
+        <div class="drawer-tab active" data-tab="specs" data-i18n="drawer.tabSpecs">Specifications</div>
+        <div class="drawer-tab" data-tab="pdf" data-i18n="drawer.tabPDF">OEM Spec PDF</div>
+        <div class="drawer-tab" data-tab="inspector" data-i18n="drawer.tabPart">Part Inspector</div>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Specs Tab -->
+        <div id="drawerTabSpecs" class="tab-content active">
+          <div class="spec-section-title" data-i18n="drawer.telemetryTitle">Technical Specifications</div>
+          <table class="spec-table">
+            <tbody>
+              <tr><td class="label" data-i18n="spec.category">Category</td><td class="value" id="specCategory">Grain Elevating & Conveying</td></tr>
+              <tr><td class="label" data-i18n="spec.manufacturer">Manufacturer</td><td class="value" id="specOEM">Generic / DIN Standard</td></tr>
+              <tr><td class="label" data-i18n="spec.model">Model Series</td><td class="value" id="specModel">DIN 22104 / Diagram 69(b)</td></tr>
+              <tr><td class="label" data-i18n="spec.throughput">Nominal Throughput</td><td class="value" id="specThroughput">35 - 120 t/h (Maize/Wheat)</td></tr>
+              <tr><td class="label" data-i18n="spec.speed">Belt / Shaft Speed</td><td class="value" id="specSpeed">1.8 - 2.8 m/s</td></tr>
+              <tr><td class="label" data-i18n="spec.power">Installed Motor</td><td class="value" id="specPower">7.5 - 22 kW IP65</td></tr>
+              <tr><td class="label" data-i18n="spec.syllabus">Syllabus Reference</td><td class="value" id="specSyllabus">Maize Mod 4 Ch 9 / Wheat Mod 5</td></tr>
+            </tbody>
+          </table>
+
+          <div class="spec-section-title" style="margin-top:20px;" data-i18n="drawer.safetyTitle">Safety & Compliance</div>
+          <div id="specSafetyNotice" style="font-size:0.78rem; line-height:1.5; color:var(--text-muted); background:var(--bg-card-subtle); padding:10px 14px; border-radius:var(--radius-sm); border-left:3px solid var(--status-warning);">
+            Explosion vents must point away from personnel pathways. ATEX Zone 20/21 internal grain dust compliance required.
           </div>
+        </div>
 
-          <!-- Outputs Column -->
-          <div class="calc-outputs">
-            <div class="output-card-grid">
-              <div class="output-card">
-                <span class="output-label">Bucket Rate</span>
-                <div><span class="output-val" id="out-bucket-rate">560</span><span class="output-unit">/min</span></div>
-              </div>
-              <div class="output-card">
-                <span class="output-label">Throughput</span>
-                <div><span class="output-val" id="out-capacity-th">117.6</span><span class="output-unit">t/h</span></div>
-              </div>
-              <div class="output-card">
-                <span class="output-label">Theoretical Power</span>
-                <div><span class="output-val" id="out-theo-power">3.09</span><span class="output-unit">kW</span></div>
-              </div>
-              <div class="output-card">
-                <span class="output-label">Motor Required</span>
-                <div><span class="output-val" id="out-motor-power">4.41</span><span class="output-unit">kW</span></div>
-              </div>
+        <!-- Embedded PDF Spec Tab -->
+        <div id="drawerTabPDF" class="tab-content" style="display:none;">
+          <div class="pdf-viewer-card">
+            <div class="pdf-viewer-bar">
+              <span id="pdfFileName">Bucket_elevator.pdf</span>
+              <a id="pdfOpenNewTab" href="specs/Bucket_elevator.pdf" target="_blank" style="color:#4ADE80; text-decoration:none; font-weight:600;" data-i18n="pdf.open">Open &nearr;</a>
             </div>
+            <iframe id="pdfFrame" class="pdf-viewer-frame" src="specs/Bucket_elevator.pdf"></iframe>
+          </div>
+          <p style="font-size:0.74rem; color:var(--text-muted); margin-top:8px;" data-i18n="pdf.hint">
+            Official engineering document served from local CAD from WEB directory.
+          </p>
+        </div>
 
-            <div class="inspector-text-block" style="font-family: var(--font-mono); font-size: 11px;">
-              <strong>Kinematic Note:</strong> Head Drive Pulley (Ø 391 mm) rotates at <span id="out-head-rpm" style="color:var(--brand-green); font-weight:700;">136.8 RPM</span>. Speed ensures centrifugal discharge tangent to hood deflection plates.
-            </div>
+        <!-- Part Inspector Tab -->
+        <div id="drawerTabInspector" class="tab-content" style="display:none;">
+          <div id="inspectorEmptyState" style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:0.8rem;">
+            <p data-i18n="inspector.selectHint">Click any part or 3D hotspot badge on the model to inspect its technical details, safety requirements, and maintenance tolerances.</p>
+          </div>
+          <div id="inspectorDetailState" style="display:none;">
+            <div style="font-size:1.1rem; font-weight:700; color:var(--brand-green); margin-bottom:4px;" id="inspPartTitle">Head Pulley</div>
+            <div style="font-size:0.75rem; font-family:'DM Mono', monospace; color:var(--text-light); margin-bottom:12px;" id="inspPartTag">TAG 01 - HEAD SECTION</div>
+            <p style="font-size:0.8rem; line-height:1.5; color:var(--text-main); margin-bottom:14px;" id="inspPartDesc"></p>
+            <div class="spec-section-title" data-i18n="inspector.specs">Component Specs & Tolerances</div>
+            <p style="font-size:0.78rem; font-family:'DM Mono', monospace; color:var(--text-muted); background:var(--bg-card-subtle); padding:10px; border-radius:var(--radius-sm); margin-bottom:12px;" id="inspPartSpecs"></p>
+            <div class="spec-section-title" data-i18n="inspector.safety">Safety Requirements</div>
+            <p style="font-size:0.78rem; color:#DC2626; background:rgba(220,38,38,0.08); padding:10px; border-radius:var(--radius-sm);" id="inspPartSafety"></p>
           </div>
         </div>
       </div>
@@ -1342,93 +1218,179 @@
   </div>
 
   <!-- ============================================================
-       MODAL 3: OSHA & SAGMA BOOT CHOKE LOTO SIMULATOR
+       EQUIPMENT LIBRARY MODAL (6 CORE MILLING CATEGORIES)
        ============================================================ -->
-  <div class="modal-backdrop" id="modal-loto">
-    <div class="modal-window">
+  <div id="libraryModal" class="modal-overlay">
+    <div class="modal-container">
       <div class="modal-header">
         <div class="modal-title-group">
-          <div class="modal-title-icon">🛡️</div>
-          <div>
-            <div class="modal-title">Boot Choke Lockout/Tagout (LOTO) Simulator</div>
-            <div style="font-size: 11px; color: var(--text-muted);">OSHA 1910.147, OSHA 1910.272 &amp; SAGMA Module 2 Isolation Protocol</div>
-          </div>
+          <h2 data-i18n="lib.title">SAGMA Equipment Library</h2>
+          <p data-i18n="lib.sub">Browse 6 authoritative grain milling machinery categories with dedicated 3D twin workspaces.</p>
         </div>
-        <button class="modal-close-btn" id="btn-close-loto" data-close="modal-loto">&times;</button>
+        <button id="btnCloseLibrary" class="drawer-close" title="Close">&times;</button>
       </div>
 
-      <div class="modal-content">
-        <div class="loto-container">
-          <!-- Status Banner -->
-          <div class="loto-status-banner stalled" id="loto-status-banner">
-            <div>
-              <div style="font-size: 11px; text-transform: uppercase;">MACHINE STATE</div>
-              <div style="font-size: 15px;" id="loto-machine-state-title">CHOKED &amp; STALLED AT BOOT</div>
+      <div class="library-filter-bar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">&#128269;</span>
+          <input type="text" id="libSearchInput" class="search-input" placeholder="Search machines, models, OEMs (e.g. Bühler, Satake, MDDK, plansifter)..." data-i18n-placeholder="lib.searchPlaceholder">
+        </div>
+
+        <div class="category-pills">
+          <button class="cat-pill active" data-cat="all" data-i18n="cat.all">All Machinery (24)</button>
+          <button class="cat-pill" data-cat="01_degerming" data-i18n="cat.c1">01 - Degerming & Debranning</button>
+          <button class="cat-pill" data-cat="02_roller_mills" data-i18n="cat.c2">02 - Roller Mills</button>
+          <button class="cat-pill" data-cat="03_plansifters" data-i18n="cat.c3">03 - Plansifters & Sifting</button>
+          <button class="cat-pill" data-cat="04_purifiers" data-i18n="cat.c4">04 - Purifiers & Finishing</button>
+          <button class="cat-pill" data-cat="05_screenroom" data-i18n="cat.c5">05 - Screenroom & Cleaning</button>
+          <button class="cat-pill" data-cat="06_conveying" data-i18n="cat.c6">06 - Conveying & Dust</button>
+        </div>
+      </div>
+
+      <div class="modal-scroll-area">
+        <div id="fleetGrid" class="fleet-grid">
+          <!-- Dynamically populated machine cards -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       UNIVERSAL MACHINE FILE UPLOADER MODAL
+       ============================================================ -->
+  <div id="uploaderModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 680px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h2 data-i18n="upload.title">Universal Machine & CAD Uploader</h2>
+          <p data-i18n="upload.sub">Add custom machinery models (.step, .stp, .iges, .glb, .gltf, .obj, .stl) and vendor spec PDFs.</p>
+        </div>
+        <button id="btnCloseUploader" class="drawer-close" title="Close">&times;</button>
+      </div>
+
+      <div class="modal-scroll-area">
+        <!-- Drag & Drop Zone -->
+        <div id="dropZone" class="dropzone">
+          <div class="drop-icon">&#128229;</div>
+          <div class="drop-title" data-i18n="upload.dropTitle">Drag & Drop 3D Model or CAD File Here</div>
+          <div class="drop-sub" data-i18n="upload.dropSub">Supports .step, .stp, .iges, .glb, .gltf, .obj, .stl and optional .pdf spec sheet</div>
+          <input type="file" id="fileInput3D" accept=".glb,.gltf,.obj,.stl,.step,.stp,.iges,.igs" style="display:none;">
+          <button type="button" id="btnBrowse3D" class="btn btn-primary" style="margin-top:14px;" data-i18n="upload.browse">Browse Files</button>
+        </div>
+
+        <div id="selectedFileInfo" style="display:none; background:var(--bg-card-subtle); padding:10px 14px; border-radius:var(--radius-sm); margin-bottom:16px; font-family:'DM Mono', monospace; font-size:0.75rem;">
+          <strong>Selected 3D Model:</strong> <span id="selectedFileName">None</span> (<span id="selectedFileSize">0 KB</span>)
+        </div>
+
+        <form id="uploadMetadataForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" data-i18n="upload.fieldName">Machine Name</label>
+              <input type="text" id="upMachineName" class="form-input" placeholder="e.g. Bühler Antares MDDR" required>
             </div>
-            <div style="font-family: var(--font-mono); font-size: 11px;" id="loto-energy-state">LIVE ENERGY DETECTED</div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="upload.fieldOEM">Manufacturer / OEM</label>
+              <input type="text" id="upMachineOEM" class="form-input" placeholder="e.g. Bühler Group, Satake, Simon" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="upload.fieldCat">Milling Category</label>
+              <select id="upMachineCategory" class="form-select">
+                <option value="01_degerming">01 - Degerming & Debranning</option>
+                <option value="02_roller_mills">02 - Roller Mills</option>
+                <option value="03_plansifters">03 - Plansifters & Sifting</option>
+                <option value="04_purifiers">04 - Purifiers & Finishing</option>
+                <option value="05_screenroom">05 - Screenroom & Cleaning</option>
+                <option value="06_conveying" selected>06 - Conveying & Dust</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="upload.fieldShader">Default Material Shader</label>
+              <select id="upMachineShader" class="form-select">
+                <option value="sagma_paint">SAGMA Industrial Paint (#005A36)</option>
+                <option value="stainless">Brushed Stainless Steel</option>
+                <option value="castiron">Cast Iron Industrial</option>
+                <option value="xray">X-Ray Diagnostic</option>
+                <option value="default">Original Mesh Materials</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label" data-i18n="upload.fieldPDF">Attach Technical Specification Sheet (Optional .PDF)</label>
+              <input type="file" id="upSpecPDF" class="form-input" accept=".pdf">
+            </div>
           </div>
 
-          <!-- Step Action Buttons -->
-          <div class="loto-step-list">
-            <button class="loto-step-btn" id="loto-btn-estop">
-              <span>1. Hit Emergency Stop (E-Stop) Pushbutton</span>
-              <span class="tag-badge subtle">ELECTRICAL</span>
-            </button>
-            <button class="loto-step-btn" id="loto-btn-lockout" disabled>
-              <span>2. Apply Padlock &amp; Danger Tag at Main Breaker (OSHA 1910.147)</span>
-              <span class="tag-badge subtle">LOTO</span>
-            </button>
-            <button class="loto-step-btn" id="loto-btn-zero" disabled>
-              <span>3. Verify Zero Electrical Energy (Try Start Button &amp; Voltmeter)</span>
-              <span class="tag-badge subtle">VERIFY</span>
-            </button>
-            <button class="loto-step-btn" id="loto-btn-gravity" disabled>
-              <span>4. Secure Gravitational Anti-Runback Mechanical Belt Clamp</span>
-              <span class="tag-badge subtle">MECHANICAL</span>
-            </button>
-            <button class="loto-step-btn" id="loto-btn-open-panel" disabled>
-              <span>5. Unbolt Boot Cleanout Inspection Hatch</span>
-              <span class="tag-badge subtle">ACCESS</span>
-            </button>
-            <div style="display:flex; gap:8px;">
-              <button class="loto-step-btn" id="loto-btn-hand-clear" style="border-color:var(--red-border);" disabled>
-                <span>6A. Reach Hand In to Scrape Choked Grain</span>
-                <span class="tag-badge" style="background:var(--red); color:#fff;">VIOLATION TEST</span>
-              </button>
-              <button class="loto-step-btn" id="loto-btn-cane-clear" style="border-color:var(--border-card);" disabled>
-                <span>6B. Clear Boot Using Approved Timber Cane</span>
-                <span class="tag-badge subtle">SAGMA APPROVED</span>
-              </button>
+          <div id="uploadProgressBox" class="upload-progress-box">
+            <div class="progress-bar-bg">
+              <div id="uploadProgressBar" class="progress-bar-fill"></div>
             </div>
-            <button class="loto-step-btn" id="loto-btn-close-panels" disabled>
-              <span>7. Reinstall &amp; Bolt Inspection Panels</span>
-              <span class="tag-badge subtle">GUARDS</span>
-            </button>
-            <button class="loto-step-btn" id="loto-btn-restart" disabled>
-              <span>8. Remove Locks &amp; Perform Controlled Empty Restart</span>
-              <span class="tag-badge subtle">STARTUP</span>
-            </button>
+            <div id="uploadProgressText" class="progress-text">Processing CAD Geometry...</div>
           </div>
 
-          <!-- Event Log -->
-          <div>
-            <div class="inspector-section-label">OSHA &amp; SAGMA Compliance Log</div>
-            <div class="loto-log-box" id="loto-log-box">
-              [SYSTEM] Elevator choked with whole grain stock. High amp trip at head drive motor.
-            </div>
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+            <button type="button" id="btnCancelUpload" class="btn btn-header" style="color:var(--text-main); border-color:var(--border-subtle);" data-i18n="upload.cancel">Cancel</button>
+            <button type="submit" id="btnSubmitUpload" class="btn btn-accent" data-i18n="upload.submit">Import to Library & Open Twin</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       CALCULATIONS MODAL (Milling Calculations)
+       ============================================================ -->
+  <div id="calculationsModal" class="modal-overlay">
+    <div class="modal-container" style="max-width: 600px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h2 data-i18n="calc.title">SAGMA Engineering Calculations</h2>
+          <p data-i18n="calc.sub">Interactive formulas for grain throughput, bucket elevator capacity & degermer extraction.</p>
+        </div>
+        <button id="btnCloseCalculations" class="drawer-close" title="Close">&times;</button>
+      </div>
+      <div class="modal-scroll-area">
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Bucket Volume (Liters)</label>
+            <input type="number" id="calcBucketVol" class="form-input" value="1.8" step="0.1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bucket Spacing (Meters)</label>
+            <input type="number" id="calcSpacing" class="form-input" value="0.25" step="0.01">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Belt Speed (m/s)</label>
+            <input type="number" id="calcSpeed" class="form-input" value="2.2" step="0.1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Grain Bulk Density (kg/m³)</label>
+            <input type="number" id="calcDensity" class="form-input" value="750" step="10">
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:16px; border-radius:var(--radius-md); border-left:4px solid var(--brand-emerald);">
+            <div style="font-size:0.74rem; font-family:'DM Mono', monospace; color:var(--text-light); text-transform:uppercase;">Calculated Capacity</div>
+            <div style="font-size:1.6rem; font-weight:700; color:var(--brand-green); font-family:'DM Mono', monospace; margin:4px 0;" id="calcResultThroughput">42.77 t/h</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);" id="calcResultBuckets">8.8 buckets/sec discharge rate</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- External Libraries -->
+  <!-- Loading Screen Indicator -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-msg" id="loadingMsg">INITIALIZING NVIDIA 3D STAGE...</div>
+  </div>
+
+  <!-- ============================================================
+       EXTERNAL DEPENDENCIES & STANDALONE LOADERS
+       ============================================================ -->
   <script src="libs/three.min.js"></script>
   <script src="libs/OrbitControls.js"></script>
   <script src="libs/GLTFLoader.js"></script>
   <script src="libs/DRACOLoader.js"></script>
-
-  <!-- Application Engine Script -->
+  <script src="libs/STLLoader.js"></script>
+  <script src="libs/OBJLoader.js"></script>
+  <script src="libs/occt-import-js.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
