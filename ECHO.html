@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECHO - 3D Spatial Presentation Studio</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        #ui-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #exploded-slider {
+            width: 200px;
+        }
+        #open-model-btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        #open-model-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        #timeline {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .timeline-step {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .timeline-step:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .timeline-step.active {
+            background: #4a90e2;
+        }
+        #drop-zone {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vw;
+            height: 80vh;
+            border: 2px dashed #666;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.2rem;
+            pointer-events: all;
+            transition: border-color 0.3s, background 0.3s;
+        }
+        #drop-zone.dragover {
+            border-color: #4a90e2;
+            background: rgba(74, 144, 226, 0.1);
+            color: #4a90e2;
+        }
+        #loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            font-size: 1.2rem;
+        }
+        #loading-indicator.show {
+            display: flex;
+        }
+        #progress-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        #progress {
+            width: 0%;
+            height: 100%;
+            background: #4a90e2;
+            transition: width 0.1s linear;
+        }
+        #file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-container">
+        <h3>ECHO Controls</h3>
+        <div class="control-row">
+            <label for="exploded-slider">Exploded View: </label>
+            <input type="range" id="exploded-slider" min="0" max="1" step="0.01" value="0">
+        </div>
+        <div class="control-row">
+            <button id="open-model-btn">Open 3D Model</button>
+            <input type="file" id="file-input" accept=".glb,.gltf">
+        </div>
+    </div>
+    <div id="timeline">
+        <button class="timeline-step active" data-step="1">Step 1</button>
+        <button class="timeline-step" data-step="2">Step 2</button>
+        <button class="timeline-step" data-step="3">Step 3</button>
+    </div>
+    <div id="drop-zone">
+        Drag & Drop .glb or .gltf model here
+    </div>
+    <div id="loading-indicator">
+        <div>Loading model...</div>
+        <div id="progress-bar"><div id="progress"></div></div>
+    </div>
+
+    <!-- Three.js and dependencies from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/jsm/loaders/GLTFLoader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/jsm/loaders/DRACOLoader.js"></script>
+    <script>
+        // Three.js ECHO Application (self-contained, works via file://)
+        let scene, camera, renderer, controls;
+        let model = null; // The loaded GLTF model
+        let explodedAmount = 0; // 0 to 1
+
+        // Camera positions for timeline steps
+        const cameraPositions = [
+            { position: new THREE.Vector3(5, 5, 5), target: new THREE.Vector3(0, 0, 0) }, // Step 1
+            { position: new THREE.Vector3(-5, 3, 5), target: new THREE.Vector3(0, 1, 0) }, // Step 2
+            { position: new THREE.Vector3(0, -5, 8), target: new THREE.Vector3(0, 0, 0) }  // Step 3
+        ];
+
+        let currentStep = 0;
+        let isAnimating = false;
+
+        // UI elements
+        const dropZone = document.getElementById('drop-zone');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const progressBar = document.getElementById('progress');
+        const explodedSlider = document.getElementById('exploded-slider');
+        const openModelBtn = document.getElementById('open-model-btn');
+        const fileInput = document.getElementById('file-input');
+
+        init();
+        animate();
+
+        function init() {
+            // Prevent browser from handling drag/drop globally (prevent download/open)
+            ['dragover', 'dragenter', 'dragleave', 'drop'].forEach(eventName => {
+                window.addEventListener(eventName, preventDragDrop, false);
+                document.addEventListener(eventName, preventDragDrop, false);
+            });
+
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x202020);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(5, 5, 5);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.enableZoom = true;
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 2);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+            directionalLight.position.set(5, 10, 7);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 50;
+            directionalLight.shadow.camera.left = -10;
+            directionalLight.shadow.camera.right = 10;
+            directionalLight.shadow.camera.top = 10;
+            directionalLight.shadow.camera.bottom = -10;
+            scene.add(directionalLight);
+
+            // Fill light (softer, opposite)
+            const fillLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            fillLight.position.set(-5, 3, -5);
+            scene.add(fillLight);
+
+            // Draco loader for compressed GLTF
+            const dracoLoader = new THREE.DRACOLoader();
+            dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+
+            // GLTF loader
+            const gltfLoader = new THREE.GLTFLoader();
+            gltfLoader.setDRACOLoader(dracoLoader);
+
+            // Drop zone events
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+                hideLoading();
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (!file) return;
+                if (!(file.name.endsWith('.glb') || file.name.endsWith('.gltf'))) {
+                    showError('Please drop a .glb or .gltf file');
+                    return;
+                }
+                loadModelFromFile(file);
+            });
+
+            // File picker button
+            openModelBtn.addEventListener('click', () => {
+                fileInput.value = ''; // Reset
+                fileInput.click();
+            });
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    loadModelFromFile(file);
+                }
+            });
+
+            // Exploded view slider
+            explodedSlider.addEventListener('input', (e) => {
+                explodedAmount = parseFloat(e.target.value);
+                applyExplodedView();
+            });
+
+            // Timeline steps
+            const timelineSteps = document.querySelectorAll('.timeline-step');
+            timelineSteps.forEach((step, index) => {
+                step.addEventListener('click', () => {
+                    if (!isAnimating) {
+                        goToStep(index);
+                    }
+                });
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // NOTE: Auto-loading sample.glb is disabled for file:// due to security restrictions.
+            // To test with a sample, copy it next to this HTML and drag/drop or use the Open button.
+        }
+
+        function preventDragDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function loadModelFromFile(file) {
+            showLoading();
+            dropZone.textContent = 'Loading model...';
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const arrayBuffer = event.target.result;
+                // Parse GLTF from array buffer
+                const dracoLoader = new THREE.DRACOLoader();
+                dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+                const gltfLoader = new THREE.GLTFLoader();
+                gltfLoader.setDRACOLoader(dracoLoader);
+                gltfLoader.parse(
+                    arrayBuffer,
+                    '',
+                    (gltf) => {
+                        handleModelLoaded(gltf);
+                    },
+                    (progress) => {
+                        if (progress.lengthComputable) {
+                            const percent = (progress.loaded / progress.total) * 100;
+                            progressBar.style.width = percent + '%';
+                        }
+                    },
+                    (error) => {
+                        console.error('GLTFLoader error:', error);
+                        showError('Failed to load model: ' + error);
+                    }
+                );
+            };
+            reader.onerror = (error) => {
+                console.error('FileReader error:', error);
+                showError('Failed to read file');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function handleModelLoaded(gltf) {
+            // Remove previous model if exists
+            if (model) {
+                scene.remove(model);
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.geometry.dispose();
+                        if (child.material) {
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(m => m.dispose());
+                            } else {
+                                child.material.dispose();
+                            }
+                        }
+                    }
+                });
+            }
+
+            model = gltf.scene;
+            scene.add(model);
+
+            // Center the model
+            const box = new THREE.Box3().setFromObject(model);
+            const center = box.getCenter(new THREE.Vector3());
+            model.position.sub(center);
+
+            // Scale to fit view (optional)
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const scaleFactor = 2 / maxDim;
+            model.scale.setScalar(scaleFactor);
+
+            // Initialize exploded view (store original positions)
+            model.userData.originalPositions = [];
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    model.userData.originalPositions.push(child.position.clone());
+                }
+            });
+
+            // Apply initial exploded view (0)
+            applyExplodedView();
+
+            // Update UI
+            hideLoading();
+            dropZone.textContent = 'Drag & Drop .glb or .gltf model here';
+        }
+
+        function showError(message) {
+            hideLoading();
+            dropZone.textContent = message;
+            dropZone.style.color = '#ff6b6b';
+            setTimeout(() => {
+                dropZone.textContent = 'Drag & Drop .glb or .gltf model here';
+                dropZone.style.color = '#666';
+            }, 3000);
+        }
+
+        function showLoading() {
+            loadingIndicator.classList.add('show');
+            progressBar.style.width = '0%';
+        }
+
+        function hideLoading() {
+            loadingIndicator.classList.remove('show');
+        }
+
+        function applyExplodedView() {
+            if (!model || !model.userData.originalPositions) return;
+
+            let i = 0;
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    const originalPos = model.userData.originalPositions[i];
+                    // Move along the normal of the bounding box (simplified: use position direction)
+                    const direction = originalPos.clone().normalize();
+                    if (direction.length() === 0) {
+                        direction.set(1, 0, 0); // Default to X axis
+                    }
+                    const explosionOffset = direction.multiplyScalar(explodedAmount * 2); // 2 units max
+                    child.position.copy(originalPos).add(explosionOffset);
+                    i++;
+                }
+            });
+        }
+
+        function goToStep(stepIndex) {
+            if (isAnimating || stepIndex === currentStep) return;
+            isAnimating = true;
+
+            // Update UI
+            document.querySelectorAll('.timeline-step').forEach((step, idx) => {
+                step.classList.toggle('active', idx === stepIndex);
+            });
+
+            const startPos = camera.position.clone();
+            const startTarget = controls.target.clone();
+            const endPos = cameraPositions[stepIndex].position.clone();
+            const endTarget = cameraPositions[stepIndex].target.clone();
+
+            const duration = 1500; // ms
+            const startTime = performance.now();
+
+            function animateCamera(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easedProgress = easeInOutCubic(progress);
+
+                // Interpolate camera position
+                camera.position.lerpVectors(startPos, endPos, easedProgress);
+                // Interpolate target (controls.target)
+                controls.target.lerpVectors(startTarget, endTarget, easedProgress);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateCamera);
+                } else {
+                    isAnimating = false;
+                    currentStep = stepIndex;
+                    controls.update();
+                }
+            }
+
+            requestAnimationFrame(animateCamera);
+        }
+
+        function easeInOutCubic(t) {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            controls.update();
+
+            // Apply exploded view if model exists
+            if (model) {
+                applyExplodedView();
+            }
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>

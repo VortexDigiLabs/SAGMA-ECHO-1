@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAGMA ECHO - Digital Twin Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================================
+       SAGMA ECHO - APPROVED GREEN & WHITE LIGHT THEME DESIGN TOKENS
+       ============================================================ */
+    :root {
+      --bg-canvas: #EAF0EB;
+      --bg-panel: rgba(255, 255, 255, 0.94);
+      --bg-panel-solid: #FFFFFF;
+      --bg-card: #FFFFFF;
+      --bg-card-subtle: #F4F8F5;
+      --bg-hover: #EBF4EE;
+      
+      --brand-green: #005A36;
+      --brand-green-dark: #00462A;
+      --brand-emerald: #0D6E45;
+      --brand-green-tint: #E6F3EC;
+      --brand-glow: rgba(0, 90, 54, 0.18);
+      
+      --text-main: #14281E;
+      --text-muted: #4A6356;
+      --text-light: #7E968A;
+      
+      --border-hairline: rgba(0, 90, 54, 0.12);
+      --border-card: #D7E2DA;
+      --border-strong: #CBD7CE;
+      
+      --amber: #D97706;
+      --amber-bg: #FEF3C7;
+      --amber-border: #FCD34D;
+      --red: #DC2626;
+      --red-bg: #FEE2E2;
+      --red-border: #FCA5A5;
+      --sensor-green: #16A34A;
+      --sensor-bg: #DCFCE7;
+      
+      --shadow-sm: 0 2px 8px rgba(0, 45, 25, 0.04);
+      --shadow-soft: 0 8px 28px rgba(0, 90, 54, 0.08);
+      --shadow-elevated: 0 16px 40px rgba(0, 45, 25, 0.12);
+      
+      --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-full: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* 3D Canvas Area */
+    #viewport-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    #three-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* 3D Projected Callout Badges */
+    #callout-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+      overflow: hidden;
+    }
+
+    .callout-badge {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      pointer-events: auto;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid var(--brand-emerald);
+      border-radius: var(--radius-full);
+      box-shadow: var(--shadow-soft);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+    }
+
+    .callout-badge:hover {
+      transform: translate(-50%, -50%) scale(1.08);
+      background: #FFFFFF;
+      border-color: var(--brand-green);
+      box-shadow: 0 10px 32px var(--brand-glow);
+    }
+
+    .callout-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--brand-green);
+      color: #FFFFFF;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+    }
+
+    .callout-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .callout-pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--brand-emerald);
+      box-shadow: 0 0 0 0 rgba(13, 110, 69, 0.7);
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0% { box-shadow: 0 0 0 0 rgba(13, 110, 69, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(13, 110, 69, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(13, 110, 69, 0); }
+    }
+
+    /* ============================================================
+       TOP HEADER NAV
+       ============================================================ */
+    .app-header {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      height: 56px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 10;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-logo-img {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .brand-text-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--brand-green-dark);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .brand-subtitle {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--brand-emerald);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+
+    .header-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border-hairline);
+    }
+
+    /* Machine Selector Pill */
+    .machine-selector-wrapper {
+      position: relative;
+    }
+
+    .machine-selector-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-full);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--brand-green-dark);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .machine-selector-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--brand-green);
+    }
+
+    .machine-selector-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--sensor-green);
+    }
+
+    /* Navigation Action Buttons */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      background: #FFFFFF;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--brand-emerald);
+      color: var(--brand-green);
+      transform: translateY(-1px);
+    }
+
+    .header-btn.active {
+      background: var(--brand-green-tint);
+      border-color: var(--brand-green);
+      color: var(--brand-green-dark);
+    }
+
+    .header-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    /* Primary CTA Button */
+    .btn-primary {
+      background: var(--brand-green);
+      color: #FFFFFF;
+      border-color: var(--brand-green-dark);
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-green-dark);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px var(--brand-glow);
+    }
+
+    /* ============================================================
+       TOP RIGHT TELEMETRY PILL
+       ============================================================ */
+    .metrics-pill {
+      position: absolute;
+      top: 84px;
+      right: 16px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-soft);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      z-index: 10;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .metric-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .metric-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .metric-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--brand-green-dark);
+    }
+
+    /* ============================================================
+       BOTTOM HUD DOCK
+       ============================================================ */
+    .bottom-dock {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-panel);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-elevated);
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      z-index: 10;
+    }
+
+    .preset-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .preset-btn {
+      padding: 6px 11px;
+      background: #FFFFFF;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .preset-btn:hover {
+      background: var(--bg-hover);
+      color: var(--brand-green);
+      border-color: var(--brand-emerald);
+    }
+
+    .preset-btn.active {
+      background: var(--brand-green);
+      color: #FFFFFF;
+      border-color: var(--brand-green-dark);
+    }
+
+    .dock-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border-hairline);
+    }
+
+    /* Exploded View Control */
+    .explode-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .explode-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .explode-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 110px;
+      height: 6px;
+      border-radius: var(--radius-full);
+      background: var(--border-strong);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .explode-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--brand-green);
+      border: 2px solid #FFFFFF;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .explode-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .explode-val {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--brand-green-dark);
+      min-width: 32px;
+    }
+
+    /* ============================================================
+       SLIDE-IN SIDEBAR: SYLLABUS MECHANICAL INSPECTOR
+       ============================================================ */
+    .inspector-card {
+      position: absolute;
+      top: 84px;
+      left: 16px;
+      width: 340px;
+      max-height: calc(100vh - 120px);
+      background: var(--bg-panel);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-elevated);
+      padding: 18px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+      transform: translateX(0);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s;
+    }
+
+    .inspector-card.hidden {
+      transform: translateX(-380px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .inspector-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .inspector-tags {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .tag-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+    }
+
+    .tag-badge.primary {
+      background: var(--brand-green);
+      color: #FFFFFF;
+    }
+
+    .tag-badge.subtle {
+      background: var(--brand-green-tint);
+      color: var(--brand-green-dark);
+    }
+
+    .inspector-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--brand-green-dark);
+      line-height: 1.25;
+    }
+
+    .inspector-close-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px;
+    }
+
+    .inspector-close-btn:hover {
+      color: var(--text-main);
+    }
+
+    .inspector-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-main);
+    }
+
+    .inspector-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .inspector-text-block {
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+
+    .inspector-safety-block {
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-border);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #92400E;
+    }
+
+    .inspector-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .inspector-btn {
+      flex: 1;
+      padding: 7px 10px;
+      background: #FFFFFF;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .inspector-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--brand-emerald);
+      color: var(--brand-green);
+    }
+
+    /* ============================================================
+       MODALS: LIBRARY, CALCULATIONS, LOTO
+       ============================================================ */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(14, 28, 20, 0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-window {
+      background: #FFFFFF;
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-elevated);
+      width: 90%;
+      max-width: 820px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.96) translateY(10px);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-backdrop.open .modal-window {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+      padding: 16px 22px;
+      background: var(--bg-card-subtle);
+      border-bottom: 1px solid var(--border-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-title-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      background: var(--brand-green);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--brand-green-dark);
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    .modal-close-btn:hover {
+      color: var(--text-main);
+    }
+
+    .modal-content {
+      padding: 22px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Library Cards Grid */
+    .library-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .library-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-card);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s;
+    }
+
+    .library-card:hover {
+      border-color: var(--brand-emerald);
+      box-shadow: var(--shadow-soft);
+      transform: translateY(-2px);
+    }
+
+    .library-card.active-card {
+      border-color: var(--brand-green);
+      background: var(--brand-green-tint);
+    }
+
+    .card-thumb-wrap {
+      width: 100%;
+      height: 120px;
+      background: var(--bg-canvas);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card-thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .card-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      padding: 3px 6px;
+      border-radius: var(--radius-sm);
+      background: rgba(0, 0, 0, 0.75);
+      color: #FFFFFF;
+    }
+
+    .card-content {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--brand-green-dark);
+      line-height: 1.2;
+    }
+
+    .card-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-light);
+      padding-top: 6px;
+      border-top: 1px solid var(--border-card);
+    }
+
+    .card-select-btn {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+      background: var(--brand-green);
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .card-select-btn:hover {
+      background: var(--brand-green-dark);
+    }
+
+    .library-card.active-card .card-select-btn {
+      background: var(--brand-emerald);
+      cursor: default;
+    }
+
+    /* Custom Upload Drop Zone */
+    .upload-zone {
+      border: 2px dashed var(--brand-emerald);
+      border-radius: var(--radius-md);
+      background: var(--brand-green-tint);
+      padding: 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      background: #D9EFE3;
+      border-color: var(--brand-green);
+    }
+
+    .upload-zone-icon {
+      font-size: 28px;
+      color: var(--brand-green);
+    }
+
+    .upload-zone-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--brand-green-dark);
+    }
+
+    .upload-zone-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Calculations Grid */
+    .calc-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .calc-inputs, .calc-outputs {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .calc-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .calc-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .calc-val-pill {
+      font-family: var(--font-mono);
+      color: var(--brand-green);
+    }
+
+    .calc-range-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--border-strong);
+      border-radius: var(--radius-full);
+      outline: none;
+    }
+
+    .calc-range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--brand-green);
+      cursor: pointer;
+    }
+
+    .output-card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .output-card {
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .output-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .output-val {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--brand-green-dark);
+    }
+
+    .output-unit {
+      font-size: 11px;
+      color: var(--text-light);
+      margin-left: 2px;
+    }
+
+    /* LOTO State Machine UI */
+    .loto-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .loto-status-banner {
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .loto-status-banner.running {
+      background: var(--sensor-bg);
+      color: #166534;
+      border: 1px solid #86EFAC;
+    }
+
+    .loto-status-banner.stalled {
+      background: var(--red-bg);
+      color: #991B1B;
+      border: 1px solid var(--red-border);
+    }
+
+    .loto-status-banner.isolated {
+      background: var(--amber-bg);
+      color: #92400E;
+      border: 1px solid var(--amber-border);
+    }
+
+    .loto-step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .loto-step-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #FFFFFF;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .loto-step-btn:hover:not(:disabled) {
+      background: var(--bg-hover);
+      border-color: var(--brand-emerald);
+      color: var(--brand-green-dark);
+    }
+
+    .loto-step-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .loto-log-box {
+      background: #14281E;
+      color: #86EFAC;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      max-height: 140px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    /* Loading Overlay */
+    #loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(234, 240, 235, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      transition: opacity 0.3s;
+    }
+
+    #loading-overlay.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid var(--border-strong);
+      border-top-color: var(--brand-green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--brand-green-dark);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading State Screen -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-msg">INITIALIZING SAGMA ECHO DIGITAL TWIN...</div>
+  </div>
+
+  <!-- 3D Canvas Viewport -->
+  <div id="viewport-container">
+    <canvas id="three-canvas"></canvas>
+    <div id="callout-container"></div>
+  </div>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand-group">
+        <img src="assets/sagma_logo.png" alt="SAGMA Logo" class="brand-logo-img">
+        <div class="brand-text-block">
+          <div class="brand-title">SAGMA ECHO</div>
+          <div class="brand-subtitle">DIGITAL TWIN STUDIO</div>
+        </div>
+      </div>
+
+      <div class="header-divider"></div>
+
+      <!-- Quick Machine Switcher -->
+      <div class="machine-selector-wrapper">
+        <button class="machine-selector-btn" id="btn-machine-quick-switch" title="Switch Machine Twin">
+          <span class="machine-selector-dot"></span>
+          <span id="active-machine-name-label">Diagram 69(b) Bucket Elevator</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Actions Bar -->
+    <div class="header-actions">
+      <button class="header-btn" id="btn-open-library" title="Open Central Equipment Asset Library">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <span>Equipment Library</span>
+      </button>
+
+      <button class="header-btn" id="btn-open-calc" title="SAGMA Module 8 Calculations Engine">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
+        <span>Calculations</span>
+      </button>
+
+      <button class="header-btn" id="btn-open-loto" title="OSHA & SAGMA Module 2 Boot Choke LOTO Isolation">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>LOTO Safety</span>
+      </button>
+
+      <div class="header-divider"></div>
+
+      <button class="header-btn active" id="btn-toggle-callouts" title="Toggle 3D Callout Badges (Key: L)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>3D Badges</span>
+      </button>
+
+      <button class="header-btn" id="btn-reset-cam" title="Reset Camera View">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        <span>Reset View</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Top Right Model Telemetry Pill -->
+  <div class="metrics-pill">
+    <div class="metric-item">
+      <span class="metric-label">Nodes</span>
+      <span class="metric-value" id="telemetry-nodes">99 Parts</span>
+    </div>
+    <div class="metric-item">
+      <span class="metric-label">Size</span>
+      <span class="metric-value" id="telemetry-size">248 KB</span>
+    </div>
+    <div class="metric-item">
+      <span class="metric-label">Engine</span>
+      <span class="metric-value" id="telemetry-fps">60 FPS</span>
+    </div>
+  </div>
+
+  <!-- Syllabus Mechanical Inspector Card -->
+  <aside class="inspector-card hidden" id="inspector-card">
+    <div class="inspector-header">
+      <div>
+        <div class="inspector-tags">
+          <span class="tag-badge primary" id="insp-tag">01</span>
+          <span class="tag-badge subtle" id="insp-section">Head Assembly</span>
+        </div>
+        <div class="inspector-title" id="insp-title">Split Removable Upper Hood</div>
+      </div>
+      <button class="inspector-close-btn" id="btn-close-inspector">&times;</button>
+    </div>
+
+    <div class="inspector-body">
+      <div>
+        <div class="inspector-section-label">Syllabus Module Reference</div>
+        <div class="inspector-text-block" id="insp-source">SAGMA Diagram 69(b) [Header]</div>
+      </div>
+
+      <div>
+        <div class="inspector-section-label">Mechanical & Functional Description</div>
+        <div class="inspector-text-block" id="insp-desc">The entire upper housing is split longitudinally and can be removed for inspection, belt splicing, and pulley maintenance without disturbing the vertical casing legs.</div>
+      </div>
+
+      <div id="insp-safety-wrap">
+        <div class="inspector-section-label">Safety & LOTO Protocol</div>
+        <div class="inspector-safety-block" id="insp-safety">Ensure motor is locked out (LOTO) and mechanical belt clamp is locked before loosening hood clamps.</div>
+      </div>
+
+      <div class="inspector-actions">
+        <button class="inspector-btn" id="btn-insp-focus">Focus Camera</button>
+        <button class="inspector-btn" id="btn-insp-isolate">Isolate Component</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Bottom Navigation HUD -->
+  <footer class="bottom-dock">
+    <!-- Camera Elevation Presets -->
+    <div class="preset-group" id="camera-preset-bar">
+      <button class="preset-btn active" data-preset="full">Full Elevation</button>
+      <button class="preset-btn" data-preset="head">Head Drive</button>
+      <button class="preset-btn" data-preset="spout">Discharge</button>
+      <button class="preset-btn" data-preset="legs">Twin Legs</button>
+      <button class="preset-btn" data-preset="boot">Boot Tensioner</button>
+    </div>
+
+    <div class="dock-divider"></div>
+
+    <!-- Exploded View Radial Engine -->
+    <div class="explode-control">
+      <span class="explode-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
+        Explode
+      </span>
+      <input type="range" min="0" max="100" value="0" class="explode-slider" id="explode-slider">
+      <span class="explode-val" id="explode-val">0%</span>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       MODAL 1: CENTRAL EQUIPMENT ASSET LIBRARY
+       ============================================================ -->
+  <div class="modal-backdrop" id="modal-library">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-title-icon">🗄️</div>
+          <div>
+            <div class="modal-title">Central Equipment Asset Library</div>
+            <div style="font-size: 11px; color: var(--text-muted);">SAGMA ECHO Official Continuous Milling Fleet & Local Models</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-library" data-close="modal-library">&times;</button>
+      </div>
+
+      <div class="modal-content">
+        <!-- Fleet Models Grid -->
+        <div class="library-grid" id="library-cards-container">
+          <!-- Populated dynamically by script.js -->
+        </div>
+
+        <!-- Custom Upload Zone -->
+        <div class="upload-zone" id="library-upload-zone">
+          <div class="upload-zone-icon">📥</div>
+          <div class="upload-zone-title">Add Custom 3D Model to Local Library</div>
+          <div class="upload-zone-desc">Drag & Drop .GLB / .GLTF file here, or click to browse</div>
+          <input type="file" id="library-file-input" accept=".glb,.gltf" style="display:none">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL 2: SAGMA CALCULATIONS ENGINE (MODULE 8 SEC 3)
+       ============================================================ -->
+  <div class="modal-backdrop" id="modal-calc">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-title-icon">📐</div>
+          <div>
+            <div class="modal-title">SAGMA Module 8 Calculations Engine</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Authoritative Continuous Grain Elevation Throughput & Motor Sizing</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-calc" data-close="modal-calc">&times;</button>
+      </div>
+
+      <div class="modal-content">
+        <div class="calc-layout">
+          <!-- Inputs Column -->
+          <div class="calc-inputs">
+            <div class="calc-row">
+              <div class="calc-label-row">
+                <span>Belt Speed (m/s)</span>
+                <span class="calc-val-pill" id="calc-val-speed">2.80 m/s</span>
+              </div>
+              <input type="range" id="calc-input-speed" min="0.8" max="4.0" step="0.1" value="2.80" class="calc-range-slider">
+            </div>
+
+            <div class="calc-row">
+              <div class="calc-label-row">
+                <span>Bucket Spacing / Pitch (m)</span>
+                <span class="calc-val-pill" id="calc-val-pitch">0.30 m</span>
+              </div>
+              <input type="range" id="calc-input-pitch" min="0.15" max="0.60" step="0.05" value="0.30" class="calc-range-slider">
+            </div>
+
+            <div class="calc-row">
+              <div class="calc-label-row">
+                <span>Grain Mass per Bucket (kg)</span>
+                <span class="calc-val-pill" id="calc-val-mass">3.50 kg</span>
+              </div>
+              <input type="range" id="calc-input-mass" min="0.5" max="10.0" step="0.5" value="3.50" class="calc-range-slider">
+            </div>
+
+            <div class="calc-row">
+              <div class="calc-label-row">
+                <span>Lifting Height (m)</span>
+                <span class="calc-val-pill" id="calc-val-height">9.63 m</span>
+              </div>
+              <input type="range" id="calc-input-height" min="5.0" max="35.0" step="0.5" value="9.63" class="calc-range-slider">
+            </div>
+
+            <div class="calc-row">
+              <div class="calc-label-row">
+                <span>Mechanical Efficiency (η)</span>
+                <span class="calc-val-pill" id="calc-val-eff">70%</span>
+              </div>
+              <input type="range" id="calc-input-eff" min="0.50" max="0.95" step="0.05" value="0.70" class="calc-range-slider">
+            </div>
+          </div>
+
+          <!-- Outputs Column -->
+          <div class="calc-outputs">
+            <div class="output-card-grid">
+              <div class="output-card">
+                <span class="output-label">Bucket Rate</span>
+                <div><span class="output-val" id="out-bucket-rate">560</span><span class="output-unit">/min</span></div>
+              </div>
+              <div class="output-card">
+                <span class="output-label">Throughput</span>
+                <div><span class="output-val" id="out-capacity-th">117.6</span><span class="output-unit">t/h</span></div>
+              </div>
+              <div class="output-card">
+                <span class="output-label">Theoretical Power</span>
+                <div><span class="output-val" id="out-theo-power">3.09</span><span class="output-unit">kW</span></div>
+              </div>
+              <div class="output-card">
+                <span class="output-label">Motor Required</span>
+                <div><span class="output-val" id="out-motor-power">4.41</span><span class="output-unit">kW</span></div>
+              </div>
+            </div>
+
+            <div class="inspector-text-block" style="font-family: var(--font-mono); font-size: 11px;">
+              <strong>Kinematic Note:</strong> Head Drive Pulley (Ø 391 mm) rotates at <span id="out-head-rpm" style="color:var(--brand-green); font-weight:700;">136.8 RPM</span>. Speed ensures centrifugal discharge tangent to hood deflection plates.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL 3: OSHA & SAGMA BOOT CHOKE LOTO SIMULATOR
+       ============================================================ -->
+  <div class="modal-backdrop" id="modal-loto">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-title-icon">🛡️</div>
+          <div>
+            <div class="modal-title">Boot Choke Lockout/Tagout (LOTO) Simulator</div>
+            <div style="font-size: 11px; color: var(--text-muted);">OSHA 1910.147, OSHA 1910.272 &amp; SAGMA Module 2 Isolation Protocol</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-loto" data-close="modal-loto">&times;</button>
+      </div>
+
+      <div class="modal-content">
+        <div class="loto-container">
+          <!-- Status Banner -->
+          <div class="loto-status-banner stalled" id="loto-status-banner">
+            <div>
+              <div style="font-size: 11px; text-transform: uppercase;">MACHINE STATE</div>
+              <div style="font-size: 15px;" id="loto-machine-state-title">CHOKED &amp; STALLED AT BOOT</div>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 11px;" id="loto-energy-state">LIVE ENERGY DETECTED</div>
+          </div>
+
+          <!-- Step Action Buttons -->
+          <div class="loto-step-list">
+            <button class="loto-step-btn" id="loto-btn-estop">
+              <span>1. Hit Emergency Stop (E-Stop) Pushbutton</span>
+              <span class="tag-badge subtle">ELECTRICAL</span>
+            </button>
+            <button class="loto-step-btn" id="loto-btn-lockout" disabled>
+              <span>2. Apply Padlock &amp; Danger Tag at Main Breaker (OSHA 1910.147)</span>
+              <span class="tag-badge subtle">LOTO</span>
+            </button>
+            <button class="loto-step-btn" id="loto-btn-zero" disabled>
+              <span>3. Verify Zero Electrical Energy (Try Start Button &amp; Voltmeter)</span>
+              <span class="tag-badge subtle">VERIFY</span>
+            </button>
+            <button class="loto-step-btn" id="loto-btn-gravity" disabled>
+              <span>4. Secure Gravitational Anti-Runback Mechanical Belt Clamp</span>
+              <span class="tag-badge subtle">MECHANICAL</span>
+            </button>
+            <button class="loto-step-btn" id="loto-btn-open-panel" disabled>
+              <span>5. Unbolt Boot Cleanout Inspection Hatch</span>
+              <span class="tag-badge subtle">ACCESS</span>
+            </button>
+            <div style="display:flex; gap:8px;">
+              <button class="loto-step-btn" id="loto-btn-hand-clear" style="border-color:var(--red-border);" disabled>
+                <span>6A. Reach Hand In to Scrape Choked Grain</span>
+                <span class="tag-badge" style="background:var(--red); color:#fff;">VIOLATION TEST</span>
+              </button>
+              <button class="loto-step-btn" id="loto-btn-cane-clear" style="border-color:var(--border-card);" disabled>
+                <span>6B. Clear Boot Using Approved Timber Cane</span>
+                <span class="tag-badge subtle">SAGMA APPROVED</span>
+              </button>
+            </div>
+            <button class="loto-step-btn" id="loto-btn-close-panels" disabled>
+              <span>7. Reinstall &amp; Bolt Inspection Panels</span>
+              <span class="tag-badge subtle">GUARDS</span>
+            </button>
+            <button class="loto-step-btn" id="loto-btn-restart" disabled>
+              <span>8. Remove Locks &amp; Perform Controlled Empty Restart</span>
+              <span class="tag-badge subtle">STARTUP</span>
+            </button>
+          </div>
+
+          <!-- Event Log -->
+          <div>
+            <div class="inspector-section-label">OSHA &amp; SAGMA Compliance Log</div>
+            <div class="loto-log-box" id="loto-log-box">
+              [SYSTEM] Elevator choked with whole grain stock. High amp trip at head drive motor.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- External Libraries -->
+  <script src="libs/three.min.js"></script>
+  <script src="libs/OrbitControls.js"></script>
+  <script src="libs/GLTFLoader.js"></script>
+  <script src="libs/DRACOLoader.js"></script>
+
+  <!-- Application Engine Script -->
+  <script src="script.js"></script>
+</body>
+</html>
