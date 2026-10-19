@@ -76,7 +76,12 @@ const TRANSLATIONS = {
     "upload.fieldOEM": "Manufacturer / OEM",
     "upload.fieldCat": "Milling Category",
     "upload.fieldShader": "Default Material Shader",
+    "upload.fieldPDF": "Attach Technical Specification Sheet (Optional .PDF)",
+    "upload.cancel": "Cancel",
+    "upload.submit": "Import to Library & Open Twin",
     "upload.saveBtn": "Process & Launch 3D Twin",
+    "calc.title": "SAGMA Engineering Calculations",
+    "calc.sub": "Interactive formulas for grain throughput, bucket elevator capacity & degermer extraction.",
     "badge.cadReady": "3D CAD Ready",
     "badge.meshTwin": "Mesh Twin",
     "badge.cadConverted": "CAD Converted"
@@ -140,7 +145,12 @@ const TRANSLATIONS = {
     "upload.fieldOEM": "Vervaardiger / OEM",
     "upload.fieldCat": "Meulkategorie",
     "upload.fieldShader": "Standaard Materiaal",
+    "upload.fieldPDF": "Heg Tegniese Spesifikasieblad Aan (Opsionele .PDF)",
+    "upload.cancel": "Kanselleer",
+    "upload.submit": "Voer In na Biblioteek & Maak Oop",
     "upload.saveBtn": "Verwerk & Begin 3D Tweeling",
+    "calc.title": "SAGMA Ingenieursberekeninge",
+    "calc.sub": "Interaktiewe formules vir graandeurset, emmerhyser-kapasiteit en ontkieming.",
     "badge.cadReady": "3D CAD Gereed",
     "badge.meshTwin": "Gaas Tweeling",
     "badge.cadConverted": "CAD Omgeskakel"
@@ -204,7 +214,12 @@ const TRANSLATIONS = {
     "upload.fieldOEM": "Umenzi / OEM",
     "upload.fieldCat": "Umkhakha Wokugaya",
     "upload.fieldShader": "Uhlobo Lwempahla",
+    "upload.fieldPDF": "Faka Ifayela Lemininingwane (.PDF)",
+    "upload.cancel": "Khansela",
+    "upload.submit": "Faka Kumtapo & Vula ku-3D",
     "upload.saveBtn": "Qala Umshini ku-3D",
+    "calc.title": "Izibalo Zobunjiniyela be-SAGMA",
+    "calc.sub": "Amafomula okubala amandla okugaya kanye nejubane lomshini.",
     "badge.cadReady": "I-CAD ye-3D Ilungile",
     "badge.meshTwin": "Imodeli ye-Mesh",
     "badge.cadConverted": "I-CAD Ipendukisiwe"
@@ -268,7 +283,12 @@ const TRANSLATIONS = {
     "upload.fieldOEM": "Moetsi / OEM",
     "upload.fieldCat": "Lekala la ho Sila",
     "upload.fieldShader": "Thepa ya Mmala",
+    "upload.fieldPDF": "Kenya Tokomane ya Dintlha (.PDF)",
+    "upload.cancel": "Hlakola",
+    "upload.submit": "Kenya Laeboraring & Bula 3D",
     "upload.saveBtn": "Qala Mochini ho 3D",
+    "calc.title": "Dipalo tsa Boenjiniere tsa SAGMA",
+    "calc.sub": "Difomula tsa bokhoni ba mochini le lebelo la ho sila.",
     "badge.cadReady": "3D CAD e Lokile",
     "badge.meshTwin": "Pono ya Mesh",
     "badge.cadConverted": "CAD e Fetotsweng"
@@ -332,7 +352,12 @@ const TRANSLATIONS = {
     "upload.fieldOEM": "Fabricante / OEM",
     "upload.fieldCat": "Categoria de Moagem",
     "upload.fieldShader": "Material Padrão",
+    "upload.fieldPDF": "Anexar Ficha de Especificação Técnica (.PDF Opcional)",
+    "upload.cancel": "Cancelar",
+    "upload.submit": "Importar para a Biblioteca e Abrir 3D",
     "upload.saveBtn": "Processar e Abrir no Espaço 3D",
+    "calc.title": "Cálculos de Engenharia SAGMA",
+    "calc.sub": "Fórmulas interativas para capacidade de moagem e elevadores de canecas.",
     "badge.cadReady": "CAD 3D Pronto",
     "badge.meshTwin": "Gêmeo em Malha",
     "badge.cadConverted": "CAD Convertido"
@@ -358,7 +383,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Maize Milling Module 4 & 5",
     sourceFile: "assets/satake_vbf.glb",
     previewImg: "assets/satake_preview.png",
-    specPdf: "specs/Grain_Cleaning_Equipment_Specs.pdf",
+    specPdf: "specs/Buhler_02_Maize_Degermer_Plansifter_Puromat.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 87,
     callouts: SATAKE_CALLOUTS,
@@ -379,7 +404,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Advanced Wheat Debranning Mod 3",
     sourceFile: "procedural:debranner",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Grain_Cleaning_Equipment_Specs.pdf",
+    specPdf: "specs/Buhler_03_MHXM_Degermer_CombiCleaner_MTKB.pdf",
     statusBadge: "Mesh Twin",
     partsCount: 42,
     callouts: [],
@@ -400,7 +425,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Cereal Processing Mod 4",
     sourceFile: "procedural:debranner_intensive",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Grain_Cleaning_Equipment_Specs.pdf",
+    specPdf: "specs/Buhler_03_MHXM_Degermer_CombiCleaner_MTKB.pdf",
     statusBadge: "Mesh Twin",
     partsCount: 48,
     callouts: [],
@@ -425,7 +450,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Wheat & Maize Rollermill Technology Ch 3-6",
     sourceFile: "procedural:rollermill_4",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_Roller_Mill_MDDK.pdf",
+    specPdf: "specs/Buhler_05_RollerMills_MDDK_MDDM_MDDO_Specs.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 64,
     callouts: [],
@@ -446,7 +471,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Commercial Milling Practice Mod 5",
     sourceFile: "procedural:rollermill_8",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_Roller_Mill_MDDK.pdf",
+    specPdf: "specs/Buhler_06_RollerMills_MDDK_MDDM_MDDO_Scrapers.pdf",
     statusBadge: "Mesh Twin",
     partsCount: 78,
     callouts: [],
@@ -467,7 +492,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Modern Milling Automation Mod 6",
     sourceFile: "procedural:rollermill_antares",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Antares_Buhler_MDDR_Roller_Mill.pdf",
+    specPdf: "specs/Buhler_04_Antares_MDDR_MDDT_RollerMill.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 72,
     callouts: [],
@@ -488,7 +513,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Historical & Classical Mill Design",
     sourceFile: "procedural:rollermill_simon",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Henry_Simon_Rollermill.pdf",
+    specPdf: "specs/Buhler_07_RollerMills_MDDR_MDDM_MDDO_GapControl.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 58,
     callouts: [],
@@ -513,7 +538,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Sifting Dynamics & Sieve Flow Schemes",
     sourceFile: "procedural:plansifter_quadrostar",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_Plansifter_MPAG.pdf",
+    specPdf: "specs/Buhler_09_Plansifter_Sieve_Dims_MPAG_MPAJ_Sangati.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 68,
     callouts: [],
@@ -534,7 +559,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Maize Mill Sifting & Degerming Screening",
     sourceFile: "procedural:plansifter_novastar",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_Plansifter_MPAG.pdf",
+    specPdf: "specs/Buhler_08_NovaStar_MPAJ_Square_Plansifter.pdf",
     statusBadge: "Mesh Twin",
     partsCount: 52,
     callouts: [],
@@ -555,7 +580,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Sifting Performance Analysis Mod 4",
     sourceFile: "procedural:plansifter_sangati",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Sangati_Berga_Sifter.pdf",
+    specPdf: "specs/Buhler_09_Plansifter_Sieve_Dims_MPAG_MPAJ_Sangati.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 60,
     callouts: [],
@@ -576,7 +601,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Flour Dressing and Semolina Grading",
     sourceFile: "procedural:plansifter_flowmaster",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Henry_Simon_Rollermill.pdf",
+    specPdf: "specs/Satake_11_ST_Rotary_Sifter_Dimensions.pdf",
     statusBadge: "Mesh Twin",
     partsCount: 56,
     callouts: [],
@@ -601,7 +626,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Purifier Adjustment & Air Distribution",
     sourceFile: "procedural:purifier_mqrf",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_Purifier_MQRF.pdf",
+    specPdf: "specs/Buhler_10_Puromat_MQRF_Semolina_Purifier.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 62,
     callouts: [],
@@ -622,7 +647,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Endosperm Detachment & Disruption",
     sourceFile: "procedural:entoleter",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Impact_Detacher_Milling.pdf",
+    specPdf: "specs/Buhler_02_Maize_Degermer_Plansifter_Puromat.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 36,
     callouts: [],
@@ -643,7 +668,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Sanitation and Food Safety Standards",
     sourceFile: "procedural:mkzg_turbo",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Impact_Detacher_Milling.pdf",
+    specPdf: "specs/Buhler_02_Maize_Degermer_Plansifter_Puromat.pdf",
     statusBadge: "Mesh Twin",
     partsCount: 38,
     callouts: [],
@@ -668,7 +693,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Grain Intake, Pre-Cleaning and Destoning",
     sourceFile: "procedural:combi_cleaner",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_Separator_Classifier.pdf",
+    specPdf: "specs/Buhler_03_MHXM_Degermer_CombiCleaner_MTKB.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 70,
     callouts: [],
@@ -689,7 +714,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Conditioning, Conditioning Times and Moisture Control",
     sourceFile: "procedural:water_meter",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Grain_Cleaning_Equipment_Specs.pdf",
+    specPdf: "specs/Satake_12_PH_Grain_Cleaner_Dimensions.pdf",
     statusBadge: "Mesh Twin",
     partsCount: 34,
     callouts: [],
@@ -710,7 +735,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Conditioning Physics & Water Penetration",
     sourceFile: "procedural:intensive_dampener",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Grain_Cleaning_Equipment_Specs.pdf",
+    specPdf: "specs/Satake_12_PH_Grain_Cleaner_Dimensions.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 46,
     callouts: [],
@@ -731,7 +756,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Terminal Velocity & Aerodynamic Grain Cleaning",
     sourceFile: "procedural:tarara_air",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_Separator_Classifier.pdf",
+    specPdf: "specs/Buhler_03_MHXM_Degermer_CombiCleaner_MTKB.pdf",
     statusBadge: "Mesh Twin",
     partsCount: 40,
     callouts: [],
@@ -820,7 +845,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Pneumatic Conveying Systems & Airlocks",
     sourceFile: "procedural:rotary_airlock",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Airlock_Feeder_Milling.pdf",
+    specPdf: "specs/Buhler_01_Corn_Maize_Milling_Line.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 32,
     callouts: [],
@@ -841,7 +866,7 @@ const FLEET_CATALOG = [
     syllabus: "SAGMA Dust Explosion Prevention & Aspiration",
     sourceFile: "procedural:filter_mvrp",
     previewImg: "assets/preview_render.png",
-    specPdf: "specs/Pneumatic_Conveying_Milling.pdf",
+    specPdf: "specs/Buhler_Corn_Maize_Milling_Brochure.pdf",
     statusBadge: "3D CAD Ready",
     partsCount: 54,
     callouts: [],
@@ -873,7 +898,7 @@ const FLEET_CATALOG = [
 
 // 5. CLIENT INDEXEDDB PERSISTENCE (ECHO_STUDIO_DB)
 const DB_NAME = 'ECHO_STUDIO_DB';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const STORE_NAME = 'machines';
 
 const EchoDB = {
@@ -903,20 +928,11 @@ const EchoDB = {
   async seedInitialFleet() {
     if (!this.db) return;
     try {
-      const tx = this.db.transaction([STORE_NAME], 'readonly');
-      const store = tx.objectStore(STORE_NAME);
-      const req = store.getAll();
-      req.onsuccess = async () => {
-        const existing = req.result || [];
-        const existingMap = new Map(existing.map(m => [m.id, m]));
-        const writeTx = this.db.transaction([STORE_NAME], 'readwrite');
-        const writeStore = writeTx.objectStore(STORE_NAME);
-        for (const m of FLEET_CATALOG) {
-          if (!existingMap.has(m.id)) {
-            writeStore.put(m);
-          }
-        }
-      };
+      const writeTx = this.db.transaction([STORE_NAME], 'readwrite');
+      const writeStore = writeTx.objectStore(STORE_NAME);
+      for (const m of FLEET_CATALOG) {
+        writeStore.put(m);
+      }
     } catch (err) {
       console.warn('Seeding check error:', err);
     }
@@ -979,13 +995,23 @@ let calloutsVisible = true;
 let calloutElements = [];
 let activeInspectedCallout = null;
 let isWireframeActive = false;
+let isCutawayActive = true;
+let isLiveMotionActive = true;
+let driveSpeedMultiplier = 1.0;
 let currentShaderPreset = 'default';
 let originalMaterials = new Map();
 let meshOriginalPositions = new Map();
 let occtInstance = null;
 
+// Live Kinematic & Particle References
+let kinematicRotors = [];
+let kinematicBuckets = [];
+let grainParticleSystem = null;
+let grainParticlesData = [];
+let cutawayGlassMeshes = [];
+
 // Lighting References
-let dirLight, fillLight, rimLight, ambientLight, groundGrid, shadowPlane;
+let dirLight, fillLight, rimLight, ambientLight, groundGrid, shadowPlane, studioEnvTexture;
 
 // Performance Telemetry
 let frameCount = 0;
@@ -993,17 +1019,73 @@ let lastTime = performance.now();
 let lastFpsUpdate = performance.now();
 let measuredFPS = 60.0;
 
+function generateStudioEnvironment(rendererInstance) {
+  try {
+    const pmremGenerator = new THREE.PMREMGenerator(rendererInstance);
+    pmremGenerator.compileEquirectangularShader();
+
+    const envScene = new THREE.Scene();
+    envScene.background = new THREE.Color(0x0b1015);
+
+    // Overhead Softbox Strip
+    const topStrip = new THREE.Mesh(
+      new THREE.PlaneGeometry(18, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+    );
+    topStrip.position.set(0, 10, 0);
+    topStrip.rotation.x = Math.PI / 2;
+    envScene.add(topStrip);
+
+    // Warm Key Studio Strip (Brass/Gold specular enhancer)
+    const warmKey = new THREE.Mesh(
+      new THREE.PlaneGeometry(12, 10),
+      new THREE.MeshBasicMaterial({ color: 0xffd699, side: THREE.DoubleSide })
+    );
+    warmKey.position.set(12, 4, 10);
+    warmKey.lookAt(0, 0, 0);
+    envScene.add(warmKey);
+
+    // Cool Cyan Rim Strip (Optical Glass & Chrome edge highlight)
+    const coolRim = new THREE.Mesh(
+      new THREE.PlaneGeometry(14, 10),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide })
+    );
+    coolRim.position.set(-12, 5, -10);
+    coolRim.lookAt(0, 0, 0);
+    envScene.add(coolRim);
+
+    // SAGMA Emerald Floor Bounce
+    const floorBounce = new THREE.Mesh(
+      new THREE.PlaneGeometry(24, 24),
+      new THREE.MeshBasicMaterial({ color: 0x0d3b26, side: THREE.DoubleSide })
+    );
+    floorBounce.position.set(0, -8, 0);
+    floorBounce.rotation.x = -Math.PI / 2;
+    envScene.add(floorBounce);
+
+    const envRT = pmremGenerator.fromScene(envScene, 0.04);
+    pmremGenerator.dispose();
+    return envRT.texture;
+  } catch (e) {
+    console.warn('PMREM environment fallback:', e);
+    return null;
+  }
+}
+
 function initThreeEngine() {
   const container = document.getElementById('viewport-container');
   const canvas = document.getElementById('three-canvas');
 
-  // Scene with SAGMA Light Sage Background
+  const isDark = document.body.classList.contains('studio-dark-mode');
+  const bgHex = isDark ? 0x090d12 : 0xEAF0EB;
+
+  // Scene with Studio Dark Museum Background
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xEAF0EB);
-  scene.fog = new THREE.FogExp2(0xEAF0EB, 0.045);
+  scene.background = new THREE.Color(bgHex);
+  scene.fog = new THREE.FogExp2(bgHex, 0.032);
 
   // Perspective Camera
-  camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.05, 500);
+  camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.05, 500);
   camera.position.set(2.8, 2.2, 3.2);
 
   // WebGL Renderer with High-Precision Shadows & Tone Mapping
@@ -1015,18 +1097,28 @@ function initThreeEngine() {
   });
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  if ('outputColorSpace' in renderer) {
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+  } else {
+    renderer.outputEncoding = THREE.sRGBEncoding;
+  }
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
+  renderer.toneMappingExposure = 1.25;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  // Bind Procedural Studio HDRI Environment for PBR Metal & Glass Reflections
+  studioEnvTexture = generateStudioEnvironment(renderer);
+  if (studioEnvTexture) {
+    scene.environment = studioEnvTexture;
+  }
 
   // OrbitControls with Smooth Damping
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
   controls.screenSpacePanning = true;
-  controls.minDistance = 0.3;
+  controls.minDistance = 0.4;
   controls.maxDistance = 60;
   controls.target.set(0, 1.2, 0);
 
@@ -1042,45 +1134,46 @@ function initThreeEngine() {
 
 function setupStudioLighting() {
   // 1. Ambient Light
-  ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.85);
+  ambientLight = new THREE.AmbientLight(0xFFFFFF, 0.55);
   scene.add(ambientLight);
 
-  // 2. Main Key Directional Light (Sun/Key)
-  dirLight = new THREE.DirectionalLight(0xFFF8F0, 1.85);
-  dirLight.position.set(8, 16, 10);
+  // 2. Main Key Directional Light (Warm Studio Key)
+  dirLight = new THREE.DirectionalLight(0xFFF6E8, 2.2);
+  dirLight.position.set(7, 14, 9);
   dirLight.castShadow = true;
   dirLight.shadow.mapSize.width = 2048;
   dirLight.shadow.mapSize.height = 2048;
   dirLight.shadow.camera.near = 0.5;
-  dirLight.shadow.camera.far = 40;
-  dirLight.shadow.bias = -0.0003;
-  dirLight.shadow.camera.left = -6;
-  dirLight.shadow.camera.right = 6;
-  dirLight.shadow.camera.top = 6;
-  dirLight.shadow.camera.bottom = -6;
+  dirLight.shadow.camera.far = 35;
+  dirLight.shadow.bias = -0.0002;
+  dirLight.shadow.camera.left = -4.5;
+  dirLight.shadow.camera.right = 4.5;
+  dirLight.shadow.camera.top = 4.5;
+  dirLight.shadow.camera.bottom = -4.5;
   scene.add(dirLight);
 
-  // 3. Cool Secondary Fill Light
-  fillLight = new THREE.DirectionalLight(0xD8EAF8, 0.95);
-  fillLight.position.set(-10, 8, -6);
+  // 3. Cool Cyan Rim / Edge Light
+  fillLight = new THREE.DirectionalLight(0x38BDF8, 1.35);
+  fillLight.position.set(-9, 6, -7);
   scene.add(fillLight);
 
-  // 4. Warm Accent Rim Light
-  rimLight = new THREE.DirectionalLight(0xE0F0D8, 1.1);
-  rimLight.position.set(0, -6, -10);
+  // 4. Warm Brass Under-Fill Light
+  rimLight = new THREE.DirectionalLight(0xF59E0B, 0.75);
+  rimLight.position.set(0, -5, 6);
   scene.add(rimLight);
 
   // 5. Soft Ground Contact Shadow Plane
   const planeGeo = new THREE.PlaneGeometry(60, 60);
-  const shadowMat = new THREE.ShadowMaterial({ opacity: 0.18 });
+  const shadowMat = new THREE.ShadowMaterial({ opacity: 0.42 });
   shadowPlane = new THREE.Mesh(planeGeo, shadowMat);
   shadowPlane.rotation.x = -Math.PI / 2;
-  shadowPlane.position.y = -0.01;
+  shadowPlane.position.y = -0.005;
   shadowPlane.receiveShadow = true;
   scene.add(shadowPlane);
 
-  // 6. Engineering CAD Ground Grid
-  groundGrid = new THREE.GridHelper(30, 60, 0x005A36, 0xCBD8CE);
+  // 6. Precision Museum CAD Ground Grid
+  const isDark = document.body.classList.contains('studio-dark-mode');
+  groundGrid = new THREE.GridHelper(24, 48, 0x16A34A, isDark ? 0x182620 : 0xCBD8CE);
   groundGrid.position.y = 0;
   scene.add(groundGrid);
 }
@@ -1100,7 +1193,7 @@ function onWindowResize() {
 function disposeHierarchy(node) {
   if (!node) return;
   node.traverse(child => {
-    if (child.isMesh) {
+    if (child.isMesh || child.isPoints) {
       if (child.geometry) child.geometry.dispose();
       if (child.material) {
         if (Array.isArray(child.material)) {
@@ -1132,117 +1225,677 @@ function clearCurrentScene() {
   }
   originalMaterials.clear();
   meshOriginalPositions.clear();
+  kinematicRotors = [];
+  kinematicBuckets = [];
+  grainParticleSystem = null;
+  grainParticlesData = [];
+  cutawayGlassMeshes = [];
   clearCallouts();
 }
 
 // ============================================================================
-// 8. PROCEDURAL 3D TWIN GENERATOR (FOR SPEC-READY MACHINES)
+// 8. MUSEUM-GRADE PBR MATERIALS & PROCEDURAL CAD ASSEMBLIES
+// ============================================================================
+function createMuseumPalette() {
+  return {
+    sagmaGreen: new THREE.MeshStandardMaterial({
+      color: 0x064E30,
+      metalness: 0.45,
+      roughness: 0.28,
+      envMapIntensity: 1.4,
+      side: THREE.DoubleSide
+    }),
+    gunmetal: new THREE.MeshStandardMaterial({
+      color: 0x1A2129,
+      metalness: 0.85,
+      roughness: 0.26,
+      envMapIntensity: 1.5,
+      side: THREE.DoubleSide
+    }),
+    darkCastIron: new THREE.MeshStandardMaterial({
+      color: 0x11161B,
+      metalness: 0.72,
+      roughness: 0.45,
+      envMapIntensity: 1.2,
+      side: THREE.DoubleSide
+    }),
+    machinedSteel: new THREE.MeshStandardMaterial({
+      color: 0xCFD8E3,
+      metalness: 0.96,
+      roughness: 0.14,
+      envMapIntensity: 1.8,
+      side: THREE.DoubleSide
+    }),
+    brushedChrome: new THREE.MeshStandardMaterial({
+      color: 0xE2E8F0,
+      metalness: 0.98,
+      roughness: 0.08,
+      envMapIntensity: 2.0,
+      side: THREE.DoubleSide
+    }),
+    anodizedBrass: new THREE.MeshStandardMaterial({
+      color: 0xD99B26,
+      metalness: 0.94,
+      roughness: 0.18,
+      envMapIntensity: 1.9,
+      side: THREE.DoubleSide
+    }),
+    bronzeBushing: new THREE.MeshStandardMaterial({
+      color: 0xB87333,
+      metalness: 0.88,
+      roughness: 0.24,
+      envMapIntensity: 1.6,
+      side: THREE.DoubleSide
+    }),
+    sensorCyan: new THREE.MeshStandardMaterial({
+      color: 0x0EA5E9,
+      emissive: 0x0284C7,
+      emissiveIntensity: 0.55,
+      metalness: 0.5,
+      roughness: 0.2
+    }),
+    safetyRed: new THREE.MeshStandardMaterial({
+      color: 0xDC2626,
+      metalness: 0.65,
+      roughness: 0.28
+    }),
+    opticalGlass: new THREE.MeshPhysicalMaterial({
+      color: 0x93C5FD,
+      transmission: 0.85,
+      opacity: 0.28,
+      transparent: true,
+      roughness: 0.06,
+      metalness: 0.05,
+      ior: 1.52,
+      reflectivity: 0.9,
+      envMapIntensity: 2.2,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    }),
+    slottedCageGlass: new THREE.MeshPhysicalMaterial({
+      color: 0xA7F3D0,
+      transmission: 0.72,
+      opacity: 0.34,
+      transparent: true,
+      roughness: 0.15,
+      metalness: 0.2,
+      envMapIntensity: 1.8,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    })
+  };
+}
+
+// Helper to add a bolt circle of hex bolts around a flange
+function addBoltCircle(parent, radius, yPos, count, boltRadius, mat, explodeCategory) {
+  const boltGeo = new THREE.CylinderGeometry(boltRadius, boltRadius, boltRadius * 1.4, 6);
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const bolt = new THREE.Mesh(boltGeo, mat);
+    bolt.position.set(Math.cos(angle) * radius, yPos, Math.sin(angle) * radius);
+    bolt.userData.explodeCategory = explodeCategory || 'flange';
+    parent.add(bolt);
+  }
+}
+
+// Helper to add a Museum Instrument Bench Plinth with Brass Trim & Scale Ticks
+function createInstrumentBenchPlinth(width, depth, matPalette) {
+  const plinthGroup = new THREE.Group();
+  plinthGroup.name = 'Instrument_Bench_Plinth';
+
+  // Heavy Cast Base Slab
+  const slab = new THREE.Mesh(new THREE.BoxGeometry(width, 0.08, depth), matPalette.darkCastIron);
+  slab.position.y = 0.04;
+  slab.castShadow = true;
+  slab.receiveShadow = true;
+  slab.userData.noExplode = true;
+  plinthGroup.add(slab);
+
+  // Brass Bevel Perimeter Trim
+  const trim = new THREE.Mesh(new THREE.BoxGeometry(width + 0.02, 0.016, depth + 0.02), matPalette.anodizedBrass);
+  trim.position.y = 0.082;
+  trim.userData.noExplode = true;
+  plinthGroup.add(trim);
+
+  // 4 Machined Leveling Feet
+  const footOffsets = [
+    [-width * 0.45, -depth * 0.45],
+    [width * 0.45, -depth * 0.45],
+    [-width * 0.45, depth * 0.45],
+    [width * 0.45, depth * 0.45]
+  ];
+  footOffsets.forEach(([fx, fz]) => {
+    const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.07, 0.03, 24), matPalette.anodizedBrass);
+    foot.position.set(fx, 0.015, fz);
+    foot.userData.noExplode = true;
+    plinthGroup.add(foot);
+  });
+
+  // Front Precision Metric Ruler Strip & Ticks
+  const rulerBar = new THREE.Mesh(new THREE.BoxGeometry(width * 0.85, 0.008, 0.035), matPalette.gunmetal);
+  rulerBar.position.set(0, 0.085, depth * 0.46);
+  rulerBar.userData.noExplode = true;
+  plinthGroup.add(rulerBar);
+
+  const tickCount = 31;
+  const startX = -width * 0.4;
+  const spanX = width * 0.8;
+  for (let i = 0; i < tickCount; i++) {
+    const isMajor = i % 5 === 0;
+    const tick = new THREE.Mesh(
+      new THREE.BoxGeometry(0.003, 0.004, isMajor ? 0.022 : 0.011),
+      isMajor ? matPalette.anodizedBrass : matPalette.machinedSteel
+    );
+    tick.position.set(startX + (i / (tickCount - 1)) * spanX, 0.09, depth * 0.46);
+    tick.userData.noExplode = true;
+    plinthGroup.add(tick);
+  }
+
+  return plinthGroup;
+}
+
+// ============================================================================
+// FLAGSHIP 1: MUSEUM-GRADE SATAKE VBF VERTICAL MAIZE DEGERMER (CUTAWAY RIG)
+// ============================================================================
+function buildMuseumSatakeVBF() {
+  const root = new THREE.Group();
+  root.name = 'Satake_VBF_Museum_Twin';
+  const P = createMuseumPalette();
+
+  // 1. Instrument Plinth Base
+  root.add(createInstrumentBenchPlinth(1.45, 1.25, P));
+
+  // 2. Machine Base Frame & Thrust Bearing Pedestal (Tag 10)
+  const baseGroup = new THREE.Group();
+  baseGroup.name = 'Satake_Base_Frame_Stand';
+  const mainPedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.44, 0.34, 48), P.gunmetal);
+  mainPedestal.position.y = 0.25;
+  baseGroup.add(mainPedestal);
+
+  // Brass Thrust Bearing Collar Ring
+  const bearingCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.26, 0.07, 48), P.anodizedBrass);
+  bearingCollar.position.y = 0.44;
+  baseGroup.add(bearingCollar);
+  addBoltCircle(baseGroup, 0.40, 0.09, 16, 0.012, P.anodizedBrass, 'base');
+
+  // 4 Structural Cast Support Columns
+  for (let i = 0; i < 4; i++) {
+    const ang = (i / 4) * Math.PI * 2 + Math.PI / 4;
+    const col = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.045, 0.56, 24), P.darkCastIron);
+    col.position.set(Math.cos(ang) * 0.34, 0.36, Math.sin(ang) * 0.34);
+    baseGroup.add(col);
+  }
+  root.add(baseGroup);
+
+  // 3. 75 kW Main Drive Motor & Multi-V-Belt Pulley Drive (Tag 10)
+  const motorGroup = new THREE.Group();
+  motorGroup.name = 'Satake_Drive_Motor_75kW';
+  const motorBody = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.42, 36), P.sagmaGreen);
+  motorBody.rotation.z = Math.PI / 2;
+  motorBody.position.set(0.42, 0.28, -0.18);
+  motorGroup.add(motorBody);
+
+  // Cooling Fins on 75kW Motor
+  for (let f = -0.16; f <= 0.16; f += 0.028) {
+    const fin = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.008, 32), P.sagmaGreen);
+    fin.rotation.z = Math.PI / 2;
+    fin.position.set(0.42 + f, 0.28, -0.18);
+    motorGroup.add(fin);
+  }
+
+  // Brass Drive Sheave & V-Belt Guard Cutaway
+  const drivePulley = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.08, 36), P.anodizedBrass);
+  drivePulley.position.set(0.48, 0.28, 0.04);
+  drivePulley.rotation.x = Math.PI / 2;
+  motorGroup.add(drivePulley);
+  kinematicRotors.push({ mesh: drivePulley, axis: 'z', speed: 6.5 });
+  root.add(motorGroup);
+
+  // 4. Air Induction Fan & Central Hollow Rotor Duct (Tag 09)
+  const fanGroup = new THREE.Group();
+  fanGroup.name = 'Satake_Air_Induction_Fan';
+  const voluteCasing = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.11, 36), P.sagmaGreen);
+  voluteCasing.rotation.x = Math.PI / 2;
+  voluteCasing.position.set(-0.22, 0.26, 0.26);
+  fanGroup.add(voluteCasing);
+
+  // Brass Impeller Hub visible inside intake
+  const impellerHub = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 24), P.anodizedBrass);
+  impellerHub.rotation.x = Math.PI / 2;
+  impellerHub.position.set(-0.22, 0.26, 0.27);
+  fanGroup.add(impellerHub);
+  kinematicRotors.push({ mesh: impellerHub, axis: 'z', speed: 9.0 });
+
+  // Aspiration Air Manifold Pipe
+  const airPipe = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.32, 24), P.machinedSteel);
+  airPipe.rotation.z = Math.PI / 2;
+  airPipe.position.set(-0.1, 0.26, 0.12);
+  fanGroup.add(airPipe);
+  root.add(fanGroup);
+
+  // 5. Vertical Distribution Scroll (Tag 03)
+  const scrollGroup = new THREE.Group();
+  scrollGroup.name = 'Satake_Distribution_Scroll';
+  const scrollShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.36, 36), P.machinedSteel);
+  scrollShaft.position.set(0, 0.56, 0);
+  scrollGroup.add(scrollShaft);
+
+  // Helical Auger Flights (6 precision brass-edged flights)
+  for (let i = 0; i < 6; i++) {
+    const flight = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.018, 36), P.anodizedBrass);
+    flight.position.set(0, 0.43 + i * 0.048, 0);
+    flight.rotation.z = 0.18;
+    flight.rotation.x = (i % 2 === 0) ? 0.12 : -0.12;
+    scrollGroup.add(flight);
+  }
+  kinematicRotors.push({ mesh: scrollGroup, axis: 'y', speed: 4.8 });
+  root.add(scrollGroup);
+
+  // 6. Cylindrical Steel Rotor - Split Segment Design (Tag 04) & Beater Bars (Tag 05)
+  const rotorGroup = new THREE.Group();
+  rotorGroup.name = 'Satake_Vertical_Steel_Rotor';
+
+  const centralShaft = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 1.55, 36), P.brushedChrome);
+  centralShaft.position.set(0, 1.05, 0);
+  rotorGroup.add(centralShaft);
+
+  const rotorCore = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.18, 0.78, 48), P.machinedSteel);
+  rotorCore.position.set(0, 1.12, 0);
+  rotorGroup.add(rotorCore);
+
+  // Knurled & Slotted Air Grooves on Rotor Drum
+  for (let r = 0; r < 5; r++) {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.202, 0.009, 16, 48), P.anodizedBrass);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.set(0, 0.82 + r * 0.15, 0);
+    rotorGroup.add(ring);
+  }
+
+  // Detachable Hardened Steel Beater Bars (Tag 05)
+  const beaterGroup = new THREE.Group();
+  beaterGroup.name = 'Satake_Beater_Bars';
+  for (let b = 0; b < 4; b++) {
+    const ang = (b / 4) * Math.PI * 2;
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.74, 0.045), P.anodizedBrass);
+    bar.position.set(Math.cos(ang) * 0.215, 1.12, Math.sin(ang) * 0.215);
+    bar.rotation.y = -ang;
+    beaterGroup.add(bar);
+  }
+  rotorGroup.add(beaterGroup);
+  kinematicRotors.push({ mesh: rotorGroup, axis: 'y', speed: 4.8 });
+  root.add(rotorGroup);
+
+  // 7. Multifaceted Slotted Screen Cartridge & Optical Cutaway Cage (Tag 06 & 07)
+  const screenGroup = new THREE.Group();
+  screenGroup.name = 'Satake_Slotted_Screens';
+
+  // Lower & Upper Machined Brass Clamping Flanges (like camera lens rings in reference video!)
+  const lowerFlange = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.045, 48), P.anodizedBrass);
+  lowerFlange.position.set(0, 0.72, 0);
+  screenGroup.add(lowerFlange);
+  addBoltCircle(screenGroup, 0.32, 0.745, 16, 0.009, P.machinedSteel);
+
+  const midFlange = new THREE.Mesh(new THREE.TorusGeometry(0.33, 0.016, 16, 48), P.anodizedBrass);
+  midFlange.rotation.x = Math.PI / 2;
+  midFlange.position.set(0, 1.12, 0);
+  screenGroup.add(midFlange);
+
+  const upperFlange = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.045, 48), P.anodizedBrass);
+  upperFlange.position.set(0, 1.52, 0);
+  screenGroup.add(upperFlange);
+  addBoltCircle(screenGroup, 0.32, 1.545, 16, 0.009, P.machinedSteel);
+
+  // Back Gunmetal Outer Jacket (180 deg cutaway so front reveals internal rotor & grain stream)
+  const backJacket = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.335, 0.335, 0.78, 36, 1, true, Math.PI * 0.85, Math.PI * 1.3),
+    P.gunmetal
+  );
+  backJacket.position.set(0, 1.12, 0);
+  screenGroup.add(backJacket);
+
+  // Front Optical Glass Cutaway Inspection Shield
+  const frontGlass = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.31, 0.31, 0.76, 48, 1, true, -Math.PI * 0.15, Math.PI * 1.0),
+    P.opticalGlass
+  );
+  frontGlass.position.set(0, 1.12, 0);
+  cutawayGlassMeshes.push(frontGlass);
+  screenGroup.add(frontGlass);
+
+  // 8 Vertical Rib Cage Pillars & Adjustable Resistance Bars (Tag 07)
+  for (let p = 0; p < 8; p++) {
+    const ang = (p / 8) * Math.PI * 2;
+    const rib = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.80, 0.024), P.sagmaGreen);
+    rib.position.set(Math.cos(ang) * 0.315, 1.12, Math.sin(ang) * 0.315);
+    rib.rotation.y = -ang;
+    screenGroup.add(rib);
+
+    // Knurled Brass Resistance Adjustment Bolts
+    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.04, 16), P.anodizedBrass);
+    knob.rotation.z = Math.PI / 2;
+    knob.position.set(Math.cos(ang) * 0.34, 1.25, Math.sin(ang) * 0.34);
+    knob.rotation.y = -ang;
+    screenGroup.add(knob);
+  }
+  root.add(screenGroup);
+
+  // 8. Upper Offal Exhaust Hood & Motorized Inlet Screw Feeder (Tag 02)
+  const feederGroup = new THREE.Group();
+  feederGroup.name = 'Satake_Inlet_Screw_Feeder';
+  const upperHood = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.24, 48), P.sagmaGreen);
+  upperHood.position.set(0, 1.66, 0);
+  feederGroup.add(upperHood);
+
+  const screwBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.095, 0.42, 32), P.gunmetal);
+  screwBarrel.rotation.z = Math.PI / 2;
+  screwBarrel.position.set(0.28, 1.66, 0);
+  feederGroup.add(screwBarrel);
+  root.add(feederGroup);
+
+  // 9. Grain Feed Inlet Hopper & Permanent Rare-Earth Magnet Trap (Tag 01)
+  const magnetGroup = new THREE.Group();
+  magnetGroup.name = 'Satake_Feed_Inlet_Magnet';
+  const hopperCone = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.09, 0.26, 36), P.brushedChrome);
+  hopperCone.position.set(0.38, 1.92, 0);
+  magnetGroup.add(hopperCone);
+
+  const magnetCore = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.045, 32), P.anodizedBrass);
+  magnetCore.position.set(0.38, 1.80, 0);
+  magnetGroup.add(magnetCore);
+  root.add(magnetGroup);
+
+  // 10. Overtails Discharge Chute & Weighted Retention Flap + CCU Module (Tag 08)
+  const flapGroup = new THREE.Group();
+  flapGroup.name = 'Satake_Top_Outlet_Weighted_Flap';
+  const outletBox = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.24, 0.24), P.sagmaGreen);
+  outletBox.position.set(-0.32, 1.65, 0);
+  flapGroup.add(outletBox);
+
+  const dischargeSpout = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.065, 0.32, 28), P.brushedChrome);
+  dischargeSpout.position.set(-0.38, 1.44, 0.04);
+  dischargeSpout.rotation.z = 0.25;
+  flapGroup.add(dischargeSpout);
+
+  // Counter-Weight Lever & Brass Poise Weight
+  const leverArm = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.34, 16), P.machinedSteel);
+  leverArm.position.set(-0.42, 1.82, 0.08);
+  leverArm.rotation.z = -0.45;
+  flapGroup.add(leverArm);
+
+  const poiseWeight = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.05, 24), P.anodizedBrass);
+  poiseWeight.position.set(-0.50, 1.94, 0.08);
+  flapGroup.add(poiseWeight);
+  root.add(flapGroup);
+
+  // 11. Live Swirling Golden Maize Kernel & Blue Aspiration Airflow Particle Stream
+  createSatakeParticleStream(root);
+
+  return root;
+}
+
+function createSatakeParticleStream(root) {
+  const count = 420;
+  const geo = new THREE.BufferGeometry();
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  grainParticlesData = [];
+
+  const colorMaize = new THREE.Color(0xFBBF24); // Golden Maize
+  const colorAir = new THREE.Color(0x38BDF8);   // Cool Aspiration Air
+
+  for (let i = 0; i < count; i++) {
+    const isAir = i % 3 === 0;
+    const h = Math.random(); // normalized height 0..1 inside chamber (y = 0.50 to 1.55)
+    const angle = Math.random() * Math.PI * 2;
+    const radius = isAir ? (0.22 + Math.random() * 0.08) : (0.18 + Math.random() * 0.11);
+
+    const x = Math.cos(angle) * radius;
+    const y = 0.50 + h * 1.05;
+    const z = Math.sin(angle) * radius;
+
+    positions[i * 3] = x;
+    positions[i * 3 + 1] = y;
+    positions[i * 3 + 2] = z;
+
+    const c = isAir ? colorAir : colorMaize;
+    colors[i * 3] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
+
+    grainParticlesData.push({
+      mode: 'vortex',
+      isAir,
+      angle,
+      radius,
+      h,
+      speed: 2.8 + Math.random() * 2.2
+    });
+  }
+
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const mat = new THREE.PointsMaterial({
+    size: 0.024,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.9,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  grainParticleSystem = new THREE.Points(geo, mat);
+  grainParticleSystem.name = 'Live_Grain_And_Air_Stream';
+  grainParticleSystem.userData.noExplode = true;
+  root.add(grainParticleSystem);
+}
+
+// ============================================================================
+// FLAGSHIP 2: ENHANCE BUCKET ELEVATOR WITH MUSEUM PBR, GLASS CUTAWAY & FLOW
+// ============================================================================
+function enhanceBucketElevatorRoot(gltfRoot) {
+  const P = createMuseumPalette();
+
+  gltfRoot.traverse(child => {
+    if (!child.isMesh) return;
+    const n = (child.name || '').toLowerCase();
+
+    if (n.includes('pulley') || n.includes('flange') || n.includes('takeup_screw')) {
+      child.material = P.anodizedBrass.clone();
+      if (n.includes('pulley')) {
+        kinematicRotors.push({ mesh: child, axis: 'z', speed: 3.5 });
+      }
+    } else if (n.includes('bucket_')) {
+      child.material = P.brushedChrome.clone();
+    } else if (n.includes('shaft') || n.includes('bearing')) {
+      child.material = P.machinedSteel.clone();
+    } else if (n.includes('viewport') || n.includes('cutaway') || n.includes('grain_flow')) {
+      child.material = P.opticalGlass.clone();
+      cutawayGlassMeshes.push(child);
+    } else if (n.includes('sensor') || n.includes('cleanout')) {
+      child.material = P.safetyRed.clone();
+    } else if (n.includes('belt_')) {
+      child.material = P.darkCastIron.clone();
+    } else if (n.includes('hood') || n.includes('spout') || n.includes('motor')) {
+      child.material = P.sagmaGreen.clone();
+    } else if (n.includes('trunking') || n.includes('casing')) {
+      // Make up-leg trunking partially cutaway glass so internal buckets & grain stream shine through
+      if (n.includes('upleg')) {
+        child.material = P.opticalGlass.clone();
+        cutawayGlassMeshes.push(child);
+      } else {
+        child.material = P.gunmetal.clone();
+      }
+    }
+  });
+
+  // Add Live Ascending & Centrifugal Discharge Grain Stream in Elevator
+  const count = 360;
+  const geo = new THREE.BufferGeometry();
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  grainParticlesData = [];
+
+  const colorGold = new THREE.Color(0xFBBF24);
+  const colorEmerald = new THREE.Color(0x34D399);
+
+  for (let i = 0; i < count; i++) {
+    const t = Math.random(); // 0..1 path progress from boot up to head discharge
+    const c = (i % 4 === 0) ? colorEmerald : colorGold;
+    colors[i * 3] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
+    grainParticlesData.push({
+      mode: 'elevator',
+      t,
+      jitterX: (Math.random() - 0.5) * 0.08,
+      jitterZ: (Math.random() - 0.5) * 0.08,
+      speed: 0.28 + Math.random() * 0.12
+    });
+  }
+
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const mat = new THREE.PointsMaterial({
+    size: 0.032,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.92,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+
+  grainParticleSystem = new THREE.Points(geo, mat);
+  grainParticleSystem.name = 'Elevator_Live_Grain_Stream';
+  grainParticleSystem.userData.noExplode = true;
+  gltfRoot.add(grainParticleSystem);
+}
+
+// ============================================================================
+// PROCEDURAL 3D TWIN GENERATOR (WITH MUSEUM PBR & PLINTH FOR ALL 24 MACHINES)
 // ============================================================================
 function generateProceduralTwin(type, colorHex) {
   const group = new THREE.Group();
-  const matPaint = new THREE.MeshStandardMaterial({
-    color: colorHex || 0x005A36,
-    metalness: 0.35,
-    roughness: 0.38
-  });
-  const matSteel = new THREE.MeshStandardMaterial({
-    color: 0xD8DCE0,
-    metalness: 0.88,
-    roughness: 0.25
-  });
-  const matDark = new THREE.MeshStandardMaterial({
-    color: 0x2A3238,
-    metalness: 0.6,
-    roughness: 0.6
-  });
+  const P = createMuseumPalette();
+  const matPaint = colorHex ? P.sagmaGreen : P.gunmetal;
+
+  // Mount every procedural twin on the Museum Instrument Bench Plinth
+  group.add(createInstrumentBenchPlinth(2.2, 1.6, P));
 
   if (type.includes('rollermill')) {
-    // Base Frame
-    const base = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.7, 1.2), matPaint);
-    base.position.y = 0.35;
-    base.castShadow = true; base.receiveShadow = true;
+    // Cast Iron Base Frame
+    const base = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.65, 1.15), P.gunmetal);
+    base.position.y = 0.40;
     group.add(base);
 
-    // Roll Housing Upper
-    const housing = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.9, 1.1), matPaint);
+    // Upper Grinding Roll Housing with Cutaway Glass Inspection Door
+    const housing = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.85, 1.05), matPaint);
     housing.position.y = 1.15;
-    housing.castShadow = true;
     group.add(housing);
 
-    // 2 Cylindrical Milling Rolls (Left & Right)
-    const rollGeo = new THREE.CylinderGeometry(0.18, 0.18, 1.1, 32);
-    const roll1 = new THREE.Mesh(rollGeo, matSteel);
-    roll1.rotation.z = Math.PI / 2;
-    roll1.position.set(0, 1.1, 0.24);
-    group.add(roll1);
+    const glassDoor = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.55, 0.04), P.opticalGlass);
+    glassDoor.position.set(0, 1.18, 0.54);
+    cutawayGlassMeshes.push(glassDoor);
+    group.add(glassDoor);
 
-    const roll2 = new THREE.Mesh(rollGeo, matSteel);
-    roll2.rotation.z = Math.PI / 2;
-    roll2.position.set(0, 1.1, -0.24);
-    group.add(roll2);
+    // 4 Precision Corrugated Chilled Cast-Iron Grinding Rolls
+    const rollGeo = new THREE.CylinderGeometry(0.16, 0.16, 1.15, 48);
+    const positions = [[0, 1.05, 0.22], [0, 1.05, -0.22], [0, 1.38, 0.22], [0, 1.38, -0.22]];
+    positions.forEach(([rx, ry, rz], idx) => {
+      const roll = new THREE.Mesh(rollGeo, P.brushedChrome);
+      roll.rotation.z = Math.PI / 2;
+      roll.position.set(rx, ry, rz);
+      group.add(roll);
+      kinematicRotors.push({ mesh: roll, axis: 'x', speed: (idx % 2 === 0 ? 5.0 : -2.0) });
 
-    // Feed Hopper & Glass Inspection Window
-    const hopper = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 0.6, 4), matDark);
-    hopper.rotation.y = Math.PI / 4;
+      // Brass Bearing End Caps
+      const capL = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.05, 32), P.anodizedBrass);
+      capL.rotation.z = Math.PI / 2;
+      capL.position.set(-0.76, ry, rz);
+      group.add(capL);
+
+      const capR = capL.clone();
+      capR.position.set(0.76, ry, rz);
+      group.add(capR);
+    });
+
+    // Top Acrylic Feed Cylinder & Brass Roll Gap Handwheels
+    const hopper = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.42, 0.55, 36), P.opticalGlass);
     hopper.position.y = 1.85;
+    cutawayGlassMeshes.push(hopper);
     group.add(hopper);
 
   } else if (type.includes('plansifter')) {
-    // Plansifter 4-Box Sieve Nest Structure
-    const boxGroup = new THREE.Mesh(new THREE.BoxGeometry(2.0, 1.5, 2.0), matPaint);
-    boxGroup.position.y = 1.3;
-    boxGroup.castShadow = true;
+    // Plansifter 4-Compartment Sieve Box with Brass Clamping Rods
+    const boxGroup = new THREE.Mesh(new THREE.BoxGeometry(1.9, 1.35, 1.9), matPaint);
+    boxGroup.position.y = 1.25;
     group.add(boxGroup);
 
-    // Cane Suspension Rods
-    const rodGeo = new THREE.CylinderGeometry(0.015, 0.015, 1.8, 16);
-    const offsets = [[-0.9, -0.9], [0.9, -0.9], [-0.9, 0.9], [0.9, 0.9]];
+    // Cane Suspension Rods & Brass Flanges
+    const rodGeo = new THREE.CylinderGeometry(0.02, 0.02, 1.8, 16);
+    const offsets = [[-0.88, -0.88], [0.88, -0.88], [-0.88, 0.88], [0.88, 0.88]];
     offsets.forEach(([x, z]) => {
-      const rod = new THREE.Mesh(rodGeo, matSteel);
-      rod.position.set(x, 2.4, z);
+      const rod = new THREE.Mesh(rodGeo, P.anodizedBrass);
+      rod.position.set(x, 1.4, z);
       group.add(rod);
     });
 
-    // Underslung Counterweight Flywheel
-    const fly = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.25, 32), matDark);
-    fly.position.y = 0.3;
+    // Underslung Eccentric Counterweight Drive
+    const fly = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.24, 36), P.anodizedBrass);
+    fly.position.y = 0.35;
     group.add(fly);
+    kinematicRotors.push({ mesh: fly, axis: 'y', speed: 4.2 });
 
   } else if (type.includes('purifier')) {
-    // Sieve deck vibrating frame
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.1, 2.2), matPaint);
-    frame.position.y = 0.8;
-    frame.castShadow = true;
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.95, 2.1), P.gunmetal);
+    frame.position.y = 0.65;
     group.add(frame);
 
-    // Aerodynamic Air Ducting Hoods
-    const hood = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.5, 2.0), matSteel);
-    hood.position.y = 1.5;
-    group.add(hood);
+    const glassCanopy = new THREE.Mesh(new THREE.BoxGeometry(1.12, 0.45, 1.95), P.opticalGlass);
+    glassCanopy.position.y = 1.35;
+    cutawayGlassMeshes.push(glassCanopy);
+    group.add(glassCanopy);
 
-  } else if (type.includes('cleaner') || type.includes('screenroom')) {
-    // Separator Classifier Sieve Trunk
-    const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.4, 1.4), matPaint);
-    body.position.y = 1.2;
-    body.rotation.z = 0.08; // 5 degree sieve slope
-    body.castShadow = true;
-    group.add(body);
-
-    const asp = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.8, 0.8), matDark);
-    asp.position.set(1.1, 1.3, 0);
-    group.add(asp);
+    const vibMotor = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.35, 24), P.anodizedBrass);
+    vibMotor.rotation.z = Math.PI / 2;
+    vibMotor.position.set(0, 0.65, 1.12);
+    group.add(vibMotor);
+    kinematicRotors.push({ mesh: vibMotor, axis: 'x', speed: 7.5 });
 
   } else {
-    // Generic Industrial Cylinder/Conveyor Twin
-    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 2.4, 32), matSteel);
-    barrel.rotation.z = Math.PI / 2;
-    barrel.position.y = 0.6;
-    barrel.castShadow = true;
-    group.add(barrel);
+    // High-Detail Horizontal Cylindrical Debranner / Conveyor with Cutaway Shell
+    const barrelBack = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.42, 0.42, 1.9, 48, 1, true, 0, Math.PI * 1.2),
+      P.gunmetal
+    );
+    barrelBack.rotation.z = Math.PI / 2;
+    barrelBack.position.y = 0.85;
+    group.add(barrelBack);
 
-    const drive = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.5), matPaint);
-    drive.position.set(1.4, 0.6, 0);
-    group.add(drive);
+    const barrelGlass = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.41, 0.41, 1.86, 48, 1, true, Math.PI * 1.2, Math.PI * 0.8),
+      P.opticalGlass
+    );
+    barrelGlass.rotation.z = Math.PI / 2;
+    barrelGlass.position.y = 0.85;
+    cutawayGlassMeshes.push(barrelGlass);
+    group.add(barrelGlass);
+
+    // Internal Rotating Screw / Rotor Shaft
+    const rotor = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 1.85, 36), P.anodizedBrass);
+    rotor.rotation.z = Math.PI / 2;
+    rotor.position.y = 0.85;
+    group.add(rotor);
+    kinematicRotors.push({ mesh: rotor, axis: 'x', speed: 5.5 });
+
+    // End Flanges
+    [-0.95, 0.95].forEach(xPos => {
+      const flange = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.05, 48), P.anodizedBrass);
+      flange.rotation.z = Math.PI / 2;
+      flange.position.set(xPos, 0.85, 0);
+      group.add(flange);
+    });
   }
 
   return group;
@@ -1276,7 +1929,6 @@ async function loadCadFileFromBuffer(buffer, fileExt, fileName) {
   const uint8Arr = new Uint8Array(buffer);
   const format = (fileExt === 'step' || fileExt === 'stp') ? 'step' : 'iges';
   
-  // occt.ReadFile(format, buffer, params)
   const result = occt.ReadFile(format, uint8Arr, null);
   if (!result || !result.success || !result.meshes || result.meshes.length === 0) {
     throw new Error('OpenCascade could not tessellate CAD file: ' + (result?.error || 'Unknown format error'));
@@ -1287,8 +1939,9 @@ async function loadCadFileFromBuffer(buffer, fileExt, fileName) {
 
   const defaultCadMat = new THREE.MeshStandardMaterial({
     color: 0x005A36,
-    metalness: 0.45,
-    roughness: 0.35,
+    metalness: 0.65,
+    roughness: 0.25,
+    envMapIntensity: 1.5,
     side: THREE.DoubleSide
   });
 
@@ -1310,8 +1963,9 @@ async function loadCadFileFromBuffer(buffer, fileExt, fileName) {
     if (m.color) {
       mat = new THREE.MeshStandardMaterial({
         color: new THREE.Color(m.color[0], m.color[1], m.color[2]),
-        metalness: 0.4,
-        roughness: 0.4,
+        metalness: 0.6,
+        roughness: 0.28,
+        envMapIntensity: 1.5,
         side: THREE.DoubleSide
       });
     }
@@ -1333,6 +1987,12 @@ async function loadMachineTwin(machine) {
   showLoading('LOADING ' + machine.name.toUpperCase() + '...');
   currentMachineMeta = machine;
 
+  // Reset Explode Slider UI to 0% on machine load
+  const explodeRange = document.getElementById('explodeRange');
+  const explodeValText = document.getElementById('explodeValText');
+  if (explodeRange) explodeRange.value = 0;
+  if (explodeValText) explodeValText.textContent = '0%';
+
   // 1. Clear existing scene & WebGL resources
   clearCurrentScene();
 
@@ -1345,7 +2005,6 @@ async function loadMachineTwin(machine) {
     const src = machine.sourceFile;
 
     if (machine.customBlob) {
-      // User-uploaded model from IndexedDB
       const ext = (machine.fileExt || 'glb').toLowerCase();
       const buffer = await machine.customBlob.arrayBuffer();
 
@@ -1354,19 +2013,21 @@ async function loadMachineTwin(machine) {
       } else if (ext === 'stl') {
         const loader = new THREE.STLLoader();
         const geo = loader.parse(buffer);
-        const mat = new THREE.MeshStandardMaterial({ color: 0x005A36, metalness: 0.5, roughness: 0.3 });
+        const mat = new THREE.MeshStandardMaterial({ color: 0x005A36, metalness: 0.65, roughness: 0.25 });
         root = new THREE.Mesh(geo, mat);
       } else if (ext === 'obj') {
         const text = new TextDecoder().decode(buffer);
         const loader = new THREE.OBJLoader();
         root = loader.parse(text);
       } else {
-        // glb/gltf
         root = await new Promise((res, rej) => {
           const loader = new THREE.GLTFLoader();
           loader.parse(buffer, '', gltf => res(gltf.scene || gltf.scenes[0]), rej);
         });
       }
+    } else if (machine.id === 'satake_vbf') {
+      // Flagship Museum-Grade Cutaway & Live Kinematics Satake VBF Degermer
+      root = buildMuseumSatakeVBF();
     } else if (src.startsWith('procedural:')) {
       const type = src.split(':')[1] || 'generic';
       root = generateProceduralTwin(type, (machine.id.includes('buhler') ? 0x0D6E45 : 0x005A36));
@@ -1375,11 +2036,33 @@ async function loadMachineTwin(machine) {
         const loader = new THREE.GLTFLoader();
         loader.load(src, gltf => res(gltf.scene || gltf.scenes[0]), undefined, rej);
       });
+      if (machine.id === 'elevator_69b' || machine.id === 'elevator_cad') {
+        enhanceBucketElevatorRoot(root);
+      }
     } else {
       root = generateProceduralTwin('generic', 0x005A36);
     }
 
-    // Setup Shadows, Material Cache & Explode Transforms
+    // Auto-Centre & Scale Bounding Box FIRST
+    const box = new THREE.Box3().setFromObject(root);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+
+    const maxDim = Math.max(size.x, size.y, size.z);
+    if (maxDim > 0 && machine.id !== 'satake_vbf') {
+      const scaleFactor = 2.4 / maxDim;
+      root.scale.setScalar(scaleFactor);
+      box.setFromObject(root);
+      box.getCenter(center);
+      root.position.sub(center);
+      root.position.y += (box.max.y - box.min.y) / 2;
+    }
+
+    root.updateMatrixWorld(true);
+    const rootWorldBox = new THREE.Box3().setFromObject(root);
+    const rootWorldCenter = rootWorldBox.getCenter(new THREE.Vector3());
+
+    // Setup Shadows, Material Cache & True Geometry-Centroid Explode Vectors
     let polyCount = 0;
     let nodeCount = 0;
 
@@ -1400,28 +2083,32 @@ async function loadMachineTwin(machine) {
         // Save original material
         originalMaterials.set(child, child.material);
 
-        // Save original position & rotation for explode view
+        // Compute true world-space bounding box center of this specific mesh
+        const meshBox = new THREE.Box3().setFromObject(child);
+        const meshCenter = meshBox.getCenter(new THREE.Vector3());
+
+        // Compute outward radial + axial explode vector in parent local space
+        const worldDelta = meshCenter.clone().sub(rootWorldCenter);
+        // Emphasize horizontal radial separation (X/Z) and gentle vertical separation (Y)
+        // Never allow parts below center to sink below the floor!
+        const radialVec = new THREE.Vector3(worldDelta.x * 1.6, Math.max(0, worldDelta.y * 0.65), worldDelta.z * 1.6);
+        if (radialVec.lengthSq() < 0.002) {
+          // If concentric around center, fan out based on node index
+          const angle = (nodeCount * 1.375) % (Math.PI * 2);
+          radialVec.set(Math.cos(angle) * 0.45, 0.25, Math.sin(angle) * 0.45);
+        }
+
+        // Compensate for root scale so displacement is consistent
+        const invScale = 1 / (root.scale.x || 1);
+        radialVec.multiplyScalar(invScale);
+
         meshOriginalPositions.set(child, {
           pos: child.position.clone(),
-          parentPos: child.parent ? child.parent.position.clone() : new THREE.Vector3()
+          explodeVec: radialVec,
+          noExplode: Boolean(child.userData && child.userData.noExplode)
         });
       }
     });
-
-    // Auto-Centre & Scale Bounding Box
-    const box = new THREE.Box3().setFromObject(root);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-
-    const maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim > 0) {
-      const scaleFactor = 2.4 / maxDim;
-      root.scale.setScalar(scaleFactor);
-      box.setFromObject(root);
-      box.getCenter(center);
-      root.position.sub(center);
-      root.position.y += (box.max.y - box.min.y) / 2;
-    }
 
     currentLoadedRoot = root;
     scene.add(root);
@@ -1474,13 +2161,20 @@ function updateMachineTelemetryUI(machine) {
   document.getElementById('specSyllabus').textContent = machine.syllabus || 'SAGMA Grain Milling Curriculum';
 
   // Spec PDF Iframe & Link
-  const pdfPath = machine.specPdf || 'specs/Bucket_elevator.pdf';
+  let pdfPath = machine.specPdf || 'specs/Bucket_elevator.pdf';
+  if (machine.customPdfBlob instanceof Blob) {
+    if (window._activeCustomPdfUrl) {
+      URL.revokeObjectURL(window._activeCustomPdfUrl);
+    }
+    window._activeCustomPdfUrl = URL.createObjectURL(machine.customPdfBlob);
+    pdfPath = window._activeCustomPdfUrl;
+  }
   const pdfFrame = document.getElementById('pdfFrame');
   const pdfFileName = document.getElementById('pdfFileName');
   const pdfOpenNewTab = document.getElementById('pdfOpenNewTab');
 
   if (pdfFrame) pdfFrame.src = pdfPath;
-  if (pdfFileName) pdfFileName.textContent = pdfPath.split('/').pop();
+  if (pdfFileName) pdfFileName.textContent = machine.customPdfName || pdfPath.split('/').pop();
   if (pdfOpenNewTab) pdfOpenNewTab.href = pdfPath;
 
   // Reset Part Inspector
@@ -1489,7 +2183,7 @@ function updateMachineTelemetryUI(machine) {
 }
 
 // ============================================================================
-// 11. NVIDIA CAD SHADER PRESETS & WIREFRAME
+// 11. NVIDIA CAD SHADER PRESETS, CUTAWAY & WIREFRAME
 // ============================================================================
 function applyMaterialPreset(preset) {
   currentShaderPreset = preset;
@@ -1506,31 +2200,35 @@ function applyMaterialPreset(preset) {
         child.material = new THREE.MeshStandardMaterial({
           color: 0xDCE0E5,
           metalness: 0.94,
-          roughness: 0.22,
+          roughness: 0.16,
+          envMapIntensity: 1.8,
           side: THREE.DoubleSide
         });
       } else if (preset === 'castiron') {
         child.material = new THREE.MeshStandardMaterial({
-          color: 0x3C4248,
-          metalness: 0.35,
-          roughness: 0.76,
+          color: 0x262C32,
+          metalness: 0.65,
+          roughness: 0.48,
+          envMapIntensity: 1.3,
           side: THREE.DoubleSide
         });
       } else if (preset === 'sagma_paint') {
         child.material = new THREE.MeshStandardMaterial({
           color: 0x005A36,
-          metalness: 0.28,
-          roughness: 0.38,
+          metalness: 0.42,
+          roughness: 0.28,
+          envMapIntensity: 1.5,
           side: THREE.DoubleSide
         });
       } else if (preset === 'xray') {
         child.material = new THREE.MeshPhysicalMaterial({
-          color: 0x7CD4FD,
+          color: 0x38BDF8,
           transmission: 0.88,
-          opacity: 0.45,
+          opacity: 0.35,
           transparent: true,
-          roughness: 0.15,
+          roughness: 0.1,
           metalness: 0.1,
+          depthWrite: false,
           side: THREE.DoubleSide
         });
       }
@@ -1538,6 +2236,24 @@ function applyMaterialPreset(preset) {
       child.material.wireframe = isWireframeActive;
       child.material.needsUpdate = true;
     }
+  });
+}
+
+function toggleCutawayMode() {
+  isCutawayActive = !isCutawayActive;
+  const btn = document.getElementById('btnToggleCutaway');
+  if (btn) btn.classList.toggle('active', isCutawayActive);
+
+  const P = createMuseumPalette();
+  cutawayGlassMeshes.forEach(mesh => {
+    if (!mesh) return;
+    if (isCutawayActive) {
+      mesh.material = P.opticalGlass.clone();
+    } else {
+      mesh.material = P.sagmaGreen.clone();
+    }
+    mesh.material.wireframe = isWireframeActive;
+    mesh.material.needsUpdate = true;
   });
 }
 
@@ -1557,24 +2273,19 @@ function toggleWireframe() {
 }
 
 // ============================================================================
-// 12. EXPLODED ASSEMBLY SLIDER ENGINE
+// 12. EXPLODED ASSEMBLY SLIDER ENGINE (TRUE CENTROID RADIAL + AXIAL)
 // ============================================================================
 function updateExplodedView(factor) {
   if (!currentLoadedRoot || meshOriginalPositions.size === 0) return;
 
-  const rootCenter = new THREE.Vector3(0, 1.2, 0);
-
   meshOriginalPositions.forEach((saved, mesh) => {
+    if (saved.noExplode) return;
     const originalPos = saved.pos;
-    const dir = originalPos.clone().sub(rootCenter);
-    if (dir.lengthSq() < 0.0001) dir.set(0, 1, 0);
-    dir.normalize();
-
-    // Scale displacement radially outwards
-    const displacement = dir.multiplyScalar(factor * 1.8);
+    const displacement = saved.explodeVec.clone().multiplyScalar(factor * 1.35);
     mesh.position.copy(originalPos).add(displacement);
   });
 
+  if (currentLoadedRoot) currentLoadedRoot.updateMatrixWorld(true);
   updateCalloutPositions();
 }
 
@@ -1620,8 +2331,21 @@ function updateCalloutPositions() {
   const tempV = new THREE.Vector3();
 
   calloutElements.forEach(item => {
-    const anchor = item.data.anchor || [0, 1.2, 0];
-    tempV.set(anchor[0], anchor[1], anchor[2]);
+    let resolved = false;
+    if (currentLoadedRoot && item.data.meshTarget) {
+      const targetObj = currentLoadedRoot.getObjectByName(item.data.meshTarget);
+      if (targetObj) {
+        const box = new THREE.Box3().setFromObject(targetObj);
+        if (!box.isEmpty()) {
+          box.getCenter(tempV);
+          resolved = true;
+        }
+      }
+    }
+    if (!resolved) {
+      const anchor = item.data.anchor || (item.data.camPreset && item.data.camPreset.look) || [0, 1.2, 0];
+      tempV.set(anchor[0], anchor[1], anchor[2]);
+    }
 
     // Check if behind camera
     tempV.project(camera);
@@ -1831,12 +2555,13 @@ function setupUploaderPipeline() {
       return;
     }
 
-    const name = document.getElementById('upMachineName').value.trim();
-    const oem = document.getElementById('upMachineOEM').value.trim();
-    const category = document.getElementById('upMachineCategory').value;
-    const shader = document.getElementById('upMachineShader').value;
-    const model = document.getElementById('upMachineModel').value.trim() || 'Custom Twin';
-    const throughput = document.getElementById('upMachineThroughput').value.trim() || 'Custom Spec';
+    const name = document.getElementById('upMachineName')?.value.trim() || 'Custom Machine';
+    const oem = document.getElementById('upMachineOEM')?.value.trim() || 'Custom OEM';
+    const category = document.getElementById('upMachineCategory')?.value || '06_conveying';
+    const shader = document.getElementById('upMachineShader')?.value || 'sagma_paint';
+    const model = document.getElementById('upMachineModel')?.value.trim() || 'Custom Twin';
+    const throughput = document.getElementById('upMachineThroughput')?.value.trim() || 'Custom Spec';
+    const pdfFile = document.getElementById('upSpecPDF')?.files?.[0] || null;
 
     const ext = pendingUploadedFile.name.split('.').pop().toLowerCase();
     const machineId = 'custom_' + Date.now();
@@ -1858,6 +2583,8 @@ function setupUploaderPipeline() {
       sourceFile: 'custom:' + pendingUploadedFile.name,
       fileExt: ext,
       customBlob: pendingUploadedFile,
+      customPdfBlob: pdfFile,
+      customPdfName: pdfFile ? pdfFile.name : null,
       previewImg: 'assets/preview_render.png',
       specPdf: 'specs/Bucket_elevator.pdf',
       statusBadge: isCad ? 'CAD Converted' : '3D CAD Ready',
@@ -2048,13 +2775,35 @@ function setupDOMListeners() {
     setLanguage(e.target.value);
   });
 
+  // LOTO Safety Lockout Toggle
+  document.getElementById('lotoIndicator')?.addEventListener('click', () => {
+    const lotoEl = document.getElementById('lotoIndicator');
+    const lotoText = document.getElementById('lotoStatusText');
+    if (!lotoEl || !lotoText) return;
+    const isLocked = lotoEl.classList.toggle('locked');
+    const i18nKey = isLocked ? 'loto.isolated' : 'loto.active';
+    lotoText.setAttribute('data-i18n', i18nKey);
+    const dict = TRANSLATIONS[currentLocale] || TRANSLATIONS['en-ZA'];
+    lotoText.textContent = dict[i18nKey];
+
+    // Reflect safety lockout state on HUD Status
+    const hudStatus = document.getElementById('hudStatus');
+    if (hudStatus) {
+      hudStatus.textContent = isLocked ? 'LOTO ISOLATED (0 RPM)' : (dict['hud.statusVal'] || 'ONLINE');
+      hudStatus.style.color = isLocked ? '#EF4444' : '#4ADE80';
+    }
+  });
+
   // Studio Dark / Light Viewport Toggle
   document.getElementById('btnToggleStudioMode')?.addEventListener('click', () => {
     document.body.classList.toggle('studio-dark-mode');
     const isDark = document.body.classList.contains('studio-dark-mode');
     if (scene) {
-      scene.background = new THREE.Color(isDark ? 0x0D1319 : 0xEAF0EB);
-      scene.fog.color = new THREE.Color(isDark ? 0x0D1319 : 0xEAF0EB);
+      scene.background = new THREE.Color(isDark ? 0x090D11 : 0xEAF0EB);
+      scene.fog.color = new THREE.Color(isDark ? 0x090D11 : 0xEAF0EB);
+    }
+    if (groundGrid && groundGrid.material) {
+      groundGrid.material.opacity = isDark ? 0.35 : 0.55;
     }
   });
 
@@ -2080,6 +2829,7 @@ function setupDOMListeners() {
   // Universal Uploader Triggers
   document.getElementById('btnOpenUploader')?.addEventListener('click', openUploaderModal);
   document.getElementById('btnCloseUploader')?.addEventListener('click', closeUploaderModal);
+  document.getElementById('btnCancelUpload')?.addEventListener('click', closeUploaderModal);
 
   // Calculations Engine Triggers
   document.getElementById('btnOpenCalculations')?.addEventListener('click', () => {
@@ -2097,6 +2847,25 @@ function setupDOMListeners() {
   // Viewport Toolbar Controls
   document.getElementById('btnResetCam')?.addEventListener('click', resetCameraFraming);
   document.getElementById('btnToggleWireframe')?.addEventListener('click', toggleWireframe);
+  document.getElementById('btnToggleCutaway')?.addEventListener('click', toggleCutawayMode);
+
+  // Live Mechanical Motion & Particle Flow Toggle
+  document.getElementById('btnToggleMotion')?.addEventListener('click', () => {
+    isLiveMotionActive = !isLiveMotionActive;
+    const btn = document.getElementById('btnToggleMotion');
+    if (btn) btn.classList.toggle('active', isLiveMotionActive);
+    if (grainParticleSystem) {
+      grainParticleSystem.visible = isLiveMotionActive;
+    }
+  });
+
+  // Drive Speed Multiplier Slider
+  const speedRange = document.getElementById('speedRange');
+  const speedValText = document.getElementById('speedValText');
+  speedRange?.addEventListener('input', (e) => {
+    driveSpeedMultiplier = parseFloat(e.target.value) / 100;
+    if (speedValText) speedValText.textContent = driveSpeedMultiplier.toFixed(1) + 'x';
+  });
 
   document.getElementById('btnToggleCallouts')?.addEventListener('click', () => {
     calloutsVisible = !calloutsVisible;
@@ -2134,7 +2903,10 @@ function setupDOMListeners() {
   // Modal Backdrop Click to Close
   document.querySelectorAll('.modal-overlay').forEach(modal => {
     modal.addEventListener('click', (e) => {
-      if (e.target === modal) modal.classList.remove('active');
+      if (e.target === modal) {
+        modal.classList.remove('active');
+        modal.classList.remove('open');
+      }
     });
   });
 
@@ -2154,12 +2926,14 @@ function setupDOMListeners() {
 }
 
 // ============================================================================
-// 22. ANIMATION & RENDER LOOP (NVIDIA CAD 60 FPS)
+// 22. ANIMATION & RENDER LOOP (NVIDIA CAD 60 FPS + MUSEUM KINEMATICS)
 // ============================================================================
 function animate() {
   requestAnimationFrame(animate);
 
   const now = performance.now();
+  const delta = Math.min((now - lastTime) / 1000, 0.1);
+  lastTime = now;
   frameCount++;
 
   // Calculate FPS every 500ms
@@ -2169,6 +2943,57 @@ function animate() {
     lastFpsUpdate = now;
     const hudFPS = document.getElementById('hudFPS');
     if (hudFPS) hudFPS.textContent = measuredFPS.toFixed(1) + ' FPS';
+  }
+
+  // Advance Live Mechanical Kinematics & Particle Streams (if not LOTO locked)
+  const isLotoLocked = document.getElementById('lotoIndicator')?.classList.contains('locked');
+  if (isLiveMotionActive && !isLotoLocked && driveSpeedMultiplier > 0) {
+    // 1. Rotate mechanical rotors, pulleys, screw flights, and rolls
+    for (let i = 0; i < kinematicRotors.length; i++) {
+      const item = kinematicRotors[i];
+      if (item && item.mesh) {
+        const step = item.speed * driveSpeedMultiplier * delta;
+        if (item.axis === 'x') item.mesh.rotation.x += step;
+        else if (item.axis === 'y') item.mesh.rotation.y += step;
+        else if (item.axis === 'z') item.mesh.rotation.z += step;
+      }
+    }
+
+    // 2. Update internal grain & aspiration airflow particle streams
+    if (grainParticleSystem && grainParticlesData.length > 0 && grainParticleSystem.geometry) {
+      const posAttr = grainParticleSystem.geometry.attributes.position;
+      const arr = posAttr.array;
+
+      for (let i = 0; i < grainParticlesData.length; i++) {
+        const p = grainParticlesData[i];
+        if (p.mode === 'vortex') {
+          p.angle += p.speed * driveSpeedMultiplier * delta;
+          p.h += (p.isAir ? 0.55 : 0.34) * driveSpeedMultiplier * delta;
+          if (p.h > 1.0) p.h -= 1.0;
+
+          const r = p.radius + Math.sin(p.h * Math.PI * 2 + p.angle) * 0.018;
+          arr[i * 3] = Math.cos(p.angle) * r;
+          arr[i * 3 + 1] = 0.50 + p.h * 1.05;
+          arr[i * 3 + 2] = Math.sin(p.angle) * r;
+        } else if (p.mode === 'elevator') {
+          p.t = (p.t + p.speed * driveSpeedMultiplier * delta) % 1.0;
+          if (p.t < 0.84) {
+            const legFrac = p.t / 0.84;
+            arr[i * 3] = -0.195 + p.jitterX;
+            arr[i * 3 + 1] = 0.45 + legFrac * 8.75;
+            arr[i * 3 + 2] = p.jitterZ;
+          } else {
+            // Centrifugal discharge arc over head pulley into discharge spout
+            const arcFrac = (p.t - 0.84) / 0.16;
+            const theta = Math.PI - arcFrac * Math.PI * 0.88;
+            arr[i * 3] = Math.cos(theta) * 0.24 + arcFrac * 0.28;
+            arr[i * 3 + 1] = 9.15 + Math.sin(theta) * 0.26 - arcFrac * 0.45;
+            arr[i * 3 + 2] = p.jitterZ;
+          }
+        }
+      }
+      posAttr.needsUpdate = true;
+    }
   }
 
   // Update OrbitControls
@@ -2201,7 +3026,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // 4. Initialize Client IndexedDB
   await EchoDB.init();
 
-  // 5. Check URL Hash Route or Load Default Machine Twin
+  // 5. Check URL Hash Route or Load Default Machine Twin (Satake VBF or Bucket Elevator)
   const hash = window.location.hash;
   let initialMachine = null;
   if (hash.startsWith('#machine/')) {
@@ -2210,7 +3035,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (!initialMachine) {
-    initialMachine = await EchoDB.get('elevator_69b') || FLEET_CATALOG[0];
+    initialMachine = await EchoDB.get('satake_vbf') || await EchoDB.get('elevator_69b') || FLEET_CATALOG[0];
   }
 
   // 6. Launch Initial 3D Twin Workspace

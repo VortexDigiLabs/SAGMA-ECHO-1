@@ -115,20 +115,23 @@
     }
 
     .brand-emblem {
-      height: 40px;
-      width: 40px;
-      border-radius: var(--radius-sm);
+      height: 42px;
+      width: 42px;
+      border-radius: 50%;
       background: #FFFFFF;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      padding: 3px;
+      border: 2px solid #16A34A;
+      box-shadow: 0 2px 10px rgba(22, 163, 74, 0.35);
     }
     .brand-emblem img {
-      height: 34px;
-      width: auto;
+      height: 100%;
+      width: 100%;
       object-fit: contain;
+      border-radius: 50%;
     }
 
     .brand-titles {
@@ -617,7 +620,8 @@
       justify-content: center;
       padding: 24px;
     }
-    .modal-overlay.open {
+    .modal-overlay.open,
+    .modal-overlay.active {
       display: flex;
     }
 
@@ -742,7 +746,8 @@
       gap: 18px;
     }
 
-    .machine-card {
+    .machine-card,
+    .fleet-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-md);
@@ -753,17 +758,21 @@
       cursor: pointer;
       position: relative;
     }
-    .machine-card:hover {
+    .machine-card:hover,
+    .fleet-card:hover {
       border-color: var(--brand-emerald);
       box-shadow: var(--shadow-md);
       transform: translateY(-2px);
     }
-    .machine-card.selected {
+    .machine-card.selected,
+    .machine-card.active,
+    .fleet-card.active {
       border-color: var(--brand-green);
       box-shadow: 0 0 0 2px var(--brand-green);
     }
 
-    .card-thumb-area {
+    .card-thumb-area,
+    .fleet-card-img-wrap {
       height: 140px;
       background: var(--bg-card-subtle);
       display: flex;
@@ -773,17 +782,20 @@
       overflow: hidden;
       border-bottom: 1px solid var(--border-subtle);
     }
-    .card-thumb-area img {
+    .card-thumb-area img,
+    .fleet-card-img-wrap img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transition: transform 0.3s ease;
     }
-    .machine-card:hover .card-thumb-area img {
+    .machine-card:hover .card-thumb-area img,
+    .fleet-card:hover .fleet-card-img-wrap img {
       transform: scale(1.04);
     }
 
-    .card-cad-badge {
+    .card-cad-badge,
+    .fleet-badge {
       position: absolute;
       top: 8px;
       right: 8px;
@@ -794,25 +806,28 @@
       letter-spacing: 0.04em;
       font-family: 'DM Mono', monospace;
     }
-    .badge-ready { background: #16A34A; color: #FFFFFF; }
+    .badge-ready, .badge-cad { background: #16A34A; color: #FFFFFF; }
     .badge-mesh { background: #D97706; color: #FFFFFF; }
     .badge-spec { background: #0284C7; color: #FFFFFF; }
 
-    .card-body {
+    .card-body,
+    .fleet-card-body {
       padding: 14px 16px;
       display: flex;
       flex-direction: column;
       gap: 6px;
       flex: 1;
     }
-    .card-oem-tag {
+    .card-oem-tag,
+    .fleet-card-oem {
       font-size: 0.68rem;
       font-family: 'DM Mono', monospace;
       color: var(--brand-emerald);
       font-weight: 600;
       text-transform: uppercase;
     }
-    .card-name {
+    .card-name,
+    .fleet-card-title {
       font-size: 0.95rem;
       font-weight: 700;
       color: var(--text-main);
@@ -827,7 +842,8 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    .card-footer {
+    .card-footer,
+    .fleet-card-stats {
       margin-top: auto;
       padding-top: 10px;
       border-top: 1px solid var(--border-subtle);
@@ -997,7 +1013,7 @@
     }
   </style>
 </head>
-<body>
+<body class="studio-dark-mode">
 
   <!-- ============================================================
        TOP HEADER & WORKSPACE NAVIGATION
@@ -1005,7 +1021,7 @@
   <header>
     <div class="brand-group">
       <div class="brand-emblem">
-        <img src="assets/sagma_logo.png" alt="SAGMA" onerror="this.src='assets/sagma_emblem.png'">
+        <img src="assets/Gear_Logo-removebg-preview.png" alt="SAGMA Gear Logo" onerror="this.src='assets/sagma_emblem.png'">
       </div>
       <div class="brand-titles">
         <div class="brand-title">
@@ -1087,7 +1103,7 @@
         </div>
         <div class="telemetry-item">
           <span class="telemetry-label" data-i18n="hud.status">3D State</span>
-          <span class="telemetry-val" id="hudStatus" style="color: #16A34A;">PBR REAL-TIME</span>
+          <span class="telemetry-val" id="hudStatus" style="color: #4ADE80;">STUDIO PBR + FLOW</span>
         </div>
       </div>
     </div>
@@ -1101,6 +1117,16 @@
         <button id="btnResetCam" class="tool-btn" title="Reset Camera Framing">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
           <span data-i18n="tools.reset">Reset</span>
+        </button>
+
+        <button id="btnToggleCutaway" class="tool-btn active" title="Toggle Optical Glass Cutaway & Internal View">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <span>Cutaway</span>
+        </button>
+
+        <button id="btnToggleMotion" class="tool-btn active" title="Toggle Live Rotor, Belt Kinematics & Grain Flow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span>Live Flow</span>
         </button>
 
         <button id="btnToggleWireframe" class="tool-btn" title="Toggle Engineering Wireframe">
@@ -1121,6 +1147,15 @@
         <span data-i18n="tools.explode">Explode</span>
         <input type="range" id="explodeRange" class="explode-range" min="0" max="100" value="0">
         <span id="explodeValText">0%</span>
+      </div>
+
+      <div class="tool-divider"></div>
+
+      <!-- Drive Speed / RPM Slider -->
+      <div class="slider-container">
+        <span>Drive</span>
+        <input type="range" id="speedRange" class="explode-range" style="width:70px;" min="0" max="200" value="100">
+        <span id="speedValText">1.0x</span>
       </div>
 
       <div class="tool-divider"></div>
@@ -1293,6 +1328,14 @@
               <input type="text" id="upMachineOEM" class="form-input" placeholder="e.g. Bühler Group, Satake, Simon" required>
             </div>
             <div class="form-group">
+              <label class="form-label" data-i18n="spec.model">Model Series</label>
+              <input type="text" id="upMachineModel" class="form-input" placeholder="e.g. MDDR 250/1000">
+            </div>
+            <div class="form-group">
+              <label class="form-label" data-i18n="spec.throughput">Nominal Throughput</label>
+              <input type="text" id="upMachineThroughput" class="form-input" placeholder="e.g. 20 - 45 t/h">
+            </div>
+            <div class="form-group">
               <label class="form-label" data-i18n="upload.fieldCat">Milling Category</label>
               <select id="upMachineCategory" class="form-select">
                 <option value="01_degerming">01 - Degerming & Debranning</option>
@@ -1338,7 +1381,7 @@
   <!-- ============================================================
        CALCULATIONS MODAL (Milling Calculations)
        ============================================================ -->
-  <div id="calculationsModal" class="modal-overlay">
+  <div id="calcModal" class="modal-overlay">
     <div class="modal-container" style="max-width: 600px;">
       <div class="modal-header">
         <div class="modal-title-group">
@@ -1351,15 +1394,19 @@
         <div style="display:flex; flex-direction:column; gap:16px;">
           <div class="form-group">
             <label class="form-label">Bucket Volume (Liters)</label>
-            <input type="number" id="calcBucketVol" class="form-input" value="1.8" step="0.1">
+            <input type="number" id="calcVol" class="form-input" value="4.2" step="0.1">
           </div>
           <div class="form-group">
             <label class="form-label">Bucket Spacing (Meters)</label>
-            <input type="number" id="calcSpacing" class="form-input" value="0.25" step="0.01">
+            <input type="number" id="calcSpacing" class="form-input" value="0.28" step="0.01">
           </div>
           <div class="form-group">
             <label class="form-label">Belt Speed (m/s)</label>
-            <input type="number" id="calcSpeed" class="form-input" value="2.2" step="0.1">
+            <input type="number" id="calcSpeed" class="form-input" value="2.4" step="0.1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bucket Fill Factor (%)</label>
+            <input type="number" id="calcFill" class="form-input" value="75" min="10" max="100" step="5">
           </div>
           <div class="form-group">
             <label class="form-label">Grain Bulk Density (kg/m³)</label>
@@ -1367,8 +1414,8 @@
           </div>
           <div style="background:var(--bg-card-subtle); padding:16px; border-radius:var(--radius-md); border-left:4px solid var(--brand-emerald);">
             <div style="font-size:0.74rem; font-family:'DM Mono', monospace; color:var(--text-light); text-transform:uppercase;">Calculated Capacity</div>
-            <div style="font-size:1.6rem; font-weight:700; color:var(--brand-green); font-family:'DM Mono', monospace; margin:4px 0;" id="calcResultThroughput">42.77 t/h</div>
-            <div style="font-size:0.75rem; color:var(--text-muted);" id="calcResultBuckets">8.8 buckets/sec discharge rate</div>
+            <div style="font-size:1.6rem; font-weight:700; color:var(--brand-green); font-family:'DM Mono', monospace; margin:4px 0;" id="calcResultThroughput">72.90 t/h</div>
+            <div style="font-size:0.75rem; color:var(--text-muted);" id="calcResultBuckets">8.6 buckets/sec discharge rate</div>
           </div>
         </div>
       </div>
