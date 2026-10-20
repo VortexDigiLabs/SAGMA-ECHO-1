@@ -544,6 +544,7 @@ let occtInstance = null;
 // Live Kinematic & Particle References
 let kinematicRotors = [];
 let kinematicBuckets = [];
+let currentExplodeFactor = 0;
 let grainParticleSystem = null;
 let grainParticlesData = [];
 let cutawayGlassMeshes = [];
@@ -808,62 +809,51 @@ function clearCurrentScene() {
 // ============================================================================
 function createMuseumPalette() {
   return {
-    sagmaGreen: new THREE.MeshPhysicalMaterial({
-      color: 0x054B2E,
-      metalness: 0.52,
-      roughness: 0.24,
-      clearcoat: 0.65,
-      clearcoatRoughness: 0.14,
-      reflectivity: 0.85,
+    sagmaGreen: new THREE.MeshStandardMaterial({
+      color: 0x0D6E45,
+      metalness: 0.45,
+      roughness: 0.25,
       envMapIntensity: 1.55,
       side: THREE.DoubleSide
     }),
-    gunmetal: new THREE.MeshPhysicalMaterial({
-      color: 0x1D252E,
-      metalness: 0.82,
-      roughness: 0.24,
-      clearcoat: 0.35,
-      clearcoatRoughness: 0.2,
+    gunmetal: new THREE.MeshStandardMaterial({
+      color: 0x26313E,
+      metalness: 0.78,
+      roughness: 0.26,
       envMapIntensity: 1.65,
       side: THREE.DoubleSide
     }),
     darkCastIron: new THREE.MeshStandardMaterial({
-      color: 0x14191F,
-      metalness: 0.72,
+      color: 0x161C22,
+      metalness: 0.68,
       roughness: 0.42,
       envMapIntensity: 1.35,
       side: THREE.DoubleSide
     }),
-    machinedSteel: new THREE.MeshPhysicalMaterial({
+    machinedSteel: new THREE.MeshStandardMaterial({
       color: 0x94A3B8,
-      metalness: 0.86,
+      metalness: 0.85,
       roughness: 0.18,
-      clearcoat: 0.45,
-      clearcoatRoughness: 0.12,
-      envMapIntensity: 1.9,
+      envMapIntensity: 1.85,
       side: THREE.DoubleSide
     }),
-    brushedChrome: new THREE.MeshPhysicalMaterial({
-      color: 0xB8C4D0,
+    brushedChrome: new THREE.MeshStandardMaterial({
+      color: 0xCBD5E1,
       metalness: 0.90,
-      roughness: 0.12,
-      clearcoat: 0.6,
-      clearcoatRoughness: 0.08,
-      envMapIntensity: 2.1,
+      roughness: 0.14,
+      envMapIntensity: 2.0,
       side: THREE.DoubleSide
     }),
-    anodizedBrass: new THREE.MeshPhysicalMaterial({
-      color: 0xD99622,
-      metalness: 0.88,
-      roughness: 0.18,
-      clearcoat: 0.5,
-      clearcoatRoughness: 0.12,
-      envMapIntensity: 2.0,
+    anodizedBrass: new THREE.MeshStandardMaterial({
+      color: 0xE5A024,
+      metalness: 0.86,
+      roughness: 0.20,
+      envMapIntensity: 1.95,
       side: THREE.DoubleSide
     }),
     bronzeBushing: new THREE.MeshStandardMaterial({
       color: 0xB87333,
-      metalness: 0.86,
+      metalness: 0.84,
       roughness: 0.24,
       envMapIntensity: 1.7,
       side: THREE.DoubleSide
@@ -875,36 +865,27 @@ function createMuseumPalette() {
       metalness: 0.55,
       roughness: 0.2
     }),
-    safetyRed: new THREE.MeshPhysicalMaterial({
+    safetyRed: new THREE.MeshStandardMaterial({
       color: 0xDC2626,
-      metalness: 0.58,
-      roughness: 0.26,
-      clearcoat: 0.5,
-      clearcoatRoughness: 0.15
+      metalness: 0.55,
+      roughness: 0.28
     }),
-    opticalGlass: new THREE.MeshPhysicalMaterial({
+    opticalGlass: new THREE.MeshStandardMaterial({
       color: 0x38BDF8,
-      transmission: 0.78,
-      opacity: 0.36,
+      opacity: 0.34,
       transparent: true,
-      roughness: 0.06,
-      metalness: 0.08,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.05,
-      ior: 1.52,
-      reflectivity: 0.95,
-      envMapIntensity: 2.4,
+      roughness: 0.08,
+      metalness: 0.22,
+      envMapIntensity: 2.2,
       depthWrite: false,
       side: THREE.DoubleSide
     }),
-    slottedCageGlass: new THREE.MeshPhysicalMaterial({
+    slottedCageGlass: new THREE.MeshStandardMaterial({
       color: 0x34D399,
-      transmission: 0.68,
       opacity: 0.38,
       transparent: true,
-      roughness: 0.14,
-      metalness: 0.22,
-      clearcoat: 0.8,
+      roughness: 0.15,
+      metalness: 0.30,
       envMapIntensity: 1.9,
       depthWrite: false,
       side: THREE.DoubleSide
@@ -1297,7 +1278,7 @@ function enhanceBucketElevatorRoot(gltfRoot) {
     if (n.includes('pulley') || n.includes('flange') || n.includes('takeup_screw')) {
       child.material = P.anodizedBrass.clone();
       if (n.includes('pulley')) {
-        //Pulley Cylinder in GLTF has rotation.x = +90 deg so local Y axis is the true horizontal shaft axis!
+        // Pulley Cylinder in GLTF has rotation.x = +90 deg so local Y axis is the true horizontal shaft axis!
         // Rotate around local 'y' with negative speed (-3.8) so top moves from UpLeg (-X) to Discharge (+X)
         kinematicRotors.push({ mesh: child, axis: 'y', speed: -3.8 });
       }
@@ -1307,7 +1288,8 @@ function enhanceBucketElevatorRoot(gltfRoot) {
       // Register bucket for continuous loop animation along UpLeg -> Head Pulley -> DownLeg -> Boot Pulley
       kinematicBuckets.push({
         mesh: child,
-        phase: bucketIndex / 59
+        phase: bucketIndex / 59,
+        baseZ: child.position.z || 0
       });
       bucketIndex++;
     } else if (n.includes('shaft') || n.includes('bearing')) {
@@ -1896,6 +1878,7 @@ function toggleWireframe() {
 // 12. EXPLODED ASSEMBLY SLIDER ENGINE (TRUE CENTROID RADIAL + AXIAL)
 // ============================================================================
 function updateExplodedView(factor) {
+  currentExplodeFactor = Number(factor) || 0;
   if (!currentLoadedRoot || meshOriginalPositions.size === 0) return;
 
   meshOriginalPositions.forEach((saved, mesh) => {
@@ -3046,7 +3029,7 @@ function renderCompositeVideoFrame(elapsed) {
 
   ctx.fillStyle = '#F1F7F3';
   ctx.font = `700 ${Math.round(16 * scale)}px "DM Sans", sans-serif`;
-  ctx.fillText('SAGMA ECHO • 3D TRAINING TWIN', padX + Math.round(58 * scale), padY + Math.round(25 * scale));
+  ctx.fillText('SAGMA • 3D TRAINING TWIN', padX + Math.round(58 * scale), padY + Math.round(25 * scale));
 
   ctx.fillStyle = '#4ADE80';
   ctx.font = `600 ${Math.round(11 * scale)}px "DM Mono", monospace`;
