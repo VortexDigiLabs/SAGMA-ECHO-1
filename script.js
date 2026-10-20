@@ -549,6 +549,24 @@ let grainParticleSystem = null;
 let grainParticlesData = [];
 let cutawayGlassMeshes = [];
 
+// Instanced 3D Grain Flow & Dual-Machine Process Line State
+let GRAIN_TYPE = 'maize'; // 'maize' (golden-yellow larger kernels) | 'wheat' (amber-tan smaller kernels)
+let grainInstancedMesh = null;
+let activeGrainCount = 650;
+let dustHazePoints = null;
+let dummyMatrixObj = new THREE.Object3D();
+
+// Deterministic Seeded PRNG (Mulberry32) so every 30s recording is 100% identical & repeatable
+function createSeededRandom(seed = 20261020) {
+  let a = seed >>> 0;
+  return function () {
+    let t = (a += 0x6D2B79F5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 // Lighting References
 let dirLight, fillLight, rimLight, ambientLight, groundGrid, shadowPlane, studioEnvTexture;
 
@@ -723,24 +741,40 @@ function setupStudioLighting() {
   dirLight.shadow.camera.bottom = -4.5;
   scene.add(dirLight);
 
-  // 3. Cool Cyan Rim / Edge Light
-  fillLight = new THREE.DirectionalLight(0x38BDF8, 1.35);
+  // 3. Cool Teal/Cyan Rim / Edge Light (Strong architectural rim contour)
+  fillLight = new THREE.DirectionalLight(0x2DD4BF, 1.55);
   fillLight.position.set(-9, 6, -7);
   scene.add(fillLight);
 
   // 4. Warm Brass Under-Fill Light
-  rimLight = new THREE.DirectionalLight(0xF59E0B, 0.75);
+  rimLight = new THREE.DirectionalLight(0xF59E0B, 0.85);
   rimLight.position.set(0, -5, 6);
   scene.add(rimLight);
 
-  // 5. Soft Ground Contact Shadow Plane
+  // 5. Soft Ground Contact Shadow & Faint Reflective Studio Floor Plane
   const planeGeo = new THREE.PlaneGeometry(60, 60);
-  const shadowMat = new THREE.ShadowMaterial({ opacity: 0.42 });
+  const shadowMat = new THREE.ShadowMaterial({ opacity: 0.45 });
   shadowPlane = new THREE.Mesh(planeGeo, shadowMat);
   shadowPlane.rotation.x = -Math.PI / 2;
   shadowPlane.position.y = -0.005;
   shadowPlane.receiveShadow = true;
   scene.add(shadowPlane);
+
+  const reflectFloor = new THREE.Mesh(
+    new THREE.PlaneGeometry(36, 36),
+    new THREE.MeshStandardMaterial({
+      color: 0x0A1218,
+      metalness: 0.78,
+      roughness: 0.24,
+      transparent: true,
+      opacity: 0.36,
+      envMapIntensity: 1.5
+    })
+  );
+  reflectFloor.rotation.x = -Math.PI / 2;
+  reflectFloor.position.y = -0.008;
+  reflectFloor.receiveShadow = true;
+  scene.add(reflectFloor);
 
   // 6. Precision Museum CAD Ground Grid
   const isDark = document.body.classList.contains('studio-dark-mode');
@@ -800,6 +834,8 @@ function clearCurrentScene() {
   kinematicRotors = [];
   kinematicBuckets = [];
   grainParticleSystem = null;
+  grainInstancedMesh = null;
+  dustHazePoints = null;
   grainParticlesData = [];
   cutawayGlassMeshes = [];
   clearCallouts();
@@ -965,7 +1001,7 @@ function createInstrumentBenchPlinth(width, depth, matPalette) {
 // ============================================================================
 // FLAGSHIP 1: MUSEUM-GRADE SATAKE VBF VERTICAL MAIZE DEGERMER (CUTAWAY RIG)
 // ============================================================================
-function buildMuseumSatakeVBF() {
+function buildMuseumSatakeVBF(options = {}) {
   const root = new THREE.Group();
   root.name = 'Satake_VBF_Museum_Twin';
   const P = createMuseumPalette();
@@ -1195,8 +1231,10 @@ function buildMuseumSatakeVBF() {
   flapGroup.add(poiseWeight);
   root.add(flapGroup);
 
-  // 11. Live Swirling Golden Maize Kernel & Blue Aspiration Airflow Particle Stream
-  createSatakeParticleStream(root);
+  // 11. Live Swirling Golden Maize / Amber Wheat Kernel & Aspiration Stream
+  if (!options || !options.skipInternalParticles) {
+    createSatakeParticleStream(root);
+  }
 
   return root;
 }
@@ -1259,9 +1297,9 @@ function createSatakeParticleStream(root) {
 }
 
 // ============================================================================
-// FLAGSHIP 2: ENHANCE BUCKET ELEVATOR WITH MUSEUM PBR, GLASS CUTAWAY & FLOW
+// FLAGSHIP 2: ENHANCE BUCKET ELEVATOR WITH MUSEUM PBR, BUCKET GRAIN MOUNDS & FLOW
 // ============================================================================
-function enhanceBucketElevatorRoot(gltfRoot) {
+function enhanceBucketElevatorRoot(gltfRoot, options = {}) {
   const P = createMuseumPalette();
   kinematicBuckets = [];
 
@@ -1269,6 +1307,16 @@ function enhanceBucketElevatorRoot(gltfRoot) {
   const bootPlinth = createInstrumentBenchPlinth(1.6, 1.3, P);
   bootPlinth.position.y = -0.06;
   gltfRoot.add(bootPlinth);
+
+  const isWheat = GRAIN_TYPE === 'wheat';
+  const bucketGrainMat = new THREE.MeshStandardMaterial({
+    color: isWheat ? 0xD99B52 : 0xFBBF24,
+    emissive: isWheat ? 0x78350F : 0xB45309,
+    emissiveIntensity: 0.25,
+    roughness: 0.35,
+    metalness: 0.12
+  });
+  const bucketGrainGeo = new THREE.BoxGeometry(0.11, 0.055, 0.16);
 
   let bucketIndex = 0;
 
@@ -1286,9 +1334,19 @@ function enhanceBucketElevatorRoot(gltfRoot) {
     } else if (n.includes('bucket_')) {
       child.material = P.brushedChrome.clone();
       child.userData.noExplode = true;
+
+      // Attach a visible grain fill mound inside each bucket (visible when rising on Up-Leg, hidden when empty on return Down-Leg!)
+      const fillMesh = new THREE.Mesh(bucketGrainGeo, bucketGrainMat);
+      fillMesh.name = 'Bucket_Grain_Fill_Mound';
+      fillMesh.position.set(0, 0.032, 0);
+      fillMesh.userData.noExplode = true;
+      fillMesh.userData.isGrainFill = true;
+      child.add(fillMesh);
+
       // Register bucket for continuous loop animation along UpLeg -> Head Pulley -> DownLeg -> Boot Pulley
       kinematicBuckets.push({
         mesh: child,
+        grainFill: fillMesh,
         phase: bucketIndex / 59,
         baseZ: child.position.z || 0
       });
@@ -1318,47 +1376,387 @@ function enhanceBucketElevatorRoot(gltfRoot) {
     }
   });
 
-  // Add Live Ascending & Centrifugal Discharge Grain Stream in Elevator
-  const count = 360;
-  const geo = new THREE.BufferGeometry();
-  const positions = new Float32Array(count * 3);
-  const colors = new Float32Array(count * 3);
+  if (!options.skipInternalParticles) {
+    createInstancedGrainFlow(gltfRoot, 'elevator_only', activeGrainCount);
+  }
+}
+
+// ============================================================================
+// INSTANCED 3D GRAIN FLOW ENGINE (MAIZE / WHEAT) + DISCHARGE DUST HAZE & GLOW
+// ============================================================================
+function createInstancedGrainFlow(parentRoot, mode = 'process_line', maxCount = 650) {
+  const isWheat = GRAIN_TYPE === 'wheat';
+  const rng = createSeededRandom(20261020);
+
+  // 1. Instanced 3D Kernel Geometry (Maize = larger plump golden dent kernel; Wheat = smaller elongated amber-tan berry)
+  const kernelGeo = isWheat
+    ? new THREE.CylinderGeometry(0.0085, 0.0085, 0.023, 7)
+    : new THREE.DodecahedronGeometry(0.0155, 0);
+
+  const baseHex = isWheat ? 0xD99B52 : 0xFBBF24;
+  const emissiveHex = isWheat ? 0x92400E : 0xD97706;
+
+  const kernelMat = new THREE.MeshStandardMaterial({
+    color: baseHex,
+    emissive: emissiveHex,
+    emissiveIntensity: 0.32,
+    roughness: 0.28,
+    metalness: 0.12
+  });
+
+  const instMesh = new THREE.InstancedMesh(kernelGeo, kernelMat, maxCount);
+  instMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  instMesh.name = 'Instanced_3D_Grain_Flow';
+  instMesh.userData.noExplode = true;
+  instMesh.castShadow = false;
+  instMesh.receiveShadow = false;
+
+  const cBase = new THREE.Color(baseHex);
+  const cAlt = new THREE.Color(isWheat ? 0xB47B38 : 0xF59E0B);
+  const cBright = new THREE.Color(isWheat ? 0xFDE68A : 0xFEF08A);
+  const tempColor = new THREE.Color();
+
   grainParticlesData = [];
 
-  const colorGold = new THREE.Color(0xFBBF24);
-  const colorEmerald = new THREE.Color(0x34D399);
+  for (let i = 0; i < maxCount; i++) {
+    const t = i / maxCount; // Uniformly pre-filled 0..1 along entire process path!
+    const mixR = rng();
+    if (mixR < 0.5) tempColor.copy(cBase).lerp(cAlt, rng() * 0.6);
+    else tempColor.copy(cBase).lerp(cBright, rng() * 0.45);
+    if (instMesh.setColorAt) {
+      instMesh.setColorAt(i, tempColor);
+    }
 
-  for (let i = 0; i < count; i++) {
-    const t = Math.random(); // 0..1 path progress from boot up to head discharge
-    const c = (i % 4 === 0) ? colorEmerald : colorGold;
-    colors[i * 3] = c.r;
-    colors[i * 3 + 1] = c.g;
-    colors[i * 3 + 2] = c.b;
     grainParticlesData.push({
-      mode: 'elevator',
+      mode,
+      baseT: t,
       t,
-      jitterX: (Math.random() - 0.5) * 0.08,
-      jitterZ: (Math.random() - 0.5) * 0.08,
-      speed: 0.28 + Math.random() * 0.12
+      speed: 0.135 + rng() * 0.035,
+      jitterX: (rng() - 0.5) * 0.032,
+      jitterY: (rng() - 0.5) * 0.024,
+      jitterZ: (rng() - 0.5) * 0.036,
+      rotX: rng() * Math.PI * 2,
+      rotY: rng() * Math.PI * 2,
+      rotZ: rng() * Math.PI * 2,
+      rotSpeedX: (rng() - 0.5) * 6.0,
+      rotSpeedY: (rng() - 0.5) * 6.0,
+      scaleX: isWheat ? (0.85 + rng() * 0.35) : (1.05 + rng() * 0.45),
+      scaleY: isWheat ? (1.15 + rng() * 0.40) : (0.85 + rng() * 0.35),
+      scaleZ: isWheat ? (0.85 + rng() * 0.35) : (0.75 + rng() * 0.30),
+      vortexPhase: rng() * Math.PI * 2,
+      vortexRadius: 0.18 + rng() * 0.095
     });
   }
+  if (instMesh.instanceColor) instMesh.instanceColor.needsUpdate = true;
 
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  parentRoot.add(instMesh);
+  grainInstancedMesh = instMesh;
+  grainParticleSystem = instMesh;
 
-  const mat = new THREE.PointsMaterial({
-    size: 0.032,
-    vertexColors: true,
+  // 2. Subtle Golden Dust / Chaff Haze & Soft Glow near Discharge Points
+  const hazeCount = 90;
+  const hazeGeo = new THREE.BufferGeometry();
+  const hazePos = new Float32Array(hazeCount * 3);
+  for (let i = 0; i < hazeCount; i++) {
+    const isHeadZone = i < 55;
+    if (isHeadZone) {
+      // Head pulley centrifugal discharge & transfer chute inlet glow
+      hazePos[i * 3] = 0.08 + (rng() - 0.5) * 0.24;
+      hazePos[i * 3 + 1] = 2.22 + (rng() - 0.5) * 0.22;
+      hazePos[i * 3 + 2] = (rng() - 0.5) * 0.18;
+    } else {
+      // Satake VBF outlet discharge & spill zone glow
+      const ox = mode === 'process_line' ? 0.58 : -0.38;
+      const oy = mode === 'process_line' ? 0.88 : 1.38;
+      hazePos[i * 3] = ox + (rng() - 0.5) * 0.22;
+      hazePos[i * 3 + 1] = oy + (rng() - 0.5) * 0.22;
+      hazePos[i * 3 + 2] = (rng() - 0.5) * 0.18;
+    }
+  }
+  hazeGeo.setAttribute('position', new THREE.BufferAttribute(hazePos, 3));
+  const hazeMat = new THREE.PointsMaterial({
+    color: isWheat ? 0xFCD34D : 0xFBBF24,
+    size: 0.065,
     transparent: true,
-    opacity: 0.92,
+    opacity: 0.24,
     blending: THREE.AdditiveBlending,
     depthWrite: false
   });
+  dustHazePoints = new THREE.Points(hazeGeo, hazeMat);
+  dustHazePoints.name = 'Discharge_Dust_Haze_Glow';
+  dustHazePoints.userData.noExplode = true;
+  parentRoot.add(dustHazePoints);
 
-  grainParticleSystem = new THREE.Points(geo, mat);
-  grainParticleSystem.name = 'Elevator_Live_Grain_Stream';
-  grainParticleSystem.userData.noExplode = true;
-  gltfRoot.add(grainParticleSystem);
+  // Pre-warm particle transforms at t = 0 so flow is immediately visible on frame 0
+  updateInstancedGrainSimulation(0, true);
+}
+
+// Guided 7-Stage Closed-Clearance Grain Flow Path (Never clips through casings, pulleys, or walls)
+function evaluateGrainParticleTransform(p, u, outPos) {
+  if (p.mode === 'elevator_only') {
+    // Scale-normalized coordinates inside elevator gltfRoot (0..9.6m local)
+    if (u < 0.12) {
+      const f = u / 0.12;
+      outPos.set(-0.42 + f * 0.18, 0.92 - f * 0.34, p.jitterZ);
+    } else if (u < 0.78) {
+      const f = (u - 0.12) / 0.66;
+      outPos.set(-0.235 + p.jitterX * 0.5, 0.58 + f * 8.48, p.jitterZ);
+    } else {
+      const f = (u - 0.78) / 0.22;
+      const theta = Math.PI * (1.0 - f * 0.85);
+      outPos.set(Math.cos(theta) * 0.24 + f * 0.32, 9.08 + Math.sin(theta) * 0.25 - f * 0.55, p.jitterZ);
+    }
+    return;
+  }
+
+  // Combined Dual-Machine Process Line World Coordinates:
+  // Unit 01 (Bucket Elevator at X = 0.0, Y = 0..2.4m) -> Gravity Chute -> Unit 02 (Satake VBF at X = 1.05, Y = 0..1.25m)
+  if (u < 0.08) {
+    // Stage 1: Boot Inlet Hopper -> Scooped into Boot Sump (down-leg infeed into up-leg scoop)
+    const f = u / 0.08;
+    outPos.set(
+      THREE.MathUtils.lerp(-0.18, -0.064, f) + p.jitterX * 0.3,
+      THREE.MathUtils.lerp(0.28, 0.14, Math.sin(f * Math.PI * 0.5)) + p.jitterY * 0.2,
+      p.jitterZ * 0.4
+    );
+  } else if (u < 0.40) {
+    // Stage 2: Riding Up inside Elevator Up-Leg Casing with the ascending buckets
+    const f = (u - 0.08) / 0.32;
+    outPos.set(
+      -0.064 + p.jitterX * 0.28,
+      0.16 + f * 2.08,
+      p.jitterZ * 0.35
+    );
+  } else if (u < 0.50) {
+    // Stage 3: Centrifugal Discharge Arc over Crowned Head Pulley (Y ~ 2.26m) into Head Spout
+    const f = (u - 0.40) / 0.10;
+    const theta = Math.PI * (1.0 - f * 0.78);
+    outPos.set(
+      Math.cos(theta) * 0.068 + f * 0.085,
+      2.24 + Math.sin(theta) * 0.072 - f * 0.12,
+      p.jitterZ * 0.35
+    );
+  } else if (u < 0.66) {
+    // Stage 4: Gravity Transfer Chute Hand-Off from Elevator Spout (0.14, 2.12, 0) into Satake Top Magnet Hopper (1.30, 1.24, 0)
+    const f = (u - 0.50) / 0.16;
+    outPos.set(
+      THREE.MathUtils.lerp(0.14, 1.30, f) + p.jitterX * 0.22,
+      THREE.MathUtils.lerp(2.12, 1.24, f) - Math.sin(f * Math.PI) * 0.03,
+      p.jitterZ * 0.25
+    );
+  } else if (u < 0.73) {
+    // Stage 5: Satake Inlet Hopper & Motorized Horizontal Screw Feeder into Conditioning Chamber
+    const f = (u - 0.66) / 0.07;
+    outPos.set(
+      THREE.MathUtils.lerp(1.30, 1.05, f),
+      THREE.MathUtils.lerp(1.24, 0.42, f),
+      p.jitterZ * 0.25
+    );
+  } else if (u < 0.90) {
+    // Stage 6: Helical Scouring & Degerming Vortex inside Satake VBF Slotted Screen Cage (center X = 1.05)
+    const f = (u - 0.73) / 0.17;
+    const angle = p.vortexPhase - f * Math.PI * 6.0;
+    const r = p.vortexRadius * 0.65;
+    outPos.set(
+      1.05 + Math.cos(angle) * r,
+      0.38 + f * 0.68,
+      Math.sin(angle) * r
+    );
+  } else {
+    // Stage 7: Overtails Discharge Spout Exit & Gravity Spill into Receiving Collector Bin (X = 0.80 -> 0.54, Y = 0.96 -> 0.12)
+    const f = (u - 0.90) / 0.10;
+    // Parabolic cascade fall with subtle natural scatter at the bottom bin
+    const spread = f * f * 1.6;
+    outPos.set(
+      THREE.MathUtils.lerp(0.80, 0.54, f) + p.jitterX * spread,
+      0.96 - f * f * 0.84 + p.jitterY * 0.2,
+      0.03 + p.jitterZ * spread
+    );
+  }
+}
+
+function updateInstancedGrainSimulation(elapsedOrDelta, isAbsoluteTime = false) {
+  if (!grainInstancedMesh || grainParticlesData.length === 0) return;
+
+  const limit = Math.min(activeGrainCount, grainParticlesData.length);
+  grainInstancedMesh.count = limit;
+  const tempPos = new THREE.Vector3();
+  const simSpeed = isAbsoluteTime ? 1.28 : driveSpeedMultiplier;
+
+  for (let i = 0; i < limit; i++) {
+    const p = grainParticlesData[i];
+    if (isAbsoluteTime) {
+      p.t = (p.baseT + p.speed * simSpeed * elapsedOrDelta) % 1.0;
+    } else {
+      p.t = (p.t + p.speed * simSpeed * elapsedOrDelta) % 1.0;
+    }
+
+    evaluateGrainParticleTransform(p, p.t, tempPos);
+
+    dummyMatrixObj.position.copy(tempPos);
+    const rotT = isAbsoluteTime ? elapsedOrDelta : (performance.now() * 0.001);
+    dummyMatrixObj.rotation.set(
+      p.rotX + rotT * p.rotSpeedX,
+      p.rotY + rotT * p.rotSpeedY,
+      p.rotZ
+    );
+    dummyMatrixObj.scale.set(p.scaleX, p.scaleY, p.scaleZ);
+    dummyMatrixObj.updateMatrix();
+    grainInstancedMesh.setMatrixAt(i, dummyMatrixObj.matrix);
+  }
+
+  grainInstancedMesh.instanceMatrix.needsUpdate = true;
+}
+
+function setGrainType(newType) {
+  GRAIN_TYPE = newType === 'wheat' ? 'wheat' : 'maize';
+  const sel = document.getElementById('grainTypeSelect');
+  if (sel && sel.value !== GRAIN_TYPE) sel.value = GRAIN_TYPE;
+
+  if (!currentLoadedRoot) return;
+
+  // Update bucket grain fill mounds material color
+  const isWheat = GRAIN_TYPE === 'wheat';
+  currentLoadedRoot.traverse(child => {
+    if (child.isMesh && child.userData && child.userData.isGrainFill && child.material) {
+      child.material.color.setHex(isWheat ? 0xD99B52 : 0xFBBF24);
+      child.material.emissive.setHex(isWheat ? 0x78350F : 0xB45309);
+      child.material.needsUpdate = true;
+    }
+  });
+
+  // Rebuild instanced grain mesh with updated kernel geometry & color palette
+  if (grainInstancedMesh && grainInstancedMesh.parent) {
+    const parent = grainInstancedMesh.parent;
+    const currentMode = (grainParticlesData[0] && grainParticlesData[0].mode) || 'process_line';
+    parent.remove(grainInstancedMesh);
+    disposeHierarchy(grainInstancedMesh);
+    if (dustHazePoints && dustHazePoints.parent) {
+      dustHazePoints.parent.remove(dustHazePoints);
+      disposeHierarchy(dustHazePoints);
+    }
+    createInstancedGrainFlow(parent, currentMode, activeGrainCount);
+  }
+}
+
+// ============================================================================
+// UNIFIED DUAL-MACHINE PROCESS LINE BUILDER (UNIT 01 BUCKET ELEVATOR -> CHUTE -> UNIT 02 SATAKE VBF)
+// ============================================================================
+async function buildCombinedProcessLineScene() {
+  const processGroup = new THREE.Group();
+  processGroup.name = 'SAGMA_Combined_Milling_Process_Line';
+  const P = createMuseumPalette();
+
+  // 1. Load Unit 01: Industrial Bucket Elevator (Positioned at X = 0.0, Y = 0..2.4m)
+  const elevatorRoot = await new Promise((res, rej) => {
+    const loader = new THREE.GLTFLoader();
+    loader.load('assets/elevator_full_diagram69b.glb', gltf => res(gltf.scene || gltf.scenes[0]), undefined, rej);
+  });
+  enhanceBucketElevatorRoot(elevatorRoot, { skipInternalParticles: true });
+
+  const eBox = new THREE.Box3().setFromObject(elevatorRoot);
+  const eSize = eBox.getSize(new THREE.Vector3());
+  const eCenter = eBox.getCenter(new THREE.Vector3());
+  const eMaxDim = Math.max(eSize.x, eSize.y, eSize.z);
+  if (eMaxDim > 0) {
+    const scaleFactor = 2.4 / eMaxDim;
+    elevatorRoot.scale.setScalar(scaleFactor);
+    eBox.setFromObject(elevatorRoot);
+    eBox.getCenter(eCenter);
+    elevatorRoot.position.sub(eCenter);
+    elevatorRoot.position.y += (eBox.max.y - eBox.min.y) / 2;
+  }
+  elevatorRoot.name = 'Unit01_Bucket_Elevator_Group';
+  processGroup.add(elevatorRoot);
+
+  // 2. Build Unit 02: Satake VBF Vertical Maize Degermer (Positioned at X = +1.05m so Elevator feeds it directly!)
+  const satakeRoot = buildMuseumSatakeVBF({ skipInternalParticles: true });
+  satakeRoot.scale.setScalar(0.66);
+  satakeRoot.position.set(1.05, 0, 0);
+  satakeRoot.name = 'Unit02_Satake_VBF_Group';
+  processGroup.add(satakeRoot);
+
+  // 3. Build Connecting Gravity Transfer Spout, Sight-Glass Tube, Brass Flanges & Receiving Spill Bin
+  const transferGroup = new THREE.Group();
+  transferGroup.name = 'Process_Transfer_Spout_Assembly';
+
+  const pStart = new THREE.Vector3(0.13, 2.13, 0); // Elevator Head Centrifugal Discharge Spout Exit
+  const pEnd = new THREE.Vector3(1.30, 1.25, 0);   // Satake VBF Top Magnet Inlet Hopper
+  const chuteVec = pEnd.clone().sub(pStart);
+  const chuteLen = chuteVec.length();
+  const chuteMid = pStart.clone().add(pEnd).multiplyScalar(0.5);
+
+  // Upper & Lower Mint/Teal Collars + Optical Cutaway Sight-Glass Transfer Tube (so falling grain is clearly visible!)
+  const sightTube = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.044, 0.044, chuteLen, 28, 1, true),
+    P.opticalGlass.clone()
+  );
+  sightTube.position.copy(chuteMid);
+  sightTube.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), chuteVec.clone().normalize());
+  sightTube.userData.noExplode = true;
+  cutawayGlassMeshes.push(sightTube);
+  transferGroup.add(sightTube);
+
+  // Structural Steel Runner Rails & Anodized Brass Flange Rings along Transfer Spout
+  [0.08, 0.35, 0.65, 0.92].forEach(frac => {
+    const ringPos = pStart.clone().lerp(pEnd, frac);
+    const flangeRing = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.056, 0.056, 0.024, 24),
+      P.anodizedBrass
+    );
+    flangeRing.position.copy(ringPos);
+    flangeRing.quaternion.copy(sightTube.quaternion);
+    flangeRing.userData.noExplode = true;
+    transferGroup.add(flangeRing);
+  });
+
+  // Top Head Transition Hood Collar
+  const topElbow = new THREE.Mesh(new THREE.CylinderGeometry(0.058, 0.052, 0.14, 24), P.sagmaGreen);
+  topElbow.position.copy(pStart);
+  topElbow.quaternion.copy(sightTube.quaternion);
+  topElbow.userData.noExplode = true;
+  transferGroup.add(topElbow);
+
+  // Bottom Receiving Hopper Collar into Satake Magnet Trap
+  const botElbow = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.068, 0.14, 24), P.sagmaGreen);
+  botElbow.position.copy(pEnd);
+  botElbow.quaternion.copy(sightTube.quaternion);
+  botElbow.userData.noExplode = true;
+  transferGroup.add(botElbow);
+
+  // Receiving Product Collector Bin & Golden Grain Mound at Satake Overtails Exit (X = 0.54, Y = 0.08, Z = 0.03)
+  const collectorBin = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.15, 0.18, 32), P.gunmetal);
+  collectorBin.position.set(0.54, 0.09, 0.03);
+  collectorBin.userData.noExplode = true;
+  transferGroup.add(collectorBin);
+
+  const binRim = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.012, 12, 32), P.anodizedBrass);
+  binRim.rotation.x = Math.PI / 2;
+  binRim.position.set(0.54, 0.18, 0.03);
+  binRim.userData.noExplode = true;
+  transferGroup.add(binRim);
+
+  const isWheat = GRAIN_TYPE === 'wheat';
+  const grainPile = new THREE.Mesh(
+    new THREE.ConeGeometry(0.155, 0.09, 28),
+    new THREE.MeshStandardMaterial({
+      color: isWheat ? 0xD99B52 : 0xFBBF24,
+      emissive: isWheat ? 0x78350F : 0xB45309,
+      emissiveIntensity: 0.25,
+      roughness: 0.35
+    })
+  );
+  grainPile.position.set(0.54, 0.18, 0.03);
+  grainPile.userData.noExplode = true;
+  grainPile.userData.isGrainFill = true;
+  transferGroup.add(grainPile);
+
+  processGroup.add(transferGroup);
+
+  // 4. Add Continuous Instanced 3D Grain Flow & Discharge Dust Haze across Both Machines
+  createInstancedGrainFlow(processGroup, 'process_line', activeGrainCount);
+
+  return processGroup;
 }
 
 // ============================================================================
@@ -1619,6 +2017,9 @@ async function loadMachineTwin(machine, options = {}) {
     } else if (machine.id === 'satake_vbf') {
       // Flagship Museum-Grade Cutaway & Live Kinematics Satake VBF Degermer
       root = buildMuseumSatakeVBF();
+    } else if (machine.id === 'elevator_69b' || machine.id === 'elevator_cad' || machine.id === 'process_line') {
+      // Unified Dual-Machine Process Line: Unit 01 Bucket Elevator feeding Unit 02 Satake VBF Degermer
+      root = await buildCombinedProcessLineScene();
     } else if (src.startsWith('procedural:')) {
       const type = src.split(':')[1] || 'generic';
       root = generateProceduralTwin(type, (machine.id.includes('buhler') ? 0x0D6E45 : 0x005A36));
@@ -1640,7 +2041,7 @@ async function loadMachineTwin(machine, options = {}) {
     const center = box.getCenter(new THREE.Vector3());
 
     const maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim > 0 && machine.id !== 'satake_vbf') {
+    if (maxDim > 0 && machine.id !== 'satake_vbf' && machine.id !== 'elevator_69b' && machine.id !== 'elevator_cad' && machine.id !== 'process_line') {
       const scaleFactor = 2.4 / maxDim;
       root.scale.setScalar(scaleFactor);
       box.setFromObject(root);
@@ -2556,6 +2957,11 @@ function setupDOMListeners() {
     updateExplodedView(factor);
   });
 
+  // Grain Type Selector (Maize vs Wheat)
+  document.getElementById('grainTypeSelect')?.addEventListener('change', (e) => {
+    setGrainType(e.target.value);
+  });
+
   // Shader Preset Selector
   document.getElementById('materialPresetSelect')?.addEventListener('change', (e) => {
     applyMaterialPreset(e.target.value);
@@ -2598,31 +3004,41 @@ function setupDOMListeners() {
 }
 
 // ============================================================================
-// 21B. 30-SECOND 5-BEAT CINEMATIC SHOWCASE, WEB AUDIO SYNTH & FIXED-STAGE RECORDER
+// 21B. 30-SECOND 6-BEAT DUAL-MACHINE PROCESS SHOWCASE, WEB AUDIO SYNTH & RECORDER
 // ============================================================================
-const CINEMATIC_TOTAL_DURATION = 30.0; // Master 30.0s timeline (5 Beats: 0-4s, 4-12s, 12-20s, 20-26s, 26-30s)
+const CINEMATIC_TOTAL_DURATION = 30.0; // Master 30.0s timeline (6 Beats: 0-3s, 3-9s, 9-15s, 15-22s, 22-27s, 27-30s)
 
-// Timed Callout Schedule for UNIT 01: BUCKET ELEVATOR (Max 2-3 labels at once, zero crossing leader lines)
-const ELEVATOR_TIMED_CALLOUT_SCHEDULE = [
-  // Beat 2A (4.2s - 7.8s): Boot & Lower Section
-  { id: 'boot_feed',      start: 4.2, end: 7.8, side: 'left',  slot: 0 },
-  { id: 'boot_takeup',    start: 4.5, end: 7.8, side: 'right', slot: 0 },
-  { id: 'cleanout_doors', start: 4.8, end: 7.8, side: 'right', slot: 1 },
+// Timed Callout Schedule across BOTH Connected Machines (Max 2-3 labels at once, zero crossing leader lines)
+const PROCESS_LINE_TIMED_CALLOUT_SCHEDULE = [
+  // Beat 2A (3.3s - 6.0s): Unit 01 Boot & Intake Section
+  { id: 'boot_feed',       unit: 1, start: 3.3,  end: 6.0,  side: 'left',  slot: 0 },
+  { id: 'boot_takeup',     unit: 1, start: 3.6,  end: 6.0,  side: 'right', slot: 0 },
+  { id: 'cleanout_doors',  unit: 1, start: 3.9,  end: 6.0,  side: 'right', slot: 1 },
 
-  // Beat 2B (8.0s - 11.8s): Vertical Casing & Conveying Climb
-  { id: 'trunking_legs',   start: 8.0, end: 11.8, side: 'left',  slot: 0 },
-  { id: 'antistatic_belt', start: 8.3, end: 11.8, side: 'left',  slot: 1 },
-  { id: 'rotation_frame',  start: 8.6, end: 11.8, side: 'right', slot: 0 },
+  // Beat 2B (6.2s - 8.9s): Unit 01 Vertical Twin-Leg Casing & Loaded Ascending Buckets
+  { id: 'trunking_legs',   unit: 1, start: 6.2,  end: 8.9,  side: 'left',  slot: 0 },
+  { id: 'antistatic_belt', unit: 1, start: 6.5,  end: 8.9,  side: 'left',  slot: 1 },
+  { id: 'deep_buckets',    unit: 1, start: 6.8,  end: 8.9,  side: 'right', slot: 0 },
 
-  // Beat 3A (12.2s - 15.8s): Head Drive & Pulley Detail
-  { id: 'split_hood',     start: 12.2, end: 15.8, side: 'left',  slot: 0 },
-  { id: 'crowned_pulley', start: 12.5, end: 15.8, side: 'right', slot: 0 },
-  { id: 'drive_motor',    start: 12.8, end: 15.8, side: 'left',  slot: 1 },
+  // Beat 3A (9.2s - 12.0s): Unit 01 Head Pulley & Drive Assembly
+  { id: 'split_hood',      unit: 1, start: 9.2,  end: 12.0, side: 'left',  slot: 0 },
+  { id: 'crowned_pulley',  unit: 1, start: 9.5,  end: 12.0, side: 'right', slot: 0 },
+  { id: 'drive_motor',     unit: 1, start: 9.8,  end: 12.0, side: 'left',  slot: 1 },
 
-  // Beat 3B (16.0s - 19.8s): Centrifugal Discharge, Wear Plates & Deep Buckets
-  { id: 'discharge_saddle', start: 16.0, end: 19.8, side: 'right', slot: 0 },
-  { id: 'wear_plates',      start: 16.3, end: 19.8, side: 'right', slot: 1 },
-  { id: 'deep_buckets',     start: 16.6, end: 19.8, side: 'left',  slot: 0 }
+  // Beat 3B (12.2s - 14.9s): Unit 01 Centrifugal Discharge Arc & Wear Plates
+  { id: 'discharge_saddle', unit: 1, start: 12.2, end: 14.9, side: 'right', slot: 0 },
+  { id: 'wear_plates',      unit: 1, start: 12.5, end: 14.9, side: 'right', slot: 1 },
+  { id: 'rotation_frame',   unit: 1, start: 12.8, end: 14.9, side: 'left',  slot: 0 },
+
+  // Beat 4A (15.3s - 18.5s): Transfer Spout Hand-Off -> Unit 02 Satake VBF Intake & Rotor
+  { id: 'inlet_hopper',     unit: 2, start: 15.3, end: 18.5, side: 'left',  slot: 0 },
+  { id: 'screw_feeder',     unit: 2, start: 15.6, end: 18.5, side: 'left',  slot: 1 },
+  { id: 'degerminator_rotor', unit: 2, start: 15.9, end: 18.5, side: 'right', slot: 0 },
+
+  // Beat 4B (18.7s - 21.8s): Unit 02 Slotted Screen, Aspiration & Counterweight Discharge
+  { id: 'hex_screen',       unit: 2, start: 18.7, end: 21.8, side: 'left',  slot: 0 },
+  { id: 'discharge_gate',   unit: 2, start: 19.0, end: 21.8, side: 'left',  slot: 1 },
+  { id: 'main_motor',       unit: 2, start: 19.3, end: 21.8, side: 'right', slot: 0 }
 ];
 
 const cinematicState = {
@@ -2634,6 +3050,8 @@ const cinematicState = {
   startTime: 0,
   elapsed: 0,
   lastElapsed: 0,
+  slowFrameStreak: 0,
+  particleReducedLogged: false,
   compositeCanvas: null,
   compositeCtx: null,
   mediaRecorder: null,
@@ -2643,6 +3061,8 @@ const cinematicState = {
   audioCtx: null,
   audioDest: null,
   ambientNodes: [],
+  grainFlowGainNode: null,
+  grainFlowFilterNode: null,
   triggeredCues: new Set(),
   endLiftTriggered: false,
   savedMachineId: null,
@@ -2670,7 +3090,7 @@ function formatMMSS(sec) {
 }
 
 // ----------------------------------------------------------------------------
-// WEB AUDIO API SOUND ENGINE (Ambient Bed + Label Reveal Ticks + End Card Lift)
+// WEB AUDIO API SOUND ENGINE (Ambient Bed + Mechanical Hum + Grain-Flow Texture + Ticks + End Lift)
 // Procedural Web Audio synthesis — 100% royalty-free, zero external dependencies,
 // triggered directly from user button click to satisfy browser autoplay rules.
 // ----------------------------------------------------------------------------
@@ -2696,20 +3116,20 @@ function initShowcaseAudioEngine() {
 
     const masterGain = ctx.createGain();
     masterGain.gain.setValueAtTime(0.01, ctx.currentTime);
-    // Smooth fade-in of ambient bed over first 1.2s and fade-out at 29.8s
-    masterGain.gain.linearRampToValueAtTime(0.75, ctx.currentTime + 1.2);
-    masterGain.gain.setValueAtTime(0.75, ctx.currentTime + 28.5);
+    // Smooth fade-in of ambient bed over first 1.0s and fade-out at 29.8s
+    masterGain.gain.linearRampToValueAtTime(0.80, ctx.currentTime + 1.0);
+    masterGain.gain.setValueAtTime(0.80, ctx.currentTime + 28.5);
     masterGain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 30.0);
 
     compressor.connect(masterGain);
     masterGain.connect(dest);
-    masterGain.connect(ctx.destination); // Also audible through speakers while recording
+    masterGain.connect(ctx.destination); // Audible through speakers while recording
 
-    // Warm Low Industrial Ambient Bed (55 Hz + 82.4 Hz fifth + warm low-pass filter)
+    // 1. Warm Low Industrial Ambient Bed + Subtle Mechanical Drive Hum (55 Hz + 82.4 Hz + 110 Hz)
     const lowFilter = ctx.createBiquadFilter();
     lowFilter.type = 'lowpass';
-    lowFilter.frequency.setValueAtTime(195, ctx.currentTime);
-    lowFilter.Q.setValueAtTime(1.2, ctx.currentTime);
+    lowFilter.frequency.setValueAtTime(210, ctx.currentTime);
+    lowFilter.Q.setValueAtTime(1.25, ctx.currentTime);
     lowFilter.connect(compressor);
 
     const osc1 = ctx.createOscillator();
@@ -2722,9 +3142,9 @@ function initShowcaseAudioEngine() {
     osc2.type = 'triangle';
     osc2.frequency.setValueAtTime(82.41, ctx.currentTime); // E2
     oscSub.type = 'sine';
-    oscSub.frequency.setValueAtTime(110.0, ctx.currentTime); // A2
+    oscSub.frequency.setValueAtTime(110.0, ctx.currentTime); // A2 mechanical hum
 
-    bedGain.gain.setValueAtTime(0.14, ctx.currentTime);
+    bedGain.gain.setValueAtTime(0.13, ctx.currentTime);
 
     osc1.connect(bedGain);
     osc2.connect(bedGain);
@@ -2735,9 +3155,47 @@ function initShowcaseAudioEngine() {
     osc2.start();
     oscSub.start();
 
+    // 2. Procedural Grain-Flow & Centrifugal Cascade Acoustic Texture (Filtered Pink Noise Buffer)
+    // Swells dynamically when camera approaches the Head Discharge Arc (Beat 3) and Transfer Spout / Satake Scouring Chamber (Beat 4)
+    const bufferSize = ctx.sampleRate * 3;
+    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    const audioRng = createSeededRandom(987654321);
+    for (let i = 0; i < bufferSize; i++) {
+      const white = audioRng() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      b3 = 0.86650 * b3 + white * 0.3104856;
+      b4 = 0.55000 * b4 + white * 0.5329522;
+      b5 = -0.7616 * b5 - white * 0.0168980;
+      output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.035;
+      b6 = white * 0.115926;
+    }
+
+    const noiseSource = ctx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+    noiseSource.loop = true;
+
+    const grainFilter = ctx.createBiquadFilter();
+    grainFilter.type = 'bandpass';
+    grainFilter.frequency.setValueAtTime(1150, ctx.currentTime);
+    grainFilter.Q.setValueAtTime(1.4, ctx.currentTime);
+
+    const grainFlowGain = ctx.createGain();
+    grainFlowGain.gain.setValueAtTime(0.04, ctx.currentTime);
+
+    noiseSource.connect(grainFilter);
+    grainFilter.connect(grainFlowGain);
+    grainFlowGain.connect(compressor);
+    noiseSource.start();
+
     cinematicState.audioCtx = ctx;
     cinematicState.audioDest = dest;
-    cinematicState.ambientNodes = [osc1, osc2, oscSub];
+    cinematicState.ambientNodes = [osc1, osc2, oscSub, noiseSource];
+    cinematicState.grainFlowGainNode = grainFlowGain;
+    cinematicState.grainFlowFilterNode = grainFilter;
     cinematicState.compressorNode = compressor;
 
     return dest.stream;
@@ -2745,6 +3203,43 @@ function initShowcaseAudioEngine() {
     console.warn('Web Audio API initialization warning:', e);
     return null;
   }
+}
+
+function updateShowcaseAudioDynamics(elapsed) {
+  const ctx = cinematicState.audioCtx;
+  const grainGain = cinematicState.grainFlowGainNode;
+  const grainFilter = cinematicState.grainFlowFilterNode;
+  if (!ctx || !grainGain || !grainFilter || ctx.state === 'closed') return;
+
+  try {
+    // Modulate grain cascade acoustic texture intensity based on camera proximity to active grain flow
+    let targetGain = 0.045;
+    let targetFreq = 1100;
+    if (elapsed >= 3.0 && elapsed < 9.0) {
+      // Beat 2: Boot scooping & vertical up-leg climb
+      targetGain = 0.075;
+      targetFreq = 980;
+    } else if (elapsed >= 9.0 && elapsed < 15.0) {
+      // Beat 3: Head pulley centrifugal discharge throw into spout (strongest cascade rush)
+      targetGain = 0.125;
+      targetFreq = 1480;
+    } else if (elapsed >= 15.0 && elapsed < 22.0) {
+      // Beat 4: Gravity transfer chute -> Satake VBF helical scouring chamber & exit spill
+      targetGain = 0.115;
+      targetFreq = 1320;
+    } else if (elapsed >= 22.0 && elapsed < 27.0) {
+      // Beat 5: Wide proof shot
+      targetGain = 0.055;
+      targetFreq = 1050;
+    } else if (elapsed >= 27.0) {
+      // Beat 6: End card fade down of grain noise
+      targetGain = 0.012;
+      targetFreq = 800;
+    }
+
+    grainGain.gain.setTargetAtTime(targetGain, ctx.currentTime, 0.15);
+    grainFilter.frequency.setTargetAtTime(targetFreq, ctx.currentTime, 0.15);
+  } catch (e) {}
 }
 
 function triggerShowcaseLabelTick(pitchIndex = 0) {
@@ -2758,14 +3253,14 @@ function triggerShowcaseLabelTick(pitchIndex = 0) {
     const tickGain = ctx.createGain();
 
     // Soft marimba/telemetry crystalline tick with slight pentatonic pitch variation
-    const freqs = [880, 987.77, 1108.73, 1318.51];
+    const freqs = [880, 987.77, 1108.73, 1318.51, 1479.98];
     const baseFreq = freqs[pitchIndex % freqs.length];
     osc.type = 'sine';
     osc.frequency.setValueAtTime(baseFreq, now);
     osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, now + 0.085);
 
     tickGain.gain.setValueAtTime(0.001, now);
-    tickGain.gain.linearRampToValueAtTime(0.16, now + 0.008);
+    tickGain.gain.linearRampToValueAtTime(0.15, now + 0.008);
     tickGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.095);
 
     osc.connect(tickGain);
@@ -2784,24 +3279,24 @@ function triggerShowcaseEndCardLift() {
 
   try {
     const now = ctx.currentTime;
-    // Warm resolving A-major9 chord swell into Beat 5 End Card (26.0s - 30.0s)
+    // Warm resolving A-major9 chord swell into Beat 6 End Card (27.0s - 30.0s)
     const chordFreqs = [220.0, 277.18, 329.63, 440.0, 493.88];
     chordFreqs.forEach((f, idx) => {
       const osc = ctx.createOscillator();
       const g = ctx.createGain();
       osc.type = idx % 2 === 0 ? 'triangle' : 'sine';
       osc.frequency.setValueAtTime(f * 0.995, now);
-      osc.frequency.exponentialRampToValueAtTime(f, now + 0.45);
+      osc.frequency.exponentialRampToValueAtTime(f, now + 0.40);
 
       g.gain.setValueAtTime(0.001, now);
-      g.gain.linearRampToValueAtTime(0.065, now + 0.9);
-      g.gain.setValueAtTime(0.065, now + 2.6);
-      g.gain.exponentialRampToValueAtTime(0.0005, now + 3.9);
+      g.gain.linearRampToValueAtTime(0.068, now + 0.75);
+      g.gain.setValueAtTime(0.068, now + 2.1);
+      g.gain.exponentialRampToValueAtTime(0.0005, now + 2.95);
 
       osc.connect(g);
       g.connect(comp);
       osc.start(now);
-      osc.stop(now + 4.0);
+      osc.stop(now + 3.0);
     });
   } catch (e) {
     // Ignore audio scheduling errors
@@ -2822,11 +3317,13 @@ function stopShowcaseAudioEngine() {
   }
   cinematicState.audioCtx = null;
   cinematicState.audioDest = null;
+  cinematicState.grainFlowGainNode = null;
+  cinematicState.grainFlowFilterNode = null;
   cinematicState.compressorNode = null;
 }
 
 // ----------------------------------------------------------------------------
-// FIXED-STAGE 30-SECOND RECORDING PIPELINE (1920x1080 or 1080x1350 @ 60 FPS, 12 Mbps)
+// FIXED-STAGE 30-SECOND RECORDING PIPELINE (1920x1080 or 1080x1350 @ 60 FPS, 14 Mbps)
 // ----------------------------------------------------------------------------
 async function startCinematicShowcase(format = 'landscape') {
   if (cinematicState.active || !renderer || !scene || !camera) return;
@@ -2871,18 +3368,26 @@ async function startCinematicShowcase(format = 'landscape') {
   // Disable manual OrbitControls during 30s sequence
   if (controls) controls.enabled = false;
 
-  // Load Unit 01: Industrial Bucket Elevator
+  // Load Unified Dual-Machine Process Scene (Unit 01 Bucket Elevator + Gravity Transfer Spout + Unit 02 Satake VBF Degermer)
   const elevatorMeta = await EchoDB.get('elevator_69b') || FLEET_CATALOG.find(m => m.id === 'elevator_69b') || FLEET_CATALOG[0];
   await loadMachineTwin(elevatorMeta, { silent: true, skipCameraReset: true, skipHashUpdate: true });
   if (grainParticleSystem) grainParticleSystem.visible = true;
+  if (grainInstancedMesh) {
+    grainInstancedMesh.visible = true;
+    activeGrainCount = 650;
+    grainInstancedMesh.count = activeGrainCount;
+  }
 
   // Lock Three.js WebGLRenderer to exact Fixed Stage Size (1920x1080 or 1080x1350) with pixelRatio = 1
   // so output is ALWAYS exact 1920x1080 (or 1080x1350) regardless of browser window size!
   renderer.setPixelRatio(1);
   renderer.setSize(stageW, stageH, false);
   camera.aspect = stageW / stageH;
-  camera.fov = isPortrait ? 38 : 34; // Tighter cinema lens to fill frame with the elevator
+  camera.fov = isPortrait ? 39 : 35;
   camera.updateProjectionMatrix();
+
+  // Pre-warm shaders & geometry so there is ZERO stutter on Frame 1 or when panning to Unit 02
+  renderer.compile(scene, camera);
 
   // Create Fixed-Size Composite 2D Canvas (1920x1080 or 1080x1350)
   const compCanvas = document.createElement('canvas');
@@ -2900,6 +3405,8 @@ async function startCinematicShowcase(format = 'landscape') {
   cinematicState.cancelled = false;
   cinematicState.triggeredCues = new Set();
   cinematicState.endLiftTriggered = false;
+  cinematicState.slowFrameStreak = 0;
+  cinematicState.particleReducedLogged = false;
   cinematicState.startTime = performance.now();
   cinematicState.elapsed = 0;
   cinematicState.lastElapsed = 0;
@@ -2908,12 +3415,12 @@ async function startCinematicShowcase(format = 'landscape') {
   // Start Web Audio API Sound Engine from user click gesture
   const audioStream = initShowcaseAudioEngine();
 
-  // Position camera & scene at t = 0.0s and render first composite frame before starting recorder
+  // Position camera & pre-populated grain flow at t = 0.0s and render first composite frame before starting recorder
   updateCinematicChoreography(cinematicState.startTime);
   renderer.render(scene, camera);
   renderCompositeVideoFrame(0);
 
-  // Initialize MediaRecorder at 60 FPS, 12 Mbps Video + 128 kbps Audio (Target master file ~38-42 MB < 45 MB)
+  // Initialize MediaRecorder at 60 FPS, 14 Mbps Video + 128 kbps Audio (Crisp 1080p grain detail, ~52 MB < 60 MB target)
   try {
     const videoStream = compCanvas.captureStream(60);
     const combinedTracks = [...videoStream.getVideoTracks()];
@@ -2937,8 +3444,8 @@ async function startCinematicShowcase(format = 'landscape') {
     cinematicState.selectedMimeType = selectedMimeType;
 
     const recOptions = {
-      videoBitsPerSecond: 12000000, // 12 Mbps (~43 MB for 30s, under 45 MB target)
-      audioBitsPerSecond: 128000    // 128 kbps stereo/mono AAC/Opus audio
+      videoBitsPerSecond: 14000000, // 14 Mbps (~52 MB for 30s, under 60 MB target with crisp grain particle detail)
+      audioBitsPerSecond: 128000    // 128 kbps AAC/Opus audio
     };
     if (selectedMimeType) {
       recOptions.mimeType = selectedMimeType;
@@ -2964,7 +3471,7 @@ async function startCinematicShowcase(format = 'landscape') {
 }
 
 // ----------------------------------------------------------------------------
-// MASTER 30-SECOND TIMELINE: 5 BEATS, EASED CAMERA & DETERMINISTIC KINEMATICS
+// MASTER 30-SECOND TIMELINE: 6 BEATS, DUAL-MACHINE CHOREOGRAPHY & GRAIN FLOW
 // ----------------------------------------------------------------------------
 function updateCinematicChoreography(now) {
   if (!cinematicState.active) return;
@@ -2973,6 +3480,20 @@ function updateCinematicChoreography(now) {
   const dt = Math.max(0, elapsed - cinematicState.lastElapsed);
   cinematicState.lastElapsed = elapsed;
   cinematicState.elapsed = elapsed;
+
+  // Automatic Frame-Drop Guard: if frame delta exceeds 26ms (<38 FPS) for 8 consecutive frames,
+  // dynamically reduce active instanced grain count and log to console so 60 FPS smoothness holds.
+  if (dt > 0.026 && elapsed > 0.5) {
+    cinematicState.slowFrameStreak++;
+    if (cinematicState.slowFrameStreak >= 8 && !cinematicState.particleReducedLogged && grainInstancedMesh) {
+      activeGrainCount = 360;
+      grainInstancedMesh.count = activeGrainCount;
+      cinematicState.particleReducedLogged = true;
+      console.info('[SAGMA 60FPS Guard] Frame delta exceeded threshold during recording; reduced instanced grain count to 360 kernels to preserve smooth playback.');
+    }
+  } else {
+    cinematicState.slowFrameStreak = Math.max(0, cinematicState.slowFrameStreak - 1);
+  }
 
   const isPortrait = cinematicState.format === 'portrait';
   const fmtLabel = isPortrait ? '1080×1350' : '1920×1080';
@@ -2988,26 +3509,34 @@ function updateCinematicChoreography(now) {
     return;
   }
 
-  // 1. Trigger Web Audio Cues (Label Reveal Ticks & Beat 5 End Card Lift)
-  for (let i = 0; i < ELEVATOR_TIMED_CALLOUT_SCHEDULE.length; i++) {
-    const cue = ELEVATOR_TIMED_CALLOUT_SCHEDULE[i];
+  // 1. Trigger Web Audio Cues (Label Reveal Ticks, Grain Cascade Swell & Beat 6 End Card Lift)
+  updateShowcaseAudioDynamics(elapsed);
+  for (let i = 0; i < PROCESS_LINE_TIMED_CALLOUT_SCHEDULE.length; i++) {
+    const cue = PROCESS_LINE_TIMED_CALLOUT_SCHEDULE[i];
     if (elapsed >= cue.start && !cinematicState.triggeredCues.has(cue.id)) {
       cinematicState.triggeredCues.add(cue.id);
       triggerShowcaseLabelTick(i);
     }
   }
-  if (elapsed >= 26.0 && !cinematicState.endLiftTriggered) {
+  if (elapsed >= 27.0 && !cinematicState.endLiftTriggered) {
     cinematicState.endLiftTriggered = true;
     triggerShowcaseEndCardLift();
   }
 
-  // 2. Drive ALL Mechanical & Particle Animation Deterministically from Master `elapsed` Time in Seconds
-  // (So every recording is 100% identical regardless of frame rate or CPU load!)
-  const simSpeed = 1.30;
+  // 2. Drive ALL Mechanical & Instanced Grain Animation Deterministically from Master `elapsed` Time in Seconds
+  // Note: In Beat 3 (9.0s - 15.0s, Head Pulley & Centrifugal Discharge), we apply a subtle slow-motion curve
+  // so the viewer can clearly see individual buckets tipping and throwing golden grain kernels into the transfer spout!
+  let effectiveSimTime = elapsed * 1.25;
+  if (elapsed >= 9.0 && elapsed < 15.0) {
+    effectiveSimTime = 9.0 * 1.25 + (elapsed - 9.0) * 0.68;
+  } else if (elapsed >= 15.0) {
+    effectiveSimTime = 9.0 * 1.25 + 6.0 * 0.68 + (elapsed - 15.0) * 1.25;
+  }
+
   for (let i = 0; i < kinematicRotors.length; i++) {
     const item = kinematicRotors[i];
     if (item && item.mesh) {
-      const angle = item.speed * simSpeed * elapsed;
+      const angle = item.speed * effectiveSimTime;
       if (item.axis === 'x') item.mesh.rotation.x = angle;
       else if (item.axis === 'y') item.mesh.rotation.y = angle;
       else if (item.axis === 'z') item.mesh.rotation.z = angle;
@@ -3019,131 +3548,163 @@ function updateCinematicChoreography(now) {
       const b = kinematicBuckets[i];
       if (!b || !b.mesh) continue;
       const initialPhase = i / kinematicBuckets.length;
-      const p = (initialPhase + 0.14 * simSpeed * elapsed) % 1.0;
+      const p = (initialPhase + 0.14 * effectiveSimTime) % 1.0;
 
       if (p < 0.44) {
+        // Ascending Up-Leg: Buckets are FULL of grain!
         const u = p / 0.44;
         b.mesh.position.set(-0.2605, 0.65 + u * 8.40, b.baseZ);
         b.mesh.rotation.set(0, 0, 0);
+        if (b.grainFill) {
+          b.grainFill.visible = true;
+          b.grainFill.scale.set(1, 1, 1);
+        }
       } else if (p < 0.50) {
+        // Centrifugal Discharge Arc over Head Pulley: Grain tips out into spout!
         const u = (p - 0.44) / 0.06;
         const theta = Math.PI * (1.0 - u);
         b.mesh.position.set(Math.cos(theta) * 0.2605, 9.05 + Math.sin(theta) * 0.26, b.baseZ);
         b.mesh.rotation.set(0, 0, theta - Math.PI);
+        if (b.grainFill) {
+          b.grainFill.visible = u < 0.68;
+          const shrink = Math.max(0.1, 1.0 - u * 1.35);
+          b.grainFill.scale.set(shrink, shrink, shrink);
+        }
       } else if (p < 0.94) {
+        // Descending Down-Leg: Buckets return inverted and EMPTY!
         const u = (p - 0.50) / 0.44;
         b.mesh.position.set(0.2605, 9.05 - u * 8.40, b.baseZ);
         b.mesh.rotation.set(0, 0, Math.PI);
+        if (b.grainFill) {
+          b.grainFill.visible = false;
+        }
       } else {
+        // Boot Pulley Scoop Turn: Buckets scoop fresh grain at bottom of boot!
         const u = (p - 0.94) / 0.06;
         const theta = -Math.PI * u;
         b.mesh.position.set(Math.cos(theta) * 0.2605, 0.65 + Math.sin(theta) * 0.26, b.baseZ);
         b.mesh.rotation.set(0, 0, theta - Math.PI);
-      }
-    }
-  }
-
-  if (grainParticleSystem && grainParticlesData.length > 0 && grainParticleSystem.geometry) {
-    const posAttr = grainParticleSystem.geometry.attributes.position;
-    const arr = posAttr.array;
-    for (let i = 0; i < grainParticlesData.length; i++) {
-      const p = grainParticlesData[i];
-      if (p.mode === 'elevator') {
-        if (p.baseT === undefined) p.baseT = p.t;
-        const curT = (p.baseT + p.speed * simSpeed * elapsed) % 1.0;
-        if (curT < 0.84) {
-          const legFrac = curT / 0.84;
-          arr[i * 3] = -0.195 + p.jitterX;
-          arr[i * 3 + 1] = 0.45 + legFrac * 8.75;
-          arr[i * 3 + 2] = p.jitterZ;
-        } else {
-          const arcFrac = (curT - 0.84) / 0.16;
-          const theta = Math.PI - arcFrac * Math.PI * 0.88;
-          arr[i * 3] = Math.cos(theta) * 0.24 + arcFrac * 0.28;
-          arr[i * 3 + 1] = 9.15 + Math.sin(theta) * 0.26 - arcFrac * 0.45;
-          arr[i * 3 + 2] = p.jitterZ;
+        if (b.grainFill) {
+          b.grainFill.visible = u > 0.45;
+          const fillUp = Math.min(1.0, Math.max(0.1, (u - 0.45) / 0.55));
+          b.grainFill.scale.set(fillUp, fillUp, fillUp);
         }
       }
     }
-    posAttr.needsUpdate = true;
   }
 
-  // 3. Eased 5-Beat Camera Choreography (Tight framing that fills the stage with the machine)
-  // Portrait mode uses slightly adjusted distance so the vertical casing & side labels fit 1080x1350 cleanly.
-  const distScale = isPortrait ? 1.12 : 1.0;
+  // Advance Instanced 3D Grain Flow across Both Connected Machines deterministically
+  updateInstancedGrainSimulation(effectiveSimTime, true);
+
+  // 3. Eased 6-Beat Camera Choreography (Continuous shot across Unit 01 -> Spout -> Unit 02)
+  const distScale = isPortrait ? 1.16 : 1.0;
   const phaseTag = document.getElementById('cinematicPhaseTag');
 
-  if (elapsed < 4.0) {
-    // BEAT 1 (0.0s - 4.0s): HOOK — Tight shot on ascending buckets & boot cutaway, unit title appears
-    if (phaseTag) phaseTag.textContent = 'BEAT 01 / 05 • HOOK: HIGH-CAPACITY BUCKET CONVEYING';
+  if (elapsed < 3.0) {
+    // BEAT 1 (0.0s - 3.0s): ESTABLISHING WIDE SHOT OF BOTH CONNECTED MACHINES + GRAIN ALREADY FLOWING
+    if (phaseTag) phaseTag.textContent = 'BEAT 01 / 06 • ESTABLISHING: INTEGRATED MILLING PROCESS LINE';
     if (!isCutawayActive) setCutawayState(true);
     updateExplodedView(0);
 
-    const u = cubicEaseInOut(elapsed / 4.0);
-    const angle = THREE.MathUtils.lerp(0.42, 0.18, u);
-    const radius = THREE.MathUtils.lerp(0.72, 0.82, u) * distScale;
-    const camY = THREE.MathUtils.lerp(0.52, 0.92, u);
-    const lookY = THREE.MathUtils.lerp(0.50, 0.95, u);
+    const u = cubicEaseInOut(elapsed / 3.0);
+    const camX = THREE.MathUtils.lerp(0.62, 0.48, u);
+    const camY = THREE.MathUtils.lerp(1.22, 1.08, u);
+    const camZ = THREE.MathUtils.lerp(2.58, 2.28, u) * distScale;
+    const lookX = THREE.MathUtils.lerp(0.50, 0.36, u);
+    const lookY = THREE.MathUtils.lerp(1.12, 0.98, u);
 
-    camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
-    controls.target.set(-0.04, lookY, 0);
-
-  } else if (elapsed < 12.0) {
-    // BEAT 2 (4.0s - 12.0s): CLIMB — Smooth eased crane rise along twin-leg casing, labels appear one by one
-    if (phaseTag) phaseTag.textContent = 'BEAT 02 / 05 • CLIMB: BOOT TENSIONER & TWIN-LEG TRUNKING';
-    if (!isCutawayActive) setCutawayState(true);
-    updateExplodedView(0);
-
-    const u = cubicEaseInOut((elapsed - 4.0) / 8.0);
-    const angle = THREE.MathUtils.lerp(-0.32, 0.36, u);
-    const radius = THREE.MathUtils.lerp(1.05, 1.12, Math.sin(u * Math.PI)) * distScale;
-    const camY = THREE.MathUtils.lerp(0.38, 1.98, u);
-    const lookY = THREE.MathUtils.lerp(0.36, 2.04, u);
-
-    camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
-    controls.target.set(0, lookY, 0);
-
-  } else if (elapsed < 20.0) {
-    // BEAT 3 (12.0s - 20.0s): DETAIL — Tight orbit & tilt on Head Pulley, Centrifugal Discharge, Wear Plates & Deep Buckets
-    if (phaseTag) phaseTag.textContent = 'BEAT 03 / 05 • DETAIL: HEAD PULLEY & CENTRIFUGAL DISCHARGE';
-    if (!isCutawayActive) setCutawayState(true);
-    updateExplodedView(0);
-
-    const u = cubicEaseInOut((elapsed - 12.0) / 8.0);
-    const angle = THREE.MathUtils.lerp(0.36, -0.58, u);
-    const radius = THREE.MathUtils.lerp(0.96, 0.86, Math.sin(u * Math.PI)) * distScale;
-    const camY = THREE.MathUtils.lerp(2.04, 2.26, u);
-    const lookY = THREE.MathUtils.lerp(2.06, 2.18, u);
-    const lookX = THREE.MathUtils.lerp(0.0, 0.05, u);
-
-    camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
+    camera.position.set(camX, camY, camZ);
     controls.target.set(lookX, lookY, 0);
 
-  } else if (elapsed < 26.0) {
-    // BEAT 4 (20.0s - 26.0s): PROOF — Eased pull-back & hero orbit with Key Metric Data Overlay
-    if (phaseTag) phaseTag.textContent = 'BEAT 04 / 05 • PROOF: PERFORMANCE & TELEMETRY BENCHMARK';
+  } else if (elapsed < 9.0) {
+    // BEAT 2 (3.0s - 9.0s): UNIT 01 ELEVATOR BOOT INTAKE & VERTICAL CLIMB (Full Buckets Rising, Empty Returning)
+    if (phaseTag) phaseTag.textContent = 'BEAT 02 / 06 • UNIT 01: BOOT SCOOP & LOADED BUCKET ASCENSION';
+    if (!isCutawayActive) setCutawayState(true);
+    updateExplodedView(0);
+
+    const u = cubicEaseInOut((elapsed - 3.0) / 6.0);
+    const angle = THREE.MathUtils.lerp(-0.26, 0.28, u);
+    const radius = THREE.MathUtils.lerp(0.95, 1.06, Math.sin(u * Math.PI)) * distScale;
+    const camY = THREE.MathUtils.lerp(0.34, 1.88, u);
+    const lookY = THREE.MathUtils.lerp(0.32, 1.94, u);
+
+    camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
+    controls.target.set(0.0, lookY, 0);
+
+  } else if (elapsed < 15.0) {
+    // BEAT 3 (9.0s - 15.0s): UNIT 01 HEAD PULLEY & CENTRIFUGAL DISCHARGE ARC (Slow-Motion Feel + Head Callouts)
+    if (phaseTag) phaseTag.textContent = 'BEAT 03 / 06 • UNIT 01: HEAD PULLEY & CENTRIFUGAL DISCHARGE ARC';
+    if (!isCutawayActive) setCutawayState(true);
+    updateExplodedView(0);
+
+    const u = cubicEaseInOut((elapsed - 9.0) / 6.0);
+    const angle = THREE.MathUtils.lerp(0.28, -0.34, u);
+    const radius = THREE.MathUtils.lerp(0.94, 0.86, Math.sin(u * Math.PI)) * distScale;
+    const camY = THREE.MathUtils.lerp(2.04, 2.22, u);
+    const lookX = THREE.MathUtils.lerp(0.0, 0.14, u);
+    const lookY = THREE.MathUtils.lerp(2.06, 2.12, u);
+
+    camera.position.set(lookX + Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
+    controls.target.set(lookX, lookY, 0);
+
+  } else if (elapsed < 22.0) {
+    // BEAT 4 (15.0s - 22.0s): CAMERA TRAVELS ALONG GRAVITY TRANSFER SPOUT TO UNIT 02 (SATAKE VBF DEGERMER)
+    if (phaseTag) phaseTag.textContent = 'BEAT 04 / 06 • UNIT 02: SPOUT HAND-OFF & SATAKE VBF MAIZE DEGERMER';
+    if (!isCutawayActive) setCutawayState(true);
+    updateExplodedView(0);
+
+    const localT = (elapsed - 15.0) / 7.0;
+    if (localT < 0.35) {
+      // Sub-phase 4A (15.0s - 17.45s): Follow golden grain stream down the sight-glass transfer spout into Satake inlet
+      const u = cubicEaseInOut(localT / 0.35);
+      const camX = THREE.MathUtils.lerp(0.18, 1.08, u);
+      const camY = THREE.MathUtils.lerp(2.14, 1.12, u);
+      const camZ = THREE.MathUtils.lerp(0.92, 1.12, u) * distScale;
+      const lookX = THREE.MathUtils.lerp(0.16, 1.05, u);
+      const lookY = THREE.MathUtils.lerp(2.08, 0.92, u);
+
+      camera.position.set(camX, camY, camZ);
+      controls.target.set(lookX, lookY, 0);
+    } else {
+      // Sub-phase 4B (17.45s - 22.0s): Orbit Unit 02 Satake VBF showing helical scouring rotor, screen & exit grain spill
+      const u = cubicEaseInOut((localT - 0.35) / 0.65);
+      const angle = THREE.MathUtils.lerp(0.05, 0.52, u);
+      const radius = THREE.MathUtils.lerp(1.12, 1.04, u) * distScale;
+      const camY = THREE.MathUtils.lerp(1.12, 0.68, u);
+      const lookX = THREE.MathUtils.lerp(1.05, 0.96, u);
+      const lookY = THREE.MathUtils.lerp(0.92, 0.62, u);
+
+      camera.position.set(lookX + Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
+      controls.target.set(lookX, lookY, 0);
+    }
+
+  } else if (elapsed < 27.0) {
+    // BEAT 5 (22.0s - 27.0s): PULL BACK TO WIDE SHOT OF FULL PROCESS FLOW + VERIFIED PROOF OVERLAY
+    if (phaseTag) phaseTag.textContent = 'BEAT 05 / 06 • PROOF: DUAL-UNIT TELEMETRY & CAPACITY BENCHMARK';
     if (!isCutawayActive) setCutawayState(true);
 
-    const u = cubicEaseInOut((elapsed - 20.0) / 6.0);
-    const angle = THREE.MathUtils.lerp(-0.58, 0.45, u);
-    const radius = THREE.MathUtils.lerp(0.96, 1.85, u) * distScale;
-    const camY = THREE.MathUtils.lerp(2.15, 1.38, u);
-    const lookY = THREE.MathUtils.lerp(2.05, 1.25, u);
+    const u = cubicEaseInOut((elapsed - 22.0) / 5.0);
+    const camX = THREE.MathUtils.lerp(1.38, 0.72, u);
+    const camY = THREE.MathUtils.lerp(0.76, 1.24, u);
+    const camZ = THREE.MathUtils.lerp(1.25, 2.38, u) * distScale;
+    const lookX = THREE.MathUtils.lerp(0.96, isPortrait ? 0.52 : 0.32, u);
+    const lookY = THREE.MathUtils.lerp(0.65, 1.12, u);
 
-    camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
-    controls.target.set(isPortrait ? 0 : 0.22, lookY, 0); // Offset slightly right in landscape so left Proof Card has clean space
+    camera.position.set(camX, camY, camZ);
+    controls.target.set(lookX, lookY, 0);
 
   } else {
-    // BEAT 5 (26.0s - 30.0s): END CARD — Final slow hero rise into SAGMA Brand End Card & CTA
-    if (phaseTag) phaseTag.textContent = 'BEAT 05 / 05 • END CARD: SAGMA TRAINING TWIN';
-    const u = cubicEaseInOut((elapsed - 26.0) / 4.0);
-    const angle = THREE.MathUtils.lerp(0.45, 0.65, u);
-    const radius = THREE.MathUtils.lerp(1.85, 2.15, u) * distScale;
-    const camY = THREE.MathUtils.lerp(1.38, 1.52, u);
-    const lookY = THREE.MathUtils.lerp(1.25, 1.30, u);
+    // BEAT 6 (27.0s - 30.0s): END CARD — Final hero pullback into SAGMA Emblem & [YOUR CALL TO ACTION]
+    if (phaseTag) phaseTag.textContent = 'BEAT 06 / 06 • END CARD: SAGMA 3D TRAINING TWIN';
+    const u = cubicEaseInOut((elapsed - 27.0) / 3.0);
+    const camX = THREE.MathUtils.lerp(0.72, 0.85, u);
+    const camY = THREE.MathUtils.lerp(1.24, 1.38, u);
+    const camZ = THREE.MathUtils.lerp(2.38, 2.65, u) * distScale;
+    const lookX = THREE.MathUtils.lerp(isPortrait ? 0.52 : 0.32, 0.52, u);
+    const lookY = THREE.MathUtils.lerp(1.12, 1.16, u);
 
-    camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
-    controls.target.set(0, lookY, 0);
+    camera.position.set(camX, camY, camZ);
+    controls.target.set(lookX, lookY, 0);
   }
 
   camera.lookAt(controls.target);
@@ -3151,7 +3712,8 @@ function updateCinematicChoreography(now) {
 }
 
 // Helper to project a callout's 3D world position onto the fixed stage canvas (w x h)
-function projectCalloutToStage(calloutData, stageW, stageH) {
+// Supports both Unit 01 (Elevator at X=0.0) and Unit 02 (Satake VBF at X=1.05, scaled 0.66)
+function projectCalloutToStage(calloutData, stageW, stageH, unitNum = 1) {
   if (!currentLoadedRoot || !camera) return null;
   const tempV = new THREE.Vector3();
   let resolved = false;
@@ -3168,7 +3730,11 @@ function projectCalloutToStage(calloutData, stageW, stageH) {
   }
   if (!resolved) {
     const look = (calloutData.camPreset && calloutData.camPreset.look) || [0, 1.2, 0];
-    tempV.set(look[0], look[1], look[2]);
+    if (unitNum === 2) {
+      tempV.set(1.05 + look[0] * 0.66, look[1] * 0.66, look[2] * 0.66);
+    } else {
+      tempV.set(look[0], look[1], look[2]);
+    }
   }
 
   tempV.project(camera);
@@ -3181,13 +3747,12 @@ function projectCalloutToStage(calloutData, stageW, stageH) {
 }
 
 // ----------------------------------------------------------------------------
-// COMPOSITE 2D STAGE RENDERER (TIMED CALLOUTS, ELBOW LEADER LINES, PROOF & END CARD)
+// COMPOSITE 2D STAGE RENDERER (TIMED CALLOUTS FOR UNIT 01 & UNIT 02, PROOF & END CARD)
 // ----------------------------------------------------------------------------
 function renderCompositeVideoFrame(elapsed) {
   if (!cinematicState.active || !cinematicState.compositeCtx || !cinematicState.compositeCanvas || !renderer) return;
 
   const ctx = cinematicState.compositeCtx;
-  const canvas = cinematicState.compositeCanvas;
   const webglCanvas = renderer.domElement;
 
   const w = cinematicState.stageWidth || 1920;
@@ -3211,24 +3776,25 @@ function renderCompositeVideoFrame(elapsed) {
   ctx.fillStyle = botGrad;
   ctx.fillRect(0, h * 0.72, w, h * 0.28);
 
-  // 3. Timed Sequential Callout Labels (4.0s - 20.0s, Max 2-3 at once, Eased In/Out, Non-Crossing Elbow Leader Lines)
-  if (elapsed >= 4.0 && elapsed < 20.0) {
+  // 3. Timed Sequential Callout Labels (3.0s - 22.0s across Unit 01 & Unit 02, Max 2-3 at once, Zero-Crossing Elbow Lines)
+  if (elapsed >= 3.0 && elapsed < 22.0) {
     const activeItems = [];
-    for (let i = 0; i < ELEVATOR_TIMED_CALLOUT_SCHEDULE.length; i++) {
-      const sched = ELEVATOR_TIMED_CALLOUT_SCHEDULE[i];
+    for (let i = 0; i < PROCESS_LINE_TIMED_CALLOUT_SCHEDULE.length; i++) {
+      const sched = PROCESS_LINE_TIMED_CALLOUT_SCHEDULE[i];
       if (elapsed >= sched.start && elapsed <= sched.end) {
-        const calloutObj = DIAGRAM_69B_CALLOUTS.find(c => c.id === sched.id);
+        const catalog = sched.unit === 2 ? SATAKE_CALLOUTS : DIAGRAM_69B_CALLOUTS;
+        const calloutObj = catalog.find(c => c.id === sched.id);
         if (!calloutObj) continue;
 
-        // Calculate smooth cubic ease-in (0.45s) and ease-out (0.45s)
+        // Calculate smooth cubic ease-in (0.40s) and ease-out (0.40s)
         let alpha = 1.0;
-        if (elapsed - sched.start < 0.45) {
-          alpha = cubicEaseInOut((elapsed - sched.start) / 0.45);
-        } else if (sched.end - elapsed < 0.45) {
-          alpha = cubicEaseInOut((sched.end - elapsed) / 0.45);
+        if (elapsed - sched.start < 0.40) {
+          alpha = cubicEaseInOut((elapsed - sched.start) / 0.40);
+        } else if (sched.end - elapsed < 0.40) {
+          alpha = cubicEaseInOut((sched.end - elapsed) / 0.40);
         }
 
-        const proj = projectCalloutToStage(calloutObj, w, h);
+        const proj = projectCalloutToStage(calloutObj, w, h, sched.unit);
         if (proj) {
           activeItems.push({
             sched,
@@ -3253,6 +3819,10 @@ function renderCompositeVideoFrame(elapsed) {
         ctx.save();
         ctx.globalAlpha = Math.max(0.02, Math.min(1, item.alpha));
 
+        const isUnit2 = item.sched.unit === 2;
+        const accentColor = isUnit2 ? '#2DD4BF' : '#4ADE80';
+        const accentBorder = isUnit2 ? 'rgba(45, 212, 191, 0.88)' : 'rgba(74, 222, 128, 0.88)';
+
         // Slide-in offset during reveal
         const slideOffset = (1 - item.alpha) * (side === 'left' ? -24 : 24) * scale;
 
@@ -3262,7 +3832,8 @@ function renderCompositeVideoFrame(elapsed) {
 
         const tagText = item.callout.tag || '01';
         const titleText = item.callout.title; // Keep original authoritative label text!
-        const subText = (item.callout.section || 'SAGMA DIAGRAM 69(B)').toUpperCase();
+        const defaultSub = isUnit2 ? 'UNIT 02 • SATAKE VBF DEGERMER' : 'UNIT 01 • BUCKET ELEVATOR';
+        const subText = (item.callout.section || defaultSub).toUpperCase();
 
         ctx.font = fontTag;
         const tagW = ctx.measureText(tagText).width;
@@ -3277,8 +3848,8 @@ function renderCompositeVideoFrame(elapsed) {
         const pillW = Math.round(padX + badgeBoxW + 14 * scale + contentW + padX);
         const pillH = Math.round(62 * scale);
 
-        // Place pill cleanly in outer left or right margin so it NEVER covers the elevator casing
-        const marginX = isPortrait ? Math.round(34 * scale) : Math.round(68 * scale);
+        // Place pill cleanly in outer left or right margin so it NEVER covers the machines
+        const marginX = isPortrait ? Math.round(34 * scale) : Math.round(64 * scale);
         const pillX = Math.round((side === 'left' ? marginX : (w - marginX - pillW)) + slideOffset);
 
         // Clamp Y within safe stage zone and enforce vertical spacing so pills never overlap
@@ -3296,24 +3867,28 @@ function renderCompositeVideoFrame(elapsed) {
           ? Math.min(item.ax - Math.round(28 * scale), attachX + Math.round(42 * scale))
           : Math.max(item.ax + Math.round(28 * scale), attachX - Math.round(42 * scale));
 
-        // Leader Line Glow & Crisp Stroke
+        // Leader Line Subtle Bloom & Crisp Stroke
+        ctx.save();
+        ctx.shadowColor = accentColor;
+        ctx.shadowBlur = Math.round(8 * scale);
         ctx.beginPath();
         ctx.moveTo(item.ax, item.ay);
         ctx.lineTo(elbowX, attachY);
         ctx.lineTo(attachX, attachY);
-        ctx.strokeStyle = 'rgba(74, 222, 128, 0.88)';
+        ctx.strokeStyle = accentBorder;
         ctx.lineWidth = Math.max(2, 2.5 * scale);
         ctx.stroke();
+        ctx.restore();
 
         // Glowing Anchor Target Ring + Dot on Machine Component
         ctx.beginPath();
-        ctx.arc(item.ax, item.ay, Math.max(6, 8 * scale), 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(74, 222, 128, 0.25)';
+        ctx.arc(item.ax, item.ay, Math.max(6, 8.5 * scale), 0, Math.PI * 2);
+        ctx.fillStyle = isUnit2 ? 'rgba(45, 212, 191, 0.28)' : 'rgba(74, 222, 128, 0.28)';
         ctx.fill();
 
         ctx.beginPath();
         ctx.arc(item.ax, item.ay, Math.max(4, 4.8 * scale), 0, Math.PI * 2);
-        ctx.fillStyle = '#4ADE80';
+        ctx.fillStyle = accentColor;
         ctx.fill();
         ctx.lineWidth = Math.max(1.5, 2 * scale);
         ctx.strokeStyle = '#090D12';
@@ -3321,19 +3896,19 @@ function renderCompositeVideoFrame(elapsed) {
 
         // High-Contrast Broadcast Callout Card Background
         ctx.fillStyle = 'rgba(9, 15, 22, 0.94)';
-        ctx.strokeStyle = 'rgba(74, 222, 128, 0.85)';
+        ctx.strokeStyle = accentBorder;
         ctx.lineWidth = Math.max(1.8, 2.2 * scale);
         ctx.beginPath();
         ctx.roundRect(pillX, pillY, pillW, pillH, Math.round(12 * scale));
         ctx.fill();
         ctx.stroke();
 
-        // Tag Number Pill Box (e.g. 02)
+        // Tag Number Pill Box (e.g. 01..12)
         const tagBoxX = pillX + padX;
         const tagBoxY = pillY + Math.round(12 * scale);
         const tagBoxH = pillH - Math.round(24 * scale);
-        ctx.fillStyle = 'rgba(22, 163, 74, 0.28)';
-        ctx.strokeStyle = '#4ADE80';
+        ctx.fillStyle = isUnit2 ? 'rgba(20, 184, 166, 0.26)' : 'rgba(22, 163, 74, 0.28)';
+        ctx.strokeStyle = accentColor;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.roundRect(tagBoxX, tagBoxY, badgeBoxW, tagBoxH, Math.round(8 * scale));
@@ -3341,7 +3916,7 @@ function renderCompositeVideoFrame(elapsed) {
         ctx.stroke();
 
         ctx.font = fontTag;
-        ctx.fillStyle = '#4ADE80';
+        ctx.fillStyle = accentColor;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(tagText, tagBoxX + badgeBoxW * 0.5, tagBoxY + tagBoxH * 0.5);
@@ -3365,24 +3940,24 @@ function renderCompositeVideoFrame(elapsed) {
     drawCalloutGroup(rightGroup, 'right');
   }
 
-  // 4. BEAT 4 (20.0s - 26.0s): PROOF DATA OVERLAY CARD ([YOUR KEY METRIC] + Verified Project Specs)
-  if (elapsed >= 20.0 && elapsed < 26.0) {
-    const localP = elapsed - 20.0;
+  // 4. BEAT 5 (22.0s - 27.0s): PROOF DATA OVERLAY CARD ([YOUR KEY METRIC] + Verified Specs for BOTH Machines)
+  if (elapsed >= 22.0 && elapsed < 27.0) {
+    const localP = elapsed - 22.0;
     let proofAlpha = 1.0;
-    if (localP < 0.55) proofAlpha = cubicEaseInOut(localP / 0.55);
-    else if (localP > 5.45) proofAlpha = cubicEaseInOut((6.0 - localP) / 0.55);
+    if (localP < 0.50) proofAlpha = cubicEaseInOut(localP / 0.50);
+    else if (localP > 4.50) proofAlpha = cubicEaseInOut((5.0 - localP) / 0.50);
 
     ctx.save();
     ctx.globalAlpha = Math.max(0.02, Math.min(1, proofAlpha));
 
-    const cardW = isPortrait ? Math.round(w - 96 * scale) : Math.round(620 * scale);
-    const cardH = Math.round(350 * scale);
-    const cardX = isPortrait ? Math.round(48 * scale) : Math.round(68 * scale);
+    const cardW = isPortrait ? Math.round(w - 96 * scale) : Math.round(650 * scale);
+    const cardH = Math.round(360 * scale);
+    const cardX = isPortrait ? Math.round(48 * scale) : Math.round(64 * scale);
     const cardY = isPortrait ? Math.round(135 * scale) : Math.round((h - cardH) * 0.44);
 
     // Dark Glassmorphic Telemetry Proof Panel
-    ctx.fillStyle = 'rgba(9, 14, 20, 0.92)';
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.75)';
+    ctx.fillStyle = 'rgba(9, 14, 20, 0.93)';
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.78)';
     ctx.lineWidth = Math.max(2, 2.5 * scale);
     ctx.beginPath();
     ctx.roundRect(cardX, cardY, cardW, cardH, Math.round(16 * scale));
@@ -3396,29 +3971,29 @@ function renderCompositeVideoFrame(elapsed) {
     ctx.fill();
 
     ctx.fillStyle = '#FBBF24';
-    ctx.font = `700 ${Math.round(15 * scale)}px "DM Mono", monospace`;
-    ctx.fillText('VERIFIED TELEMETRY & PERFORMANCE PROOF • DIAGRAM 69(B)', cardX + Math.round(24 * scale), cardY + Math.round(32 * scale));
+    ctx.font = `700 ${Math.round(14.5 * scale)}px "DM Mono", monospace`;
+    ctx.fillText('VERIFIED PROCESS TELEMETRY • UNIT 01 ELEVATOR + UNIT 02 SATAKE VBF', cardX + Math.round(24 * scale), cardY + Math.round(32 * scale));
 
     // Primary Key Metric Callout (Explicit Placeholder as requested: [YOUR KEY METRIC])
     ctx.fillStyle = '#9DB2A6';
     ctx.font = `600 ${Math.round(14 * scale)}px "DM Sans", sans-serif`;
-    ctx.fillText('PRIMARY BENCHMARK METRIC (CUSTOMIZE PLACEHOLDER):', cardX + Math.round(24 * scale), cardY + Math.round(84 * scale));
+    ctx.fillText('PRIMARY PROCESS BENCHMARK (CUSTOMIZE PLACEHOLDER):', cardX + Math.round(24 * scale), cardY + Math.round(84 * scale));
 
     ctx.fillStyle = '#4ADE80';
     ctx.font = `700 ${Math.round(38 * scale)}px "DM Mono", monospace`;
     ctx.fillText('[YOUR KEY METRIC]', cardX + Math.round(24 * scale), cardY + Math.round(132 * scale));
 
-    // Authoritative Project Data Grid (Directly from FLEET_CATALOG & DIAGRAM_69B_CALLOUTS)
+    // Authoritative Project Data Grid (Directly from FLEET_CATALOG for Unit 01 & Unit 02)
     const specs = [
-      { label: 'NOMINAL THROUGHPUT (PROJECT DATA)', val: '35 – 120 t/h (Grain / Flour)' },
-      { label: 'BELT VELOCITY & STANDARD',          val: '1.8 – 2.8 m/s • DIN 22104' },
-      { label: 'BUCKET PITCH & HEAD PULLEY',        val: '300 mm Pitch • 391 mm Pulley' },
-      { label: 'INSTALLED DRIVE RATING',            val: '7.5 – 22 kW IP65 Gearmotor' }
+      { label: 'UNIT 01 ELEVATOR CAPACITY', val: '35 – 120 t/h • 1.8–2.8 m/s' },
+      { label: 'UNIT 01 DRIVE & BUCKETS',   val: '7.5–22 kW • 300 mm Pitch' },
+      { label: 'UNIT 02 SATAKE VBF CAPACITY', val: '4.5 – 12.0 t/h (Maize)' },
+      { label: 'UNIT 02 ROTOR & MOTOR SPEC', val: '750–920 RPM • 37–75 kW' }
     ];
 
-    const gridStartY = cardY + Math.round(168 * scale);
+    const gridStartY = cardY + Math.round(170 * scale);
     const colW = Math.round((cardW - 64 * scale) / 2);
-    const rowH = Math.round(78 * scale);
+    const rowH = Math.round(80 * scale);
 
     specs.forEach((sp, idx) => {
       const col = idx % 2;
@@ -3426,15 +4001,15 @@ function renderCompositeVideoFrame(elapsed) {
       const bx = cardX + Math.round(24 * scale) + col * (colW + Math.round(16 * scale));
       const by = gridStartY + row * rowH;
 
-      ctx.fillStyle = 'rgba(18, 28, 38, 0.85)';
-      ctx.strokeStyle = 'rgba(74, 222, 128, 0.32)';
+      ctx.fillStyle = 'rgba(18, 28, 38, 0.88)';
+      ctx.strokeStyle = row === 1 ? 'rgba(45, 212, 191, 0.38)' : 'rgba(74, 222, 128, 0.35)';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.roundRect(bx, by, colW, Math.round(64 * scale), Math.round(8 * scale));
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = '#9DB2A6';
+      ctx.fillStyle = row === 1 ? '#2DD4BF' : '#9DB2A6';
       ctx.font = `600 ${Math.round(11 * scale)}px "DM Mono", monospace`;
       ctx.fillText(sp.label, bx + Math.round(12 * scale), by + Math.round(22 * scale));
 
@@ -3446,11 +4021,11 @@ function renderCompositeVideoFrame(elapsed) {
     ctx.restore();
   }
 
-  // 5. Top-Left "SAGMA • 3D TRAINING TWIN" Badge — Visible in Opening (0-4s), Fades Out Smoothly After Opening (4.0s - 5.2s)
-  if (elapsed < 5.2) {
+  // 5. Top-Left "SAGMA - 3D TRAINING TWIN" Badge — Visible in Opening (0-3s), Fades Out Smoothly After Opening (3.0s - 4.2s)
+  if (elapsed < 4.2) {
     let badgeAlpha = 1.0;
-    if (elapsed < 0.5) badgeAlpha = cubicEaseInOut(elapsed / 0.5);
-    else if (elapsed > 4.0) badgeAlpha = 1.0 - cubicEaseInOut((elapsed - 4.0) / 1.2);
+    if (elapsed < 0.45) badgeAlpha = cubicEaseInOut(elapsed / 0.45);
+    else if (elapsed > 3.0) badgeAlpha = 1.0 - cubicEaseInOut((elapsed - 3.0) / 1.2);
 
     const padX = Math.round(48 * scale);
     const padY = Math.round(38 * scale);
@@ -3481,57 +4056,78 @@ function renderCompositeVideoFrame(elapsed) {
     ctx.restore();
   }
 
-  // 6. Lower-Third Title Bar ("UNIT 01: BUCKET ELEVATOR | Vertical Grain Conveying System")
-  // Animates in and out cleanly per Beat (Beats 1 to 4: 0s-4s, 4s-12s, 12s-20s, 20s-26s) with a LARGER, ultra-readable Amber Phase Line!
-  if (elapsed < 26.0) {
+  // 6. Lower-Third Title Bar — Dynamically updates unit title as focus shifts from Both Units -> Unit 01 -> Unit 02 -> Process Proof
+  if (elapsed < 27.0) {
+    const grainLabel = GRAIN_TYPE === 'wheat' ? 'WHEAT' : 'YELLOW MAIZE';
     const beats = [
-      { start: 0.0,  end: 4.0,  phaseText: 'BEAT 01 • HOOK — HIGH-CAPACITY BUCKETS & CONTINUOUS GRAIN INTAKE' },
-      { start: 4.0,  end: 12.0, phaseText: 'BEAT 02 • CLIMB — BOOT TENSIONER, ANTISTATIC BELT & TWIN-LEG CASING' },
-      { start: 12.0, end: 20.0, phaseText: 'BEAT 03 • DETAIL — CROWNED HEAD PULLEY, WEAR PLATES & CENTRIFUGAL DISCHARGE' },
-      { start: 20.0, end: 26.0, phaseText: 'BEAT 04 • PROOF — VERIFIED CAPACITY & DIN 22104 OPERATIONAL TELEMETRY' }
+      {
+        start: 0.0, end: 3.0,
+        unitTitle: 'INTEGRATED PROCESS LINE | Unit 01 Bucket Elevator → Unit 02 Satake VBF Degermer',
+        phaseText: `BEAT 01 • ESTABLISHING — CONTINUOUS ${grainLabel} CONVEYING & DEGERMING HAND-OFF`
+      },
+      {
+        start: 3.0, end: 9.0,
+        unitTitle: 'UNIT 01: BUCKET ELEVATOR | Vertical Grain Conveying System (Diagram 69b)',
+        phaseText: `BEAT 02 • ELEVATOR INTAKE & CLIMB — BOOT SCOOP, FULL UP-LEG BUCKETS & RETURN LEG`
+      },
+      {
+        start: 9.0, end: 15.0,
+        unitTitle: 'UNIT 01: BUCKET ELEVATOR | Crowned Head Pulley & Centrifugal Discharge',
+        phaseText: `BEAT 03 • HEAD DISCHARGE (SLOW-MO) — CENTRIFUGAL GRAIN THROW INTO TRANSFER SPOUT`
+      },
+      {
+        start: 15.0, end: 22.0,
+        unitTitle: 'UNIT 02: SATAKE VBF DEGERMER | Vertical Maize Conditioning & Degerming Mill',
+        phaseText: `BEAT 04 • SPOUT HAND-OFF TO UNIT 02 — SCREW FEEDER, SCOURING ROTOR & EXIT DISCHARGE`
+      },
+      {
+        start: 22.0, end: 27.0,
+        unitTitle: 'UNIT 01 + UNIT 02 PROCESS LINE | Closed-Loop Grain Flow & Telemetry Proof',
+        phaseText: `BEAT 05 • PROCESS PROOF — 35–120 T/H ELEVATOR FEEDING 4.5–12.0 T/H SATAKE VBF`
+      }
     ];
     const currentBeat = beats.find(b => elapsed >= b.start && elapsed < b.end) || beats[0];
     const beatLocal = elapsed - currentBeat.start;
     const beatDur = currentBeat.end - currentBeat.start;
 
-    // Animate lower-third in (0.45s) and out (0.45s) at every beat boundary
+    // Animate lower-third in (0.40s) and out (0.40s) at every beat boundary
     let ltAlpha = 1.0;
-    if (beatLocal < 0.45) ltAlpha = cubicEaseInOut(beatLocal / 0.45);
-    else if (beatDur - beatLocal < 0.45) ltAlpha = cubicEaseInOut((beatDur - beatLocal) / 0.45);
+    if (beatLocal < 0.40) ltAlpha = cubicEaseInOut(beatLocal / 0.40);
+    else if (beatDur - beatLocal < 0.40) ltAlpha = cubicEaseInOut((beatDur - beatLocal) / 0.40);
 
     const slideY = Math.round((1.0 - ltAlpha) * 22 * scale);
-    const padX = isPortrait ? Math.round(36 * scale) : Math.round(68 * scale);
+    const padX = isPortrait ? Math.round(36 * scale) : Math.round(64 * scale);
     const cardH = Math.round(108 * scale);
+    const cardX = padX;
     const cardY = h - cardH - Math.round(42 * scale) + slideY;
-    const cardW = isPortrait ? (w - padX * 2) : Math.min(w - padX * 2, Math.round(1120 * scale));
+    const cardW = isPortrait ? (w - padX * 2) : Math.min(w - padX * 2, Math.round(1240 * scale));
 
     ctx.save();
     ctx.globalAlpha = Math.max(0.02, Math.min(1, ltAlpha));
 
     // Lower-third glass card background
     ctx.fillStyle = 'rgba(8, 13, 19, 0.92)';
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.65)';
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.68)';
     ctx.lineWidth = Math.max(1.8, 2.2 * scale);
     ctx.beginPath();
     ctx.roundRect(cardX, cardY, cardW, cardH, Math.round(12 * scale));
     ctx.fill();
     ctx.stroke();
 
-    // Left Amber/Emerald Accent Bar
-    ctx.fillStyle = '#F59E0B';
+    // Left Amber/Teal Accent Bar
+    ctx.fillStyle = (elapsed >= 15.0 && elapsed < 22.0) ? '#2DD4BF' : '#F59E0B';
     ctx.beginPath();
     ctx.roundRect(cardX, cardY, Math.round(10 * scale), cardH, [Math.round(12 * scale), 0, 0, Math.round(12 * scale)]);
     ctx.fill();
 
     // Primary Unit Headline
-    const primaryTitle = 'UNIT 01: BUCKET ELEVATOR | Vertical Grain Conveying System';
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = `700 ${Math.round((isPortrait ? 21 : 26) * scale)}px "DM Sans", sans-serif`;
-    ctx.fillText(primaryTitle, cardX + Math.round(28 * scale), cardY + Math.round(42 * scale));
+    ctx.font = `700 ${Math.round((isPortrait ? 20 : 25) * scale)}px "DM Sans", sans-serif`;
+    ctx.fillText(currentBeat.unitTitle, cardX + Math.round(28 * scale), cardY + Math.round(42 * scale));
 
-    // Larger, High-Contrast Amber Phase Line (18.5px bold monospace with dark drop-shadow for 1080p legibility)
+    // Larger, High-Contrast Amber Phase Line (18.5px bold monospace for 1080p legibility)
     ctx.fillStyle = '#FBBF24';
-    ctx.font = `700 ${Math.round((isPortrait ? 15 : 18.5) * scale)}px "DM Mono", monospace`;
+    ctx.font = `700 ${Math.round((isPortrait ? 14.5 : 18.5) * scale)}px "DM Mono", monospace`;
     ctx.fillText(currentBeat.phaseText, cardX + Math.round(28 * scale), cardY + Math.round(78 * scale));
 
     // Master Timeline Progress Bar along bottom edge of lower-third card
@@ -3542,25 +4138,25 @@ function renderCompositeVideoFrame(elapsed) {
     ctx.restore();
   }
 
-  // 7. BEAT 5 (26.0s - 30.0s): END CARD — Full-Stage SAGMA Emblem, Title & [YOUR CALL TO ACTION]
-  if (elapsed >= 26.0) {
-    const endLocal = elapsed - 26.0;
-    const endAlpha = cubicEaseInOut(Math.min(1.0, endLocal / 0.75));
+  // 7. BEAT 6 (27.0s - 30.0s): END CARD — Full-Stage SAGMA Emblem, Both Units Title & [YOUR CALL TO ACTION]
+  if (elapsed >= 27.0) {
+    const endLocal = elapsed - 27.0;
+    const endAlpha = cubicEaseInOut(Math.min(1.0, endLocal / 0.65));
 
     ctx.save();
     ctx.globalAlpha = endAlpha;
 
-    // Deep atmospheric backdrop over slow-receding 3D twin
+    // Deep atmospheric backdrop over slow-receding dual-machine 3D twin
     ctx.fillStyle = 'rgba(7, 12, 17, 0.86)';
     ctx.fillRect(0, 0, w, h);
 
-    const panelW = isPortrait ? Math.round(w - 84 * scale) : Math.round(920 * scale);
-    const panelH = Math.round(430 * scale);
+    const panelW = isPortrait ? Math.round(w - 84 * scale) : Math.round(960 * scale);
+    const panelH = Math.round(435 * scale);
     const panelX = Math.round((w - panelW) * 0.5);
     const panelY = Math.round((h - panelH) * 0.5);
 
     ctx.fillStyle = 'rgba(11, 19, 27, 0.96)';
-    ctx.strokeStyle = 'rgba(74, 222, 128, 0.75)';
+    ctx.strokeStyle = 'rgba(74, 222, 128, 0.78)';
     ctx.lineWidth = Math.max(2, 2.8 * scale);
     ctx.beginPath();
     ctx.roundRect(panelX, panelY, panelW, panelH, Math.round(22 * scale));
@@ -3571,21 +4167,21 @@ function renderCompositeVideoFrame(elapsed) {
     const centerX = Math.round(w * 0.5);
     if (cinematicState.logoImg && cinematicState.logoImg.complete && cinematicState.logoImg.naturalWidth > 0) {
       const logoSize = Math.round(96 * scale);
-      ctx.drawImage(cinematicState.logoImg, Math.round(centerX - logoSize * 0.5), panelY + Math.round(36 * scale), logoSize, logoSize);
+      ctx.drawImage(cinematicState.logoImg, Math.round(centerX - logoSize * 0.5), panelY + Math.round(34 * scale), logoSize, logoSize);
     }
 
     ctx.textAlign = 'center';
     ctx.fillStyle = '#4ADE80';
     ctx.font = `700 ${Math.round(15 * scale)}px "DM Mono", monospace`;
-    ctx.fillText('SOUTHERN AFRICAN GRAIN MILLING ACADEMY', centerX, panelY + Math.round(164 * scale));
+    ctx.fillText('SOUTHERN AFRICAN GRAIN MILLING ACADEMY', centerX, panelY + Math.round(162 * scale));
 
     ctx.fillStyle = '#FFFFFF';
     ctx.font = `700 ${Math.round((isPortrait ? 30 : 36) * scale)}px "DM Sans", sans-serif`;
-    ctx.fillText('SAGMA 3D TRAINING TWIN', centerX, panelY + Math.round(210 * scale));
+    ctx.fillText('SAGMA 3D TRAINING TWIN', centerX, panelY + Math.round(208 * scale));
 
     ctx.fillStyle = '#9DB2A6';
-    ctx.font = `500 ${Math.round(18 * scale)}px "DM Sans", sans-serif`;
-    ctx.fillText('Unit 01: Industrial Bucket Elevator (Diagram 69b)', centerX, panelY + Math.round(244 * scale));
+    ctx.font = `500 ${Math.round(17.5 * scale)}px "DM Sans", sans-serif`;
+    ctx.fillText('Unit 01: Bucket Elevator (Diagram 69b)  •  Unit 02: Satake VBF Maize Degermer', centerX, panelY + Math.round(244 * scale));
 
     // Call To Action Button Pill ([YOUR CALL TO ACTION] placeholder)
     const ctaW = Math.min(panelW - Math.round(64 * scale), Math.round(520 * scale));
@@ -3609,17 +4205,17 @@ function renderCompositeVideoFrame(elapsed) {
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = '#64748B';
     ctx.font = `600 ${Math.round(12 * scale)}px "DM Mono", monospace`;
-    ctx.fillText('REPLACE PLACEHOLDER IN script.js • SAGMA INTERACTIVE TRAINING SYLLABUS', centerX, panelY + Math.round(392 * scale));
+    ctx.fillText('REPLACE PLACEHOLDER IN script.js • SAGMA INTERACTIVE TRAINING SYLLABUS', centerX, panelY + Math.round(396 * scale));
 
     ctx.restore();
   }
 
-  // 8. Subtle Cross-Fade Transitions at Beat Boundaries (4.0s, 12.0s, 20.0s, 26.0s)
-  const cutTimes = [4.0, 12.0, 20.0, 26.0];
+  // 8. Subtle Cross-Fade Transitions at Beat Boundaries (3.0s, 9.0s, 15.0s, 22.0s, 27.0s)
+  const cutTimes = [3.0, 9.0, 15.0, 22.0, 27.0];
   for (let i = 0; i < cutTimes.length; i++) {
     const dist = Math.abs(elapsed - cutTimes[i]);
-    if (dist < 0.25) {
-      const flashAlpha = (1.0 - dist / 0.25) * 0.28;
+    if (dist < 0.22) {
+      const flashAlpha = (1.0 - dist / 0.22) * 0.24;
       ctx.save();
       ctx.fillStyle = `rgba(13, 22, 30, ${flashAlpha.toFixed(3)})`;
       ctx.fillRect(0, 0, w, h);
@@ -3638,7 +4234,7 @@ function exportRecordedShowcaseVideo() {
   const a = document.createElement('a');
   a.style.display = 'none';
   a.href = url;
-  a.download = `SAGMA-Unit01-Bucket-Elevator-30s-${suffix}.${ext}`;
+  a.download = `SAGMA-ProcessLine-Unit01-Elevator-Unit02-SatakeVBF-30s-${suffix}.${ext}`;
   document.body.appendChild(a);
   a.click();
 
@@ -3689,6 +4285,7 @@ async function stopCinematicShowcase(wasCancelled = false) {
   const motionBtn = document.getElementById('btnToggleMotion');
   if (motionBtn) motionBtn.classList.toggle('active', isLiveMotionActive);
   if (grainParticleSystem) grainParticleSystem.visible = isLiveMotionActive;
+  if (grainInstancedMesh) grainInstancedMesh.visible = isLiveMotionActive;
 
   setCutawayState(cinematicState.savedCutaway);
   updateExplodedView(0);
@@ -3730,7 +4327,7 @@ function animate() {
       }
     }
 
-    // 2. Advance closed-loop conveyor buckets (Up-Leg -> Head Pulley Arc -> Down-Leg -> Boot Pulley Arc)
+    // 2. Advance closed-loop conveyor buckets (Up-Leg Full -> Head Pulley Tipping -> Down-Leg Empty -> Boot Pulley Scoop)
     if (kinematicBuckets.length > 0 && currentExplodeFactor < 0.02) {
       for (let i = 0; i < kinematicBuckets.length; i++) {
         const b = kinematicBuckets[i];
@@ -3743,28 +4340,48 @@ function animate() {
           const u = p / 0.44;
           b.mesh.position.set(-0.2605, 0.65 + u * 8.40, b.baseZ);
           b.mesh.rotation.set(0, 0, 0);
+          if (b.grainFill) {
+            b.grainFill.visible = true;
+            b.grainFill.scale.set(1, 1, 1);
+          }
         } else if (p < 0.50) {
           // Centrifugal discharge arc over Head Pulley (turning clockwise from -X over top to +X)
           const u = (p - 0.44) / 0.06;
           const theta = Math.PI * (1.0 - u);
           b.mesh.position.set(Math.cos(theta) * 0.2605, 9.05 + Math.sin(theta) * 0.26, b.baseZ);
           b.mesh.rotation.set(0, 0, theta - Math.PI);
+          if (b.grainFill) {
+            b.grainFill.visible = u < 0.68;
+            const shrink = Math.max(0.1, 1.0 - u * 1.35);
+            b.grainFill.scale.set(shrink, shrink, shrink);
+          }
         } else if (p < 0.94) {
-          // Down-Leg descending (returning inverted from head to boot)
+          // Down-Leg descending (returning inverted and EMPTY from head to boot)
           const u = (p - 0.50) / 0.44;
           b.mesh.position.set(0.2605, 9.05 - u * 8.40, b.baseZ);
           b.mesh.rotation.set(0, 0, Math.PI);
+          if (b.grainFill) {
+            b.grainFill.visible = false;
+          }
         } else {
           // Boot Take-Up Pulley scoop turn (bottom arc from +X under boot to -X)
           const u = (p - 0.94) / 0.06;
           const theta = -Math.PI * u;
           b.mesh.position.set(Math.cos(theta) * 0.2605, 0.65 + Math.sin(theta) * 0.26, b.baseZ);
           b.mesh.rotation.set(0, 0, theta - Math.PI);
+          if (b.grainFill) {
+            b.grainFill.visible = u > 0.45;
+            const fillUp = Math.min(1.0, Math.max(0.1, (u - 0.45) / 0.55));
+            b.grainFill.scale.set(fillUp, fillUp, fillUp);
+          }
         }
       }
     }
 
-    // 3. Update internal grain & aspiration airflow particle streams
+    // 3. Advance Instanced 3D Grain Flow across Both Connected Machines in Interactive Mode
+    updateInstancedGrainSimulation(delta, false);
+
+    // 4. Update internal grain & aspiration airflow point streams
     if (grainParticleSystem && grainParticlesData.length > 0 && grainParticleSystem.geometry) {
       const posAttr = grainParticleSystem.geometry.attributes.position;
       const arr = posAttr.array;
@@ -3842,7 +4459,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // 4. Initialize Client IndexedDB
   await EchoDB.init();
 
-  // 5. Check URL Hash Route or Load Default Machine Twin (Satake VBF or Bucket Elevator)
+  // 5. Check URL Hash Route or Load Default Unified Process Line (Unit 01 Bucket Elevator + Unit 02 Satake VBF)
   const hash = window.location.hash;
   let initialMachine = null;
   if (hash.startsWith('#machine/')) {
@@ -3851,7 +4468,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (!initialMachine) {
-    initialMachine = await EchoDB.get('satake_vbf') || await EchoDB.get('elevator_69b') || FLEET_CATALOG[0];
+    initialMachine = await EchoDB.get('elevator_69b') || await EchoDB.get('satake_vbf') || FLEET_CATALOG[0];
   }
 
   // 6. Launch Initial 3D Twin Workspace
