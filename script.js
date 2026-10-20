@@ -364,8 +364,34 @@ const TRANSLATIONS = {
   }
 };
 
-// 4. FLEET CATALOG - AUTHORITATIVE VERIFIED 3D TRAINING UNITS (BUCKET ELEVATOR & SATAKE VBF)
+// 4. FLEET CATALOG - AUTHORITATIVE VERIFIED 3D TRAINING UNITS (BUCKET ELEVATOR, SATAKE VBF & CONNECTED PROCESS LINE)
 const FLEET_CATALOG = [
+  // --------------------------------------------------------------------------
+  // CONNECTED PROCESS LINE: Unit 01 Bucket Elevator -> Spout -> Unit 02 Satake VBF
+  // --------------------------------------------------------------------------
+  {
+    id: "combined_process_line",
+    name: "Connected Milling Process Line (Unit 01 + Unit 02)",
+    sub: "Bucket Elevator Feeding Satake VBF Degermer via Sight-Glass Transfer Spout",
+    category: "06_conveying",
+    categoryName: "01 & 06 - Integrated Conveying & Degerming Process",
+    oem: "DIN Standard / Satake / SAGMA",
+    model: "Diagram 69(b) + Satake VBF 10A",
+    throughput: "35 - 120 t/h Elevator • 4.5 - 12.0 t/h Degermer",
+    speed: "1.8 - 2.8 m/s Belt • 750 - 920 RPM Rotor",
+    power: "7.5 - 22 kW + 37 - 75 kW",
+    syllabus: "SAGMA Maize Mod 4 & 5 / Wheat Mod 2 & 5",
+    sourceFile: "assets/elevator_full_diagram69b.glb",
+    previewImg: "assets/preview_render.png",
+    specPdf: "specs/Bucket_elevator.pdf",
+    statusBadge: "3D CAD Ready",
+    partsCount: 186,
+    callouts: DIAGRAM_69B_CALLOUTS,
+    defaultCam: { pos: [0.58, 1.32, 3.38], target: [0.56, 1.16, 0] },
+    defaultShader: "default",
+    isDefault: true
+  },
+
   // --------------------------------------------------------------------------
   // CATEGORY 06: Conveying, Dust Handling & Packing
   // --------------------------------------------------------------------------
@@ -388,8 +414,7 @@ const FLEET_CATALOG = [
     partsCount: 99,
     callouts: DIAGRAM_69B_CALLOUTS,
     defaultCam: { pos: [2.5, 2.0, 3.2], target: [0, 1.2, 0] },
-    defaultShader: "default",
-    isDefault: true
+    defaultShader: "default"
   },
 
   // --------------------------------------------------------------------------
@@ -420,7 +445,7 @@ const FLEET_CATALOG = [
 
 // 5. CLIENT INDEXEDDB PERSISTENCE (ECHO_STUDIO_DB)
 const DB_NAME = 'ECHO_STUDIO_DB';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 const STORE_NAME = 'machines';
 
 const EchoDB = {
@@ -844,86 +869,183 @@ function clearCurrentScene() {
 // ============================================================================
 // 8. MUSEUM-GRADE PBR MATERIALS & PROCEDURAL CAD ASSEMBLIES
 // ============================================================================
+let cachedBrushedBumpTex = null;
+function getBrushedMetalBumpTexture() {
+  if (cachedBrushedBumpTex) return cachedBrushedBumpTex;
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  const rng = createSeededRandom(994411);
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(0, 0, 256, 256);
+  for (let y = 0; y < 256; y++) {
+    const v = Math.floor(108 + (rng() - 0.5) * 48);
+    ctx.fillStyle = `rgb(${v},${v},${v})`;
+    ctx.fillRect(0, y, 256, 1);
+    // Subtle anisotropic micro-scratches
+    for (let s = 0; s < 4; s++) {
+      const sx = Math.floor(rng() * 220);
+      const sw = Math.floor(12 + rng() * 36);
+      const sv = Math.floor(96 + rng() * 68);
+      ctx.fillStyle = `rgb(${sv},${sv},${sv})`;
+      ctx.fillRect(sx, y, sw, 1);
+    }
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(4, 4);
+  cachedBrushedBumpTex = tex;
+  return tex;
+}
+
+let cachedRadialSoftSpriteTex = null;
+function getRadialSoftSpriteTexture() {
+  if (cachedRadialSoftSpriteTex) return cachedRadialSoftSpriteTex;
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(64, 64, 2, 64, 64, 62);
+  grad.addColorStop(0.0, 'rgba(255, 252, 235, 1.0)');
+  grad.addColorStop(0.25, 'rgba(253, 224, 71, 0.85)');
+  grad.addColorStop(0.55, 'rgba(245, 158, 11, 0.32)');
+  grad.addColorStop(0.85, 'rgba(217, 119, 6, 0.06)');
+  grad.addColorStop(1.0, 'rgba(217, 119, 6, 0.0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 128);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  cachedRadialSoftSpriteTex = tex;
+  return tex;
+}
+
+let cachedFloorAOShadowTex = null;
+function getFloorAOShadowTexture() {
+  if (cachedFloorAOShadowTex) return cachedFloorAOShadowTex;
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(128, 128, 14, 128, 128, 122);
+  grad.addColorStop(0.0, 'rgba(3, 6, 10, 0.82)');
+  grad.addColorStop(0.45, 'rgba(4, 9, 14, 0.52)');
+  grad.addColorStop(0.78, 'rgba(5, 12, 18, 0.16)');
+  grad.addColorStop(1.0, 'rgba(5, 12, 18, 0.0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 256, 256);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  cachedFloorAOShadowTex = tex;
+  return tex;
+}
+
 function createMuseumPalette() {
+  const bumpTex = getBrushedMetalBumpTexture();
   return {
     sagmaGreen: new THREE.MeshStandardMaterial({
       color: 0x0D6E45,
-      metalness: 0.45,
-      roughness: 0.25,
-      envMapIntensity: 1.55,
+      metalness: 0.52,
+      roughness: 0.22,
+      bumpMap: bumpTex,
+      bumpScale: 0.0035,
+      envMapIntensity: 1.75,
       side: THREE.DoubleSide
     }),
     gunmetal: new THREE.MeshStandardMaterial({
-      color: 0x26313E,
-      metalness: 0.78,
-      roughness: 0.26,
-      envMapIntensity: 1.65,
+      color: 0x263342,
+      metalness: 0.82,
+      roughness: 0.24,
+      bumpMap: bumpTex,
+      bumpScale: 0.0045,
+      envMapIntensity: 1.85,
       side: THREE.DoubleSide
     }),
     darkCastIron: new THREE.MeshStandardMaterial({
-      color: 0x161C22,
-      metalness: 0.68,
-      roughness: 0.42,
-      envMapIntensity: 1.35,
+      color: 0x161D24,
+      metalness: 0.72,
+      roughness: 0.38,
+      bumpMap: bumpTex,
+      bumpScale: 0.006,
+      envMapIntensity: 1.45,
       side: THREE.DoubleSide
     }),
     machinedSteel: new THREE.MeshStandardMaterial({
       color: 0x94A3B8,
-      metalness: 0.85,
-      roughness: 0.18,
-      envMapIntensity: 1.85,
+      metalness: 0.88,
+      roughness: 0.16,
+      bumpMap: bumpTex,
+      bumpScale: 0.003,
+      envMapIntensity: 2.0,
       side: THREE.DoubleSide
     }),
     brushedChrome: new THREE.MeshStandardMaterial({
       color: 0xCBD5E1,
-      metalness: 0.90,
-      roughness: 0.14,
-      envMapIntensity: 2.0,
+      metalness: 0.92,
+      roughness: 0.12,
+      bumpMap: bumpTex,
+      bumpScale: 0.0025,
+      envMapIntensity: 2.2,
       side: THREE.DoubleSide
     }),
     anodizedBrass: new THREE.MeshStandardMaterial({
       color: 0xE5A024,
-      metalness: 0.86,
-      roughness: 0.20,
-      envMapIntensity: 1.95,
+      metalness: 0.88,
+      roughness: 0.18,
+      bumpMap: bumpTex,
+      bumpScale: 0.003,
+      envMapIntensity: 2.1,
       side: THREE.DoubleSide
     }),
     bronzeBushing: new THREE.MeshStandardMaterial({
       color: 0xB87333,
-      metalness: 0.84,
-      roughness: 0.24,
-      envMapIntensity: 1.7,
+      metalness: 0.85,
+      roughness: 0.22,
+      bumpMap: bumpTex,
+      bumpScale: 0.003,
+      envMapIntensity: 1.8,
       side: THREE.DoubleSide
     }),
     sensorCyan: new THREE.MeshStandardMaterial({
-      color: 0x0EA5E9,
-      emissive: 0x0284C7,
-      emissiveIntensity: 0.65,
+      color: 0x2DD4BF,
+      emissive: 0x14B8A6,
+      emissiveIntensity: 0.78,
       metalness: 0.55,
-      roughness: 0.2
+      roughness: 0.18
     }),
     safetyRed: new THREE.MeshStandardMaterial({
       color: 0xDC2626,
-      metalness: 0.55,
-      roughness: 0.28
+      emissive: 0x7F1D1D,
+      emissiveIntensity: 0.22,
+      metalness: 0.58,
+      roughness: 0.25
     }),
-    opticalGlass: new THREE.MeshStandardMaterial({
-      color: 0x38BDF8,
-      opacity: 0.34,
+    opticalGlass: new THREE.MeshPhysicalMaterial({
+      color: 0x7DD3FC,
+      emissive: 0x0D9488,
+      emissiveIntensity: 0.10,
+      opacity: 0.26,
       transparent: true,
-      roughness: 0.08,
-      metalness: 0.22,
-      envMapIntensity: 2.2,
+      roughness: 0.06,
+      metalness: 0.12,
+      reflectivity: 0.95,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05,
+      envMapIntensity: 2.6,
       depthWrite: false,
       side: THREE.DoubleSide
     }),
-    slottedCageGlass: new THREE.MeshStandardMaterial({
+    slottedCageGlass: new THREE.MeshPhysicalMaterial({
       color: 0x34D399,
-      opacity: 0.38,
+      emissive: 0x059669,
+      emissiveIntensity: 0.12,
+      opacity: 0.30,
       transparent: true,
-      roughness: 0.15,
-      metalness: 0.30,
-      envMapIntensity: 1.9,
+      roughness: 0.10,
+      metalness: 0.18,
+      clearcoat: 0.9,
+      envMapIntensity: 2.2,
       depthWrite: false,
       side: THREE.DoubleSide
     })
@@ -946,6 +1068,21 @@ function addBoltCircle(parent, radius, yPos, count, boltRadius, mat, explodeCate
 function createInstrumentBenchPlinth(width, depth, matPalette) {
   const plinthGroup = new THREE.Group();
   plinthGroup.name = 'Instrument_Bench_Plinth';
+
+  // Soft Ambient Occlusion Contact Shadow Pad directly under the machine plinth
+  const aoPad = new THREE.Mesh(
+    new THREE.PlaneGeometry(width * 1.48, depth * 1.48),
+    new THREE.MeshBasicMaterial({
+      map: getFloorAOShadowTexture(),
+      transparent: true,
+      opacity: 0.78,
+      depthWrite: false
+    })
+  );
+  aoPad.rotation.x = -Math.PI / 2;
+  aoPad.position.y = 0.002;
+  aoPad.userData.noExplode = true;
+  plinthGroup.add(aoPad);
 
   // Heavy Cast Base Slab
   const slab = new THREE.Mesh(new THREE.BoxGeometry(width, 0.08, depth), matPalette.darkCastIron);
@@ -1385,6 +1522,115 @@ function enhanceBucketElevatorRoot(gltfRoot, options = {}) {
 }
 
 // ============================================================================
+// FLAGSHIP 3: CONNECTED DUAL-MACHINE PROCESS LINE (UNIT 01 -> SPOUT -> UNIT 02)
+// ============================================================================
+async function buildCombinedProcessLineScene() {
+  const processRoot = new THREE.Group();
+  processRoot.name = 'SAGMA_Combined_Process_Line_Root';
+  const P = createMuseumPalette();
+
+  // 1. Load Unit 01: Industrial Bucket Elevator (Positioned at X = 0.0, Y = 0.0 .. 2.40m)
+  const elevatorRoot = await new Promise((res, rej) => {
+    const loader = new THREE.GLTFLoader();
+    loader.load('assets/elevator_full_diagram69b.glb', gltf => res(gltf.scene || gltf.scenes[0]), undefined, rej);
+  });
+  enhanceBucketElevatorRoot(elevatorRoot, { skipInternalParticles: true });
+
+  const elevBox = new THREE.Box3().setFromObject(elevatorRoot);
+  const elevSize = elevBox.getSize(new THREE.Vector3());
+  const elevCenter = elevBox.getCenter(new THREE.Vector3());
+  const elevMax = Math.max(elevSize.x, elevSize.y, elevSize.z);
+  if (elevMax > 0) {
+    const sf = 2.4 / elevMax;
+    elevatorRoot.scale.setScalar(sf);
+    elevBox.setFromObject(elevatorRoot);
+    elevBox.getCenter(elevCenter);
+    elevatorRoot.position.sub(elevCenter);
+    elevatorRoot.position.y += (elevBox.max.y - elevBox.min.y) / 2;
+  }
+  elevatorRoot.name = 'Unit01_Bucket_Elevator_Group';
+  processRoot.add(elevatorRoot);
+
+  // 2. Build Unit 02: Satake VBF Vertical Maize Degermer (Positioned at X = 1.15, Scale = 0.72 -> Y = 0.0 .. 1.48m)
+  const satakeRoot = buildMuseumSatakeVBF({ skipInternalParticles: true });
+  satakeRoot.name = 'Unit02_Satake_VBF_Group';
+  satakeRoot.scale.setScalar(0.72);
+  satakeRoot.position.set(1.15, 0.0, 0.0);
+  processRoot.add(satakeRoot);
+
+  // 3. Build Optical Sight-Glass Transfer Spout connecting Unit 01 Discharge (0.14, 2.15, 0) -> Unit 02 Inlet (1.42, 1.38, 0)
+  const spoutGroup = new THREE.Group();
+  spoutGroup.name = 'Process_Transfer_Spout_Assembly';
+
+  const pStart = new THREE.Vector3(0.14, 2.15, 0.0);
+  const pEnd = new THREE.Vector3(1.42, 1.38, 0.0);
+  const spoutVec = new THREE.Vector3().subVectors(pEnd, pStart);
+  const spoutLen = spoutVec.length();
+  const spoutMid = new THREE.Vector3().addVectors(pStart, pEnd).multiplyScalar(0.5);
+
+  // Outer Optical Sight-Glass Tube so golden maize / wheat stream is 100% visible inside!
+  const spoutGlass = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.056, 0.056, spoutLen, 32, 1, true),
+    P.opticalGlass
+  );
+  spoutGlass.position.copy(spoutMid);
+  spoutGlass.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), spoutVec.clone().normalize());
+  cutawayGlassMeshes.push(spoutGlass);
+  spoutGroup.add(spoutGlass);
+
+  // Bottom Stainless Wear Trough inside Transfer Spout
+  const spoutTrough = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.052, 0.052, spoutLen * 0.96, 24, 1, true, -Math.PI * 0.35, Math.PI * 0.7),
+    P.machinedSteel
+  );
+  spoutTrough.position.copy(spoutMid);
+  spoutTrough.quaternion.copy(spoutGlass.quaternion);
+  spoutGroup.add(spoutTrough);
+
+  // 5 Machined Anodized Brass Reinforcement Flange Rings along Transfer Spout
+  for (let f = 0; f <= 4; f++) {
+    const frac = f / 4;
+    const ringPos = new THREE.Vector3().lerpVectors(pStart, pEnd, frac);
+    const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.072, 0.024, 28), P.anodizedBrass);
+    collar.position.copy(ringPos);
+    collar.quaternion.copy(spoutGlass.quaternion);
+    spoutGroup.add(collar);
+  }
+
+  // Overtails Finished Samp Collector Bin under Unit 02 Discharge Spout (X = 0.76, Y = 0.0 .. 0.42, Z = 0.03)
+  const collectorBin = new THREE.Group();
+  collectorBin.name = 'Unit02_Overtails_Collector_Bin';
+  const binBody = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.14, 0.36, 32), P.gunmetal);
+  binBody.position.set(0.76, 0.22, 0.03);
+  collectorBin.add(binBody);
+  const binRim = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.014, 16, 32), P.anodizedBrass);
+  binRim.rotation.x = Math.PI / 2;
+  binRim.position.set(0.76, 0.40, 0.03);
+  collectorBin.add(binRim);
+  const grainMound = new THREE.Mesh(
+    new THREE.SphereGeometry(0.155, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.5),
+    new THREE.MeshStandardMaterial({
+      color: GRAIN_TYPE === 'wheat' ? 0xD99B52 : 0xFBBF24,
+      emissive: GRAIN_TYPE === 'wheat' ? 0x78350F : 0xB45309,
+      emissiveIntensity: 0.28,
+      roughness: 0.35
+    })
+  );
+  grainMound.position.set(0.76, 0.34, 0.03);
+  grainMound.userData.isGrainFill = true;
+  collectorBin.add(grainMound);
+  spoutGroup.add(collectorBin);
+
+  processRoot.add(spoutGroup);
+  processRoot.updateMatrixWorld(true);
+
+  // 4. Create Unified 7-Stage Instanced 3D Grain Flow across Both Connected Machines
+  createInstancedGrainFlow(processRoot, 'process_line', activeGrainCount);
+
+  return processRoot;
+}
+
+// ============================================================================
 // INSTANCED 3D GRAIN FLOW ENGINE (MAIZE / WHEAT) + DISCHARGE DUST HAZE & GLOW
 // ============================================================================
 function createInstancedGrainFlow(parentRoot, mode = 'elevator_only', maxCount = 650) {
@@ -1406,9 +1652,9 @@ function createInstancedGrainFlow(parentRoot, mode = 'elevator_only', maxCount =
   const kernelMat = new THREE.MeshStandardMaterial({
     color: baseHex,
     emissive: emissiveHex,
-    emissiveIntensity: 0.34,
-    roughness: 0.28,
-    metalness: 0.12
+    emissiveIntensity: 0.38,
+    roughness: 0.25,
+    metalness: 0.14
   });
 
   const instMesh = new THREE.InstancedMesh(kernelGeo, kernelMat, maxCount);
@@ -1438,10 +1684,10 @@ function createInstancedGrainFlow(parentRoot, mode = 'elevator_only', maxCount =
       mode,
       baseT: t,
       t,
-      speed: 0.16 + rng() * 0.04,
-      jitterX: (rng() - 0.5) * 0.036,
-      jitterY: (rng() - 0.5) * 0.028,
-      jitterZ: (rng() - 0.5) * 0.040,
+      speed: mode === 'process_line' ? (0.095 + rng() * 0.025) : (0.16 + rng() * 0.04),
+      jitterX: (rng() - 0.5) * 0.032,
+      jitterY: (rng() - 0.5) * 0.024,
+      jitterZ: (rng() - 0.5) * 0.034,
       rotX: rng() * Math.PI * 2,
       rotY: rng() * Math.PI * 2,
       rotZ: rng() * Math.PI * 2,
@@ -1451,7 +1697,7 @@ function createInstancedGrainFlow(parentRoot, mode = 'elevator_only', maxCount =
       scaleY: isWheat ? (1.15 + rng() * 0.40) : (0.85 + rng() * 0.35),
       scaleZ: isWheat ? (0.85 + rng() * 0.35) : (0.75 + rng() * 0.30),
       vortexPhase: rng() * Math.PI * 2,
-      vortexRadius: 0.19 + rng() * 0.095
+      vortexRadius: 0.19 + rng() * 0.090
     });
   }
   if (instMesh.instanceColor) instMesh.instanceColor.needsUpdate = true;
@@ -1460,14 +1706,30 @@ function createInstancedGrainFlow(parentRoot, mode = 'elevator_only', maxCount =
   grainInstancedMesh = instMesh;
   grainParticleSystem = instMesh;
 
-  // 2. Subtle Golden Dust / Chaff Haze & Soft Glow near Discharge Points
-  const hazeCount = 70;
+  // 2. Soft Radial-Textured Dust / Chaff Haze Sprites near Discharge & Intake (ZERO blocky square pixels!)
+  const hazeCount = 90;
   const hazeGeo = new THREE.BufferGeometry();
   const hazePos = new Float32Array(hazeCount * 3);
   for (let i = 0; i < hazeCount; i++) {
-    if (mode === 'elevator_only') {
-      // Elevator local coords (9.6m tall): half near head discharge spout (Y ~ 9.0m), half near boot intake (Y ~ 0.75m)
-      if (i < 42) {
+    if (mode === 'process_line') {
+      if (i < 30) {
+        // Unit 01 Boot intake haze
+        hazePos[i * 3] = -0.11 + (rng() - 0.5) * 0.16;
+        hazePos[i * 3 + 1] = 0.22 + (rng() - 0.5) * 0.14;
+        hazePos[i * 3 + 2] = (rng() - 0.5) * 0.14;
+      } else if (i < 60) {
+        // Unit 01 Head discharge & spout entry haze
+        hazePos[i * 3] = 0.12 + (rng() - 0.5) * 0.20;
+        hazePos[i * 3 + 1] = 2.18 + (rng() - 0.5) * 0.18;
+        hazePos[i * 3 + 2] = (rng() - 0.5) * 0.16;
+      } else {
+        // Unit 02 Satake VBF inlet & overtails discharge haze
+        hazePos[i * 3] = 0.85 + (rng() - 0.5) * 0.28;
+        hazePos[i * 3 + 1] = 0.95 + (rng() - 0.5) * 0.28;
+        hazePos[i * 3 + 2] = 0.03 + (rng() - 0.5) * 0.20;
+      }
+    } else if (mode === 'elevator_only') {
+      if (i < 50) {
         hazePos[i * 3] = 0.32 + (rng() - 0.5) * 0.55;
         hazePos[i * 3 + 1] = 8.95 + (rng() - 0.5) * 0.55;
         hazePos[i * 3 + 2] = (rng() - 0.5) * 0.45;
@@ -1477,8 +1739,7 @@ function createInstancedGrainFlow(parentRoot, mode = 'elevator_only', maxCount =
         hazePos[i * 3 + 2] = (rng() - 0.5) * 0.45;
       }
     } else {
-      // Satake VBF local coords (2.0m tall): top feed hopper (0.38, 1.90, 0) & overtails discharge spout (-0.38, 1.38, 0.04)
-      if (i < 35) {
+      if (i < 45) {
         hazePos[i * 3] = 0.38 + (rng() - 0.5) * 0.24;
         hazePos[i * 3 + 1] = 1.90 + (rng() - 0.5) * 0.22;
         hazePos[i * 3 + 2] = (rng() - 0.5) * 0.20;
@@ -1490,11 +1751,14 @@ function createInstancedGrainFlow(parentRoot, mode = 'elevator_only', maxCount =
     }
   }
   hazeGeo.setAttribute('position', new THREE.BufferAttribute(hazePos, 3));
+  const softSpriteTex = getRadialSoftSpriteTexture();
   const hazeMat = new THREE.PointsMaterial({
     color: isWheat ? 0xFCD34D : 0xFBBF24,
-    size: mode === 'elevator_only' ? 0.16 : 0.065,
+    map: softSpriteTex,
+    alphaMap: softSpriteTex,
+    size: mode === 'elevator_only' ? 0.32 : 0.11,
     transparent: true,
-    opacity: 0.24,
+    opacity: 0.36,
     blending: THREE.AdditiveBlending,
     depthWrite: false
   });
@@ -1507,12 +1771,85 @@ function createInstancedGrainFlow(parentRoot, mode = 'elevator_only', maxCount =
   updateInstancedGrainSimulation(0, true);
 }
 
-// Guided Individual-Machine Grain Flow Paths (Never clips through casings, pulleys, or walls)
+// Guided Grain Flow Paths (Supports Unified 7-Stage Process Line + Individual Units; Never clips through walls)
 function evaluateGrainParticleTransform(p, u, outPos) {
+  let stretchFactor = 1.0;
+
+  if (p.mode === 'process_line') {
+    // Unified 7-Stage Connected Process Path in World Coordinates (Unit 01 at X=0 -> Spout -> Unit 02 at X=1.15)
+    if (u < 0.08) {
+      // Stage 1: Unit 01 Boot Inlet Hopper -> Boot Sump Scoop
+      const f = u / 0.08;
+      outPos.set(
+        THREE.MathUtils.lerp(-0.15, -0.064, f) + p.jitterX * 0.4,
+        THREE.MathUtils.lerp(0.28, 0.16, Math.sin(f * Math.PI * 0.5)) + p.jitterY * 0.3,
+        p.jitterZ * 0.55
+      );
+    } else if (u < 0.38) {
+      // Stage 2: Rising Up-Leg inside Loaded Buckets (Y = 0.16 -> 2.26m)
+      const f = (u - 0.08) / 0.30;
+      outPos.set(
+        -0.064 + p.jitterX * 0.38,
+        0.16 + f * 2.10,
+        p.jitterZ * 0.55
+      );
+      stretchFactor = 1.15;
+    } else if (u < 0.46) {
+      // Stage 3: Centrifugal Discharge Arc over Crowned Head Pulley into Spout Collar
+      const f = (u - 0.38) / 0.08;
+      const theta = Math.PI * (1.0 - f * 0.86);
+      outPos.set(
+        Math.cos(theta) * 0.065 + f * 0.085 + p.jitterX * 0.35,
+        2.26 + Math.sin(theta) * 0.068 - f * f * 0.12,
+        p.jitterZ * 0.5
+      );
+      stretchFactor = 1.65; // Gentle motion elongation in fast centrifugal arc
+    } else if (u < 0.62) {
+      // Stage 4: High-Velocity Gravity Flow down Optical Sight-Glass Transfer Spout into Unit 02 Inlet
+      const f = (u - 0.46) / 0.16;
+      outPos.set(
+        THREE.MathUtils.lerp(0.14, 1.42, f) + p.jitterX * 0.32,
+        THREE.MathUtils.lerp(2.15, 1.38, f) + p.jitterY * 0.28,
+        p.jitterZ * 0.35
+      );
+      stretchFactor = 1.85; // Gentle motion streak along transfer spout
+    } else if (u < 0.70) {
+      // Stage 5: Unit 02 Satake VBF Rare-Earth Magnet Inlet & Horizontal Motorized Screw Feeder
+      const f = (u - 0.62) / 0.08;
+      outPos.set(
+        THREE.MathUtils.lerp(1.42, 1.24, f) + p.jitterX * 0.35,
+        THREE.MathUtils.lerp(1.38, 0.55, f) + p.jitterY * 0.3,
+        p.jitterZ * 0.38
+      );
+      stretchFactor = 1.25;
+    } else if (u < 0.91) {
+      // Stage 6: Helical Scouring & Degerming Vortex inside Multifaceted Slotted Screen (X=1.15, Y=0.52..1.12)
+      const f = (u - 0.70) / 0.21;
+      const angle = p.vortexPhase - f * Math.PI * 6.5;
+      const r = (p.vortexRadius * 0.72) + Math.sin(f * Math.PI * 2) * 0.011;
+      outPos.set(
+        1.15 + Math.cos(angle) * r,
+        0.52 + f * 0.60,
+        Math.sin(angle) * r
+      );
+      stretchFactor = 1.35;
+    } else {
+      // Stage 7: Overtails Discharge Chute & Natural Spill into Finished Samp Collector Bin (X=0.92 -> 0.76)
+      const f = (u - 0.91) / 0.09;
+      const spread = 0.45 + f * 0.85;
+      outPos.set(
+        THREE.MathUtils.lerp(0.92, 0.76, f) + p.jitterX * spread,
+        1.16 - f * f * 0.78 + p.jitterY * 0.3,
+        0.03 + p.jitterZ * spread
+      );
+      stretchFactor = 1.45;
+    }
+    return stretchFactor;
+  }
+
   if (p.mode === 'elevator_only') {
     // Unit 01: Industrial Bucket Elevator (Local 0..9.6m GLTF coordinates)
     if (u < 0.14) {
-      // Stage 1: Boot Inlet Hopper -> Scooped into Boot Sump
       const f = u / 0.14;
       outPos.set(
         THREE.MathUtils.lerp(-0.56, -0.245, f) + p.jitterX * 1.4,
@@ -1520,7 +1857,6 @@ function evaluateGrainParticleTransform(p, u, outPos) {
         p.jitterZ * 2.2
       );
     } else if (u < 0.78) {
-      // Stage 2: Rising inside Up-Leg Casing with full ascending buckets
       const f = (u - 0.14) / 0.64;
       outPos.set(
         -0.245 + p.jitterX * 1.2,
@@ -1528,7 +1864,6 @@ function evaluateGrainParticleTransform(p, u, outPos) {
         p.jitterZ * 2.2
       );
     } else {
-      // Stage 3: Centrifugal Discharge Arc over Crowned Head Pulley (Y ~ 9.08m) & Out the Head Spout
       const f = (u - 0.78) / 0.22;
       const theta = Math.PI * (1.0 - f * 0.88);
       outPos.set(
@@ -1536,13 +1871,13 @@ function evaluateGrainParticleTransform(p, u, outPos) {
         9.06 + Math.sin(theta) * 0.27 - f * f * 0.85,
         p.jitterZ * 2.2
       );
+      stretchFactor = 1.55;
     }
-    return;
+    return stretchFactor;
   }
 
   // Unit 02: Satake VBF Vertical Maize Degermer (Local 0..2.1m coordinates)
   if (u < 0.15) {
-    // Stage 1: Grain enters Top Rare-Earth Magnet Feed Hopper (X = 0.38, Y = 2.08 -> 1.66)
     const f = u / 0.15;
     outPos.set(
       0.38 + p.jitterX * 0.7,
@@ -1550,7 +1885,6 @@ function evaluateGrainParticleTransform(p, u, outPos) {
       p.jitterZ * 0.7
     );
   } else if (u < 0.28) {
-    // Stage 2: Horizontal Motorized Feed Screw conveys grain into Conditioning & Degerming Chamber
     const f = (u - 0.15) / 0.13;
     outPos.set(
       THREE.MathUtils.lerp(0.38, 0.12, f),
@@ -1558,7 +1892,6 @@ function evaluateGrainParticleTransform(p, u, outPos) {
       p.jitterZ * 0.6
     );
   } else if (u < 0.82) {
-    // Stage 3: Helical Scouring & Degerming Vortex inside Multifaceted Slotted Screen (Y = 0.72 .. 1.56)
     const f = (u - 0.28) / 0.54;
     const angle = p.vortexPhase - f * Math.PI * 6.5;
     const r = p.vortexRadius + Math.sin(f * Math.PI * 2) * 0.015;
@@ -1567,8 +1900,8 @@ function evaluateGrainParticleTransform(p, u, outPos) {
       0.72 + f * 0.84,
       Math.sin(angle) * r
     );
+    stretchFactor = 1.3;
   } else {
-    // Stage 4: Overtails Discharge Spout Exit & Natural Spill Cascade (X = -0.32 -> -0.52, Y = 1.62 -> 0.88)
     const f = (u - 0.82) / 0.18;
     const spread = 1.0 + f * 1.8;
     outPos.set(
@@ -1576,7 +1909,9 @@ function evaluateGrainParticleTransform(p, u, outPos) {
       1.62 - f * f * 0.76 + p.jitterY * 0.4,
       0.04 + p.jitterZ * spread
     );
+    stretchFactor = 1.45;
   }
+  return stretchFactor;
 }
 
 function updateInstancedGrainSimulation(elapsedOrDelta, isAbsoluteTime = false) {
@@ -1595,7 +1930,7 @@ function updateInstancedGrainSimulation(elapsedOrDelta, isAbsoluteTime = false) 
       p.t = (p.t + p.speed * simSpeed * elapsedOrDelta) % 1.0;
     }
 
-    evaluateGrainParticleTransform(p, p.t, tempPos);
+    const stretch = evaluateGrainParticleTransform(p, p.t, tempPos) || 1.0;
 
     dummyMatrixObj.position.copy(tempPos);
     const rotT = isAbsoluteTime ? elapsedOrDelta : (performance.now() * 0.001);
@@ -1604,7 +1939,7 @@ function updateInstancedGrainSimulation(elapsedOrDelta, isAbsoluteTime = false) 
       p.rotY + rotT * p.rotSpeedY,
       p.rotZ
     );
-    dummyMatrixObj.scale.set(p.scaleX, p.scaleY, p.scaleZ);
+    dummyMatrixObj.scale.set(p.scaleX, p.scaleY * stretch, p.scaleZ);
     dummyMatrixObj.updateMatrix();
     grainInstancedMesh.setMatrixAt(i, dummyMatrixObj.matrix);
   }
@@ -1898,6 +2233,9 @@ async function loadMachineTwin(machine, options = {}) {
           loader.parse(buffer, '', gltf => res(gltf.scene || gltf.scenes[0]), rej);
         });
       }
+    } else if (machine.id === 'combined_process_line') {
+      // Connected Dual-Machine Process Line (Unit 01 Bucket Elevator + Sight-Glass Transfer Spout + Unit 02 Satake VBF)
+      root = await buildCombinedProcessLineScene();
     } else if (machine.id === 'satake_vbf') {
       // Flagship Museum-Grade Cutaway & Live Kinematics Satake VBF Degermer (Individual Machine)
       root = buildMuseumSatakeVBF();
@@ -1922,7 +2260,7 @@ async function loadMachineTwin(machine, options = {}) {
     const center = box.getCenter(new THREE.Vector3());
 
     const maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim > 0 && machine.id !== 'satake_vbf') {
+    if (maxDim > 0 && machine.id !== 'satake_vbf' && machine.id !== 'combined_process_line') {
       const scaleFactor = 2.4 / maxDim;
       root.scale.setScalar(scaleFactor);
       box.setFromObject(root);
@@ -2684,12 +3022,14 @@ function updateCalculations() {
 }
 
 // ============================================================================
-// 20. LOADING OVERLAY
+// 20. LOADING OVERLAY & PROGRESS BAR
 // ============================================================================
-function showLoading(msg) {
+function showLoading(msg, pct = 45) {
   const overlay = document.getElementById('loading-overlay');
   const text = document.getElementById('loadingMsg');
+  const fill = document.getElementById('loadingProgressFill');
   if (text) text.textContent = msg || 'INITIALIZING NVIDIA 3D STAGE...';
+  if (fill) fill.style.width = Math.max(10, Math.min(100, pct)) + '%';
   if (overlay) {
     overlay.style.opacity = '1';
     overlay.style.pointerEvents = 'auto';
@@ -2698,6 +3038,8 @@ function showLoading(msg) {
 
 function hideLoading() {
   const overlay = document.getElementById('loading-overlay');
+  const fill = document.getElementById('loadingProgressFill');
+  if (fill) fill.style.width = '100%';
   if (overlay) {
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
@@ -2705,8 +3047,118 @@ function hideLoading() {
 }
 
 // ============================================================================
-// 21. EVENT LISTENERS & DOM HOOKS
+// 21. EVENT LISTENERS, QUALITY PRESETS, PRESENTATION MODE & TIMELINE SCRUBBER
 // ============================================================================
+let currentQualityPreset = 'standard'; // 'standard' | 'ultra' | 'safe'
+let isPresentationMode = false;
+let isTimelinePreviewPlaying = false;
+let timelinePreviewElapsed = 0.0;
+
+function applyQualityPreset(preset) {
+  currentQualityPreset = preset || 'standard';
+  const sel = document.getElementById('qualityPresetSelect');
+  if (sel && sel.value !== currentQualityPreset) sel.value = currentQualityPreset;
+
+  if (!renderer) return;
+
+  if (currentQualityPreset === 'ultra') {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 2, 2));
+    renderer.shadowMap.enabled = true;
+    activeGrainCount = 650;
+  } else if (currentQualityPreset === 'safe') {
+    renderer.setPixelRatio(1);
+    renderer.shadowMap.enabled = false;
+    activeGrainCount = 340;
+  } else {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1.5, 1.5));
+    renderer.shadowMap.enabled = true;
+    activeGrainCount = 650;
+  }
+
+  if (grainInstancedMesh) {
+    grainInstancedMesh.count = activeGrainCount;
+  }
+  onWindowResize();
+}
+
+function togglePresentationMode() {
+  isPresentationMode = !isPresentationMode;
+  document.body.classList.toggle('presentation-mode', isPresentationMode);
+  const btn = document.getElementById('btnPresentationMode');
+  if (btn) btn.classList.toggle('active', isPresentationMode);
+
+  if (isPresentationMode) {
+    if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+    // Ensure connected dual-machine process line is loaded and start smooth 30s loop
+    if (!currentMachineMeta || currentMachineMeta.id !== 'combined_process_line') {
+      const combo = FLEET_CATALOG.find(m => m.id === 'combined_process_line') || FLEET_CATALOG[0];
+      loadMachineTwin(combo, { silent: true, skipCameraReset: true, skipHashUpdate: true }).then(() => {
+        setTimelinePreviewPlaying(true);
+      });
+    } else {
+      setTimelinePreviewPlaying(true);
+    }
+  } else {
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+  setTimeout(onWindowResize, 80);
+}
+
+function setTimelinePreviewPlaying(playing) {
+  isTimelinePreviewPlaying = Boolean(playing);
+  const btn = document.getElementById('btnTimelinePlayPause');
+  const icon = document.getElementById('timelinePlayIcon');
+  const txt = document.getElementById('timelinePlayText');
+  if (btn) btn.classList.toggle('active', isTimelinePreviewPlaying);
+  if (icon) icon.textContent = isTimelinePreviewPlaying ? '⏸' : '▶';
+  if (txt) txt.textContent = isTimelinePreviewPlaying ? 'Pause 30s Preview' : 'Play 30s Preview';
+
+  if (isTimelinePreviewPlaying && (!currentMachineMeta || currentMachineMeta.id !== 'combined_process_line')) {
+    const combo = FLEET_CATALOG.find(m => m.id === 'combined_process_line') || FLEET_CATALOG[0];
+    loadMachineTwin(combo, { silent: true, skipCameraReset: true, skipHashUpdate: true });
+  }
+}
+
+function seekMasterTimeline(sec) {
+  timelinePreviewElapsed = Math.max(0, Math.min(CINEMATIC_TOTAL_DURATION, parseFloat(sec) || 0));
+  updateScrubberUI(timelinePreviewElapsed);
+  applyMasterTimelinePose(timelinePreviewElapsed, false);
+}
+
+function updateScrubberUI(elapsed) {
+  const slider = document.getElementById('timelineScrubberInput');
+  const readout = document.getElementById('timelineTimeReadout');
+  const beatLbl = document.getElementById('timelineBeatLabel');
+
+  const clamped = Math.max(0, Math.min(CINEMATIC_TOTAL_DURATION, elapsed));
+  const pct = (clamped / CINEMATIC_TOTAL_DURATION) * 100;
+
+  if (slider) {
+    slider.value = clamped.toFixed(2);
+    slider.style.setProperty('--control-value', `${pct.toFixed(1)}%`);
+  }
+  if (readout) {
+    const s = Math.floor(clamped);
+    const tenths = Math.floor((clamped - s) * 10);
+    readout.textContent = `00:${s < 10 ? '0' + s : s}.${tenths} / 00:30.0`;
+  }
+
+  const beatInfo = getBeatMetadataAtTime(clamped);
+  if (beatLbl && beatInfo) {
+    beatLbl.textContent = beatInfo.scrubberTitle;
+  }
+
+  document.querySelectorAll('.scrubber-beat-marker').forEach(m => {
+    const t = parseFloat(m.getAttribute('data-time') || '0');
+    const isAct = beatInfo && Math.abs(beatInfo.start - t) < 0.2;
+    m.classList.toggle('active', Boolean(isAct));
+  });
+}
+
 function setupDOMListeners() {
   // Language Selector
   document.getElementById('langSelector')?.addEventListener('change', (e) => {
@@ -2724,10 +3176,9 @@ function setupDOMListeners() {
     const dict = TRANSLATIONS[currentLocale] || TRANSLATIONS['en-ZA'];
     lotoText.textContent = dict[i18nKey];
 
-    // Reflect safety lockout state on HUD Status
     const hudStatus = document.getElementById('hudStatus');
     if (hudStatus) {
-      hudStatus.textContent = isLocked ? 'LOTO ISOLATED (0 RPM)' : (dict['hud.statusVal'] || 'ONLINE');
+      hudStatus.textContent = isLocked ? 'LOTO ISOLATED (0 RPM)' : (dict['hud.statusVal'] || 'STUDIO PBR + FLOW');
       hudStatus.style.color = isLocked ? '#EF4444' : '#4ADE80';
     }
   });
@@ -2742,7 +3193,10 @@ function setupDOMListeners() {
     }
   });
 
-  // 30s Cinematic Showcase & MP4 Video Exporter Triggers (1920x1080 Landscape & 1080x1350 Vertical)
+  // Boardroom Presentation Mode Button
+  document.getElementById('btnPresentationMode')?.addEventListener('click', togglePresentationMode);
+
+  // 30s Cinematic Showcase & Deterministic MP4 Video Exporter Triggers
   document.getElementById('btnCinematicShowcase')?.addEventListener('click', () => {
     if (cinematicState.active) {
       stopCinematicShowcase(true);
@@ -2759,6 +3213,74 @@ function setupDOMListeners() {
   });
   document.getElementById('btnCancelCinematic')?.addEventListener('click', () => {
     stopCinematicShowcase(true);
+  });
+
+  // Interactive 30s Timeline Scrubber Controls
+  document.getElementById('btnTimelinePlayPause')?.addEventListener('click', () => {
+    setTimelinePreviewPlaying(!isTimelinePreviewPlaying);
+  });
+  document.getElementById('btnTimelineReplay')?.addEventListener('click', () => {
+    seekMasterTimeline(0);
+    setTimelinePreviewPlaying(true);
+  });
+  document.getElementById('timelineScrubberInput')?.addEventListener('input', (e) => {
+    setTimelinePreviewPlaying(false);
+    seekMasterTimeline(parseFloat(e.target.value));
+  });
+  document.querySelectorAll('.scrubber-beat-marker').forEach(marker => {
+    marker.addEventListener('click', () => {
+      const t = parseFloat(marker.getAttribute('data-time') || '0');
+      seekMasterTimeline(t);
+    });
+  });
+
+  // Quality Preset Selector
+  document.getElementById('qualityPresetSelect')?.addEventListener('change', (e) => {
+    applyQualityPreset(e.target.value);
+  });
+
+  // Global Boardroom Keyboard Shortcuts (Space, ArrowLeft/Right, R, F, G, Escape)
+  window.addEventListener('keydown', (e) => {
+    const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+    if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
+
+    if (e.code === 'Space') {
+      e.preventDefault();
+      if (!cinematicState.active) {
+        setTimelinePreviewPlaying(!isTimelinePreviewPlaying);
+      }
+    } else if (e.code === 'ArrowRight') {
+      e.preventDefault();
+      if (!cinematicState.active) {
+        setTimelinePreviewPlaying(false);
+        seekMasterTimeline(timelinePreviewElapsed + 1.0);
+      }
+    } else if (e.code === 'ArrowLeft') {
+      e.preventDefault();
+      if (!cinematicState.active) {
+        setTimelinePreviewPlaying(false);
+        seekMasterTimeline(timelinePreviewElapsed - 1.0);
+      }
+    } else if (e.key === 'r' || e.key === 'R') {
+      e.preventDefault();
+      if (!cinematicState.active) {
+        startCinematicShowcase('landscape');
+      }
+    } else if (e.key === 'f' || e.key === 'F') {
+      e.preventDefault();
+      if (!cinematicState.active) {
+        togglePresentationMode();
+      }
+    } else if (e.key === 'g' || e.key === 'G') {
+      e.preventDefault();
+      setGrainType(GRAIN_TYPE === 'maize' ? 'wheat' : 'maize');
+    } else if (e.code === 'Escape') {
+      if (cinematicState.active) {
+        stopCinematicShowcase(true);
+      } else if (isPresentationMode) {
+        togglePresentationMode();
+      }
+    }
   });
 
   // Equipment Library Hub Triggers
@@ -2799,7 +3321,10 @@ function setupDOMListeners() {
   });
 
   // Viewport Toolbar Controls
-  document.getElementById('btnResetCam')?.addEventListener('click', resetCameraFraming);
+  document.getElementById('btnResetCam')?.addEventListener('click', () => {
+    setTimelinePreviewPlaying(false);
+    resetCameraFraming();
+  });
   document.getElementById('btnToggleWireframe')?.addEventListener('click', toggleWireframe);
   document.getElementById('btnToggleCutaway')?.addEventListener('click', toggleCutawayMode);
 
@@ -2885,58 +3410,212 @@ function setupDOMListeners() {
 }
 
 // ============================================================================
-// 21B. 30-SECOND TWO-MACHINE SHOWCASE (15s BUCKET ELEVATOR + 15s SATAKE VBF, SILENT, SMOOTH FADES)
+// 21B. BOARDROOM 30-SECOND 6-BEAT SHOWCASE & DETERMINISTIC MP4 EXPORTER (NO AUDIO)
 // ============================================================================
-const CINEMATIC_TOTAL_DURATION = 30.0; // 0.0s - 15.0s: Unit 01 Bucket Elevator | 15.0s - 30.0s: Unit 02 Satake VBF Degermer
+const CINEMATIC_TOTAL_DURATION = 30.0;
+const CINEMATIC_FPS = 60;
+const CINEMATIC_TOTAL_FRAMES = 1800; // 30.0s * 60 fps exact
 
-// Timed Callout Schedule for Each Individual Machine (Max 2-3 labels at once, zero crossing leader lines)
-const INDIVIDUAL_UNITS_CALLOUT_SCHEDULE = [
-  // --- PART 1: UNIT 01 INDUSTRIAL BUCKET ELEVATOR (0.0s - 15.0s) ---
-  // Window 1A (1.2s - 4.8s): Boot Intake, Tensioner & Cleanout Doors
-  { id: 'boot_feed',        unit: 1, start: 1.2,  end: 4.8,  side: 'left',  slot: 0 },
-  { id: 'boot_takeup',      unit: 1, start: 1.5,  end: 4.8,  side: 'right', slot: 0 },
-  { id: 'cleanout_doors',   unit: 1, start: 1.8,  end: 4.8,  side: 'right', slot: 1 },
+// Authoritative 6-Beat Structure (0-4s, 4-10s, 10-15s, 15-21s, 21-27s, 27-30s)
+const CINEMATIC_BEATS_METADATA = [
+  {
+    beatIndex: 1,
+    start: 0.0,
+    end: 4.0,
+    flowStageIndex: 0, // INTAKE
+    scrubberTitle: 'BEAT 01 (00–04s) • HERO WIDE PROCESS SHOT & GRAIN INTAKE',
+    unitTitle: 'SAGMA 3D TRAINING TWIN | Connected Grain Conveying & Degerming Line',
+    phaseText: 'BEAT 01 (00–04s) • HERO ESTABLISHING SHOT: UNIT 01 BUCKET ELEVATOR → UNIT 02 SATAKE VBF',
+    specUnit: 1,
+    focusWorld: [0.0, 0.35, 0.0],
+    camKeyframes: [
+      [0.48, 1.12, 4.95],
+      [0.52, 1.10, 4.75],
+      [0.36, 1.06, 4.15]
+    ],
+    lookKeyframes: [
+      [0.52, 0.98, 0.0],
+      [0.50, 0.98, 0.0],
+      [0.24, 0.92, 0.0]
+    ]
+  },
+  {
+    beatIndex: 2,
+    start: 4.0,
+    end: 10.0,
+    flowStageIndex: 1, // ELEVATE
+    scrubberTitle: 'BEAT 02 (04–10s) • UNIT 01 INTAKE, TENSIONER & VERTICAL CLIMB',
+    unitTitle: 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR | DIN 22104 / Diagram 69(b)',
+    phaseText: 'BEAT 02 (04–10s) • BOOT INTAKE HOPPER, SCREW TENSIONER & LOADED DEEP BUCKET CLIMB',
+    specUnit: 1,
+    focusWorld: [-0.06, 1.10, 0.0],
+    camKeyframes: [
+      [0.36, 1.08, 4.15],
+      [-0.24, 0.58, 1.58],
+      [0.18, 1.25, 1.62],
+      [0.28, 1.88, 1.65]
+    ],
+    lookKeyframes: [
+      [0.24, 0.92, 0.0],
+      [-0.04, 0.42, 0.0],
+      [0.0, 1.18, 0.0],
+      [0.02, 1.92, 0.0]
+    ]
+  },
+  {
+    beatIndex: 3,
+    start: 10.0,
+    end: 15.0,
+    flowStageIndex: 2, // DISCHARGE
+    scrubberTitle: 'BEAT 03 (10–15s) • HEAD PULLEY ORBIT & CENTRIFUGAL DISCHARGE',
+    unitTitle: 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR | 391 mm Crowned Pulley & Split Hood',
+    phaseText: 'BEAT 03 (10–15s) • CROWNED DRIVE PULLEY, THERMAL SENSOR & CENTRIFUGAL DISCHARGE',
+    specUnit: 1,
+    focusWorld: [0.06, 2.18, 0.0],
+    camKeyframes: [
+      [0.28, 1.88, 1.65],
+      [-0.36, 2.12, 1.58],
+      [0.08, 2.16, 1.56],
+      [0.45, 2.04, 1.68]
+    ],
+    lookKeyframes: [
+      [0.02, 1.92, 0.0],
+      [0.0, 2.06, 0.0],
+      [0.05, 2.08, 0.0],
+      [0.28, 1.95, 0.0]
+    ]
+  },
+  {
+    beatIndex: 4,
+    start: 15.0,
+    end: 21.0,
+    flowStageIndex: 3, // DEGERM (Transfer & Feed)
+    scrubberTitle: 'BEAT 04 (15–21s) • TRANSFER SPOUT TRACKING INTO UNIT 02 SATAKE VBF',
+    unitTitle: 'PROCESS TRANSFER & UNIT 02 INLET | Sight-Glass Spout → Satake VBF Degermer',
+    phaseText: 'BEAT 04 (15–21s) • GRAVITY SPOUT TRANSFER, RARE-EARTH MAGNET & MOTORIZED SCREW FEEDER',
+    specUnit: 2,
+    focusWorld: [1.36, 1.32, 0.0],
+    camKeyframes: [
+      [0.45, 2.04, 1.68],
+      [0.78, 1.72, 1.88],
+      [1.18, 1.38, 1.82],
+      [1.36, 1.18, 1.68]
+    ],
+    lookKeyframes: [
+      [0.28, 1.95, 0.0],
+      [0.76, 1.52, 0.0],
+      [1.18, 1.05, 0.0],
+      [1.16, 0.88, 0.0]
+    ]
+  },
+  {
+    beatIndex: 5,
+    start: 21.0,
+    end: 27.0,
+    flowStageIndex: 3, // DEGERM (Internal X-Ray Scouring)
+    scrubberTitle: 'BEAT 05 (21–27s) • UNIT 02 X-RAY CUTAWAY: ROTOR, SCREEN & ASPIRATION',
+    unitTitle: 'UNIT 02: SATAKE VBF VERTICAL MAIZE DEGERMER | X-Ray Internal Scouring Chamber',
+    phaseText: 'BEAT 05 (21–27s) • SPLIT STEEL ROTOR, BEATER BARS, SLOTTED SCREEN & HOLLOW AIR SHAFT',
+    specUnit: 2,
+    focusWorld: [1.15, 0.82, 0.0],
+    camKeyframes: [
+      [1.36, 1.18, 1.68],
+      [1.02, 0.96, 1.54],
+      [0.88, 0.82, 1.58],
+      [1.22, 0.86, 1.78]
+    ],
+    lookKeyframes: [
+      [1.16, 0.88, 0.0],
+      [1.15, 0.80, 0.0],
+      [1.12, 0.72, 0.0],
+      [1.05, 0.78, 0.0]
+    ]
+  },
+  {
+    beatIndex: 6,
+    start: 27.0,
+    end: 30.0,
+    flowStageIndex: 4, // OUTPUT
+    scrubberTitle: 'BEAT 06 (27–30s) • FULL PROCESS WIDE PULLBACK & BOARDROOM END CARD',
+    unitTitle: 'SAGMA 3D TRAINING TWIN | Complete Maize & Wheat Milling Process Line',
+    phaseText: 'BEAT 06 (27–30s) • OVERTAILS SAMP DISCHARGE, FULL LINE OVERVIEW & CLOSING SUMMARY',
+    specUnit: 2,
+    focusWorld: [0.76, 0.42, 0.03],
+    camKeyframes: [
+      [1.22, 0.86, 1.78],
+      [0.64, 1.12, 4.75],
+      [0.52, 1.12, 4.95]
+    ],
+    lookKeyframes: [
+      [1.05, 0.78, 0.0],
+      [0.54, 1.00, 0.0],
+      [0.52, 0.98, 0.0]
+    ]
+  }
+];
 
-  // Window 1B (5.2s - 9.2s): Vertical Twin-Leg Casing, Belt & Deep Buckets
-  { id: 'trunking_legs',    unit: 1, start: 5.2,  end: 9.2,  side: 'left',  slot: 0 },
-  { id: 'antistatic_belt',  unit: 1, start: 5.5,  end: 9.2,  side: 'left',  slot: 1 },
-  { id: 'deep_buckets',     unit: 1, start: 5.8,  end: 9.2,  side: 'right', slot: 0 },
+function getBeatMetadataAtTime(elapsed) {
+  const clamped = Math.max(0, Math.min(CINEMATIC_TOTAL_DURATION - 0.001, elapsed));
+  return CINEMATIC_BEATS_METADATA.find(b => clamped >= b.start && clamped < b.end) || CINEMATIC_BEATS_METADATA[CINEMATIC_BEATS_METADATA.length - 1];
+}
 
-  // Window 1C (9.6s - 14.0s): Head Hood, Crowned Drive Pulley & Centrifugal Discharge
-  { id: 'split_hood',       unit: 1, start: 9.6,  end: 14.0, side: 'left',  slot: 0 },
-  { id: 'crowned_pulley',   unit: 1, start: 9.9,  end: 14.0, side: 'right', slot: 0 },
-  { id: 'discharge_saddle', unit: 1, start: 10.2, end: 14.0, side: 'right', slot: 1 },
+// Guaranteed Callout Schedule across ALL 6 BEATS (0.0s to 30.0s) so every single second of every beat has 3-4 clear callouts!
+// World-space anchor coordinates (`worldAnchor`) are explicitly verified against the connected process line (Unit 01 at X=0, Unit 02 at X=1.15 scale 0.72)
+const MASTER_6BEAT_CALLOUT_SCHEDULE = [
+  // --- BEAT 1 (0.0s - 4.0s): Hero Wide Shot of Both Machines (2 Unit 01 + 2 Unit 02 Callouts) ---
+  { id: 'boot_feed',      unit: 1, start: 0.1, end: 3.9, side: 'left',  worldAnchor: [-0.11, 0.24, 0.0] },
+  { id: 'trunking_legs',  unit: 1, start: 0.2, end: 3.9, side: 'left',  worldAnchor: [-0.06, 1.22, 0.0] },
+  { id: '2.1',            unit: 2, start: 0.3, end: 3.9, side: 'right', worldAnchor: [1.42, 1.38, 0.0] },
+  { id: '2.6',            unit: 2, start: 0.4, end: 3.9, side: 'right', worldAnchor: [1.15, 0.80, 0.0] },
 
-  // --- PART 2: UNIT 02 SATAKE VBF VERTICAL MAIZE DEGERMER (15.0s - 30.0s) ---
-  // Window 2A (16.0s - 20.2s): Top Feed Hopper, Screw Feeder & Degerminator Rotor
-  { id: 'inlet_hopper',       unit: 2, start: 16.0, end: 20.2, side: 'right', slot: 0 },
-  { id: 'screw_feeder',       unit: 2, start: 16.3, end: 20.2, side: 'right', slot: 1 },
-  { id: 'degerminator_rotor', unit: 2, start: 16.6, end: 20.2, side: 'left',  slot: 0 },
+  // --- BEAT 2 (4.0s - 10.0s): Unit 01 Intake, Tensioner & Vertical Climb ---
+  { id: 'boot_feed',      unit: 1, start: 4.0, end: 7.1, side: 'left',  worldAnchor: [-0.11, 0.24, 0.0] },
+  { id: 'boot_takeup',    unit: 1, start: 4.1, end: 7.1, side: 'right', worldAnchor: [0.05, 0.18, 0.0] },
+  { id: 'cleanout_doors', unit: 1, start: 4.2, end: 7.1, side: 'right', worldAnchor: [0.06, 0.34, 0.0] },
 
-  // Window 2B (20.6s - 24.8s): Multifaceted Slotted Screen, Resistance Bars & Discharge Spout
-  { id: 'hex_screen',         unit: 2, start: 20.6, end: 24.8, side: 'right', slot: 0 },
-  { id: 'resistance_bars',    unit: 2, start: 20.9, end: 24.8, side: 'right', slot: 1 },
-  { id: 'discharge_gate',     unit: 2, start: 21.2, end: 24.8, side: 'left',  slot: 0 },
+  { id: 'trunking_legs',   unit: 1, start: 7.1, end: 9.95, side: 'left',  worldAnchor: [-0.06, 1.18, 0.0] },
+  { id: 'antistatic_belt', unit: 1, start: 7.2, end: 9.95, side: 'left',  worldAnchor: [-0.06, 1.48, 0.0] },
+  { id: 'deep_buckets',    unit: 1, start: 7.3, end: 9.95, side: 'right', worldAnchor: [-0.05, 1.32, 0.0] },
+  { id: 'rotation_frame',  unit: 1, start: 7.4, end: 9.95, side: 'right', worldAnchor: [0.05, 1.05, 0.0] },
 
-  // Window 2C (25.2s - 28.8s): Hollow Aspiration Shaft, Drive Pulley & 4-Pole Motor
-  { id: 'hollow_shaft',       unit: 2, start: 25.2, end: 28.8, side: 'left',  slot: 0 },
-  { id: 'belt_drive',         unit: 2, start: 25.5, end: 28.8, side: 'left',  slot: 1 },
-  { id: 'main_motor',         unit: 2, start: 25.8, end: 28.8, side: 'right', slot: 0 }
+  // --- BEAT 3 (10.0s - 15.0s): Unit 01 Head Pulley, Drive & Centrifugal Discharge ---
+  { id: 'split_hood',       unit: 1, start: 10.0, end: 14.95, side: 'left',  worldAnchor: [0.0, 2.30, 0.0] },
+  { id: 'drive_motor',      unit: 1, start: 10.1, end: 14.95, side: 'left',  worldAnchor: [-0.12, 2.14, 0.0] },
+  { id: 'crowned_pulley',   unit: 1, start: 10.2, end: 14.95, side: 'right', worldAnchor: [0.0, 2.22, 0.0] },
+  { id: 'discharge_saddle', unit: 1, start: 10.3, end: 14.95, side: 'right', worldAnchor: [0.12, 2.12, 0.0] },
+
+  // --- BEAT 4 (15.0s - 21.0s): Tracking Shot along Transfer Spout into Unit 02 Satake VBF ---
+  { id: 'wear_plates', unit: 1, start: 15.0, end: 20.95, side: 'left',  worldAnchor: [0.18, 2.10, 0.0] },
+  { id: '2.1',         unit: 2, start: 15.1, end: 20.95, side: 'right', worldAnchor: [1.42, 1.38, 0.0] },
+  { id: '2.2',         unit: 2, start: 15.2, end: 20.95, side: 'right', worldAnchor: [1.35, 1.18, 0.0] },
+  { id: '2.8',         unit: 2, start: 15.3, end: 20.95, side: 'left',  worldAnchor: [0.90, 1.16, 0.03] },
+
+  // --- BEAT 5 (21.0s - 27.0s): Unit 02 Internals (X-Ray Cutaway of Rotor, Beaters, Screen & Shaft) ---
+  { id: '2.4', unit: 2, start: 21.0, end: 24.1, side: 'left',  worldAnchor: [1.15, 0.84, 0.0] },
+  { id: '2.3', unit: 2, start: 21.1, end: 24.1, side: 'left',  worldAnchor: [1.15, 0.42, 0.0] },
+  { id: '2.5', unit: 2, start: 21.2, end: 24.1, side: 'right', worldAnchor: [1.28, 0.82, 0.0] },
+  { id: '2.6', unit: 2, start: 21.3, end: 24.1, side: 'right', worldAnchor: [1.36, 0.72, 0.0] },
+
+  { id: '2.7',  unit: 2, start: 24.1, end: 26.95, side: 'right', worldAnchor: [1.38, 0.90, 0.0] },
+  { id: '2.9',  unit: 2, start: 24.2, end: 26.95, side: 'left',  worldAnchor: [0.99, 0.22, 0.18] },
+  { id: '2.10', unit: 2, start: 24.3, end: 26.95, side: 'right', worldAnchor: [1.45, 0.22, -0.10] },
+
+  // --- BEAT 6 (27.0s - 30.0s): Pull Back to Full Process Wide Shot & Finale ---
+  { id: 'split_hood', unit: 1, start: 27.0, end: 30.0, side: 'left',  worldAnchor: [0.0, 2.28, 0.0] },
+  { id: 'boot_feed',  unit: 1, start: 27.1, end: 30.0, side: 'left',  worldAnchor: [-0.11, 0.24, 0.0] },
+  { id: '2.1',        unit: 2, start: 27.1, end: 30.0, side: 'right', worldAnchor: [1.42, 1.38, 0.0] },
+  { id: '2.8',        unit: 2, start: 27.2, end: 30.0, side: 'right', worldAnchor: [0.90, 1.12, 0.03] }
 ];
 
 const cinematicState = {
   active: false,
   cancelled: false,
-  format: 'landscape', // 'landscape' (1920x1080) or 'portrait' (1080x1350)
+  format: 'landscape', // 'landscape' (1920x1080 / 3840x2160) or 'portrait' (1080x1350)
   stageWidth: 1920,
   stageHeight: 1080,
   startTime: 0,
   elapsed: 0,
   lastElapsed: 0,
-  currentPhaseUnit: 1, // 1 = Bucket Elevator (0-15s), 2 = Satake VBF (15-30s)
-  switchingUnit: false,
-  slowFrameStreak: 0,
-  particleReducedLogged: false,
   compositeCanvas: null,
   compositeCtx: null,
   mediaRecorder: null,
@@ -2946,7 +3625,9 @@ const cinematicState = {
   savedMachineId: null,
   savedCutaway: true,
   savedMotion: true,
-  savedSpeed: 1.0
+  savedSpeed: 1.0,
+  lastExportedMasterBlob: null,
+  lastExportedEmailBlob: null
 };
 
 // Preload SAGMA round emblem for composite video watermark & end card
@@ -2967,22 +3648,681 @@ function formatMMSS(sec) {
   return '00:' + (s < 10 ? '0' + s : '' + s);
 }
 
+// Evaluate Catmull-Rom Spline Camera Path with Cubic Ease-In-Out per Beat + Gentle Steady Handheld Float
+function evaluateSplineCameraAtTime(elapsed, isPortrait = false) {
+  const beat = getBeatMetadataAtTime(elapsed);
+  const localT = Math.max(0, Math.min(1, (elapsed - beat.start) / (beat.end - beat.start)));
+  const easedU = cubicEaseInOut(localT);
+
+  const camPts = beat.camKeyframes.map(pt => new THREE.Vector3(pt[0], pt[1], pt[2]));
+  const lookPts = beat.lookKeyframes.map(pt => new THREE.Vector3(pt[0], pt[1], pt[2]));
+
+  const camCurve = new THREE.CatmullRomCurve3(camPts, false, 'catmullrom', 0.5);
+  const lookCurve = new THREE.CatmullRomCurve3(lookPts, false, 'catmullrom', 0.5);
+
+  const pos = camCurve.getPoint(easedU);
+  const target = lookCurve.getPoint(easedU);
+
+  // Subtle, organic cinema-head float so the camera never feels robotic
+  const floatX = Math.sin(elapsed * 0.85) * 0.012;
+  const floatY = Math.cos(elapsed * 1.10) * 0.010;
+  pos.x += floatX;
+  pos.y += floatY;
+
+  if (isPortrait) {
+    // Pull back slightly in 4:5 vertical format so both machines fit with generous margins
+    pos.z *= 1.18;
+  }
+
+  return { pos, target, beat };
+}
+
+// Deterministic Pose & Simulation Stepper for any timestamp `elapsed` (0.0s .. 30.0s)
+function applyMasterTimelinePose(elapsed, isRecording = false) {
+  const effectiveSimTime = elapsed * 1.25;
+
+  // 1. Rotate all mechanical pulleys, screw feeders, fan impellers & degerminator rotors deterministically
+  for (let i = 0; i < kinematicRotors.length; i++) {
+    const item = kinematicRotors[i];
+    if (item && item.mesh) {
+      const angle = item.speed * effectiveSimTime;
+      if (item.axis === 'x') item.mesh.rotation.x = angle;
+      else if (item.axis === 'y') item.mesh.rotation.y = angle;
+      else if (item.axis === 'z') item.mesh.rotation.z = angle;
+    }
+  }
+
+  // 2. Advance all 58 Bucket Elevator buckets deterministically (Loaded on rising up-leg, tipping over head pulley, empty on return leg)
+  if (kinematicBuckets.length > 0) {
+    for (let i = 0; i < kinematicBuckets.length; i++) {
+      const b = kinematicBuckets[i];
+      if (!b || !b.mesh) continue;
+      const initialPhase = i / kinematicBuckets.length;
+      const p = (initialPhase + 0.14 * effectiveSimTime) % 1.0;
+
+      if (p < 0.44) {
+        const u = p / 0.44;
+        b.mesh.position.set(-0.2605, 0.65 + u * 8.40, b.baseZ);
+        b.mesh.rotation.set(0, 0, 0);
+        if (b.grainFill) {
+          b.grainFill.visible = true;
+          b.grainFill.scale.set(1, 1, 1);
+        }
+      } else if (p < 0.50) {
+        const u = (p - 0.44) / 0.06;
+        const theta = Math.PI * (1.0 - u);
+        b.mesh.position.set(Math.cos(theta) * 0.2605, 9.05 + Math.sin(theta) * 0.26, b.baseZ);
+        b.mesh.rotation.set(0, 0, theta - Math.PI);
+        if (b.grainFill) {
+          b.grainFill.visible = u < 0.68;
+          const shrink = Math.max(0.1, 1.0 - u * 1.35);
+          b.grainFill.scale.set(shrink, shrink, shrink);
+        }
+      } else if (p < 0.94) {
+        const u = (p - 0.50) / 0.44;
+        b.mesh.position.set(0.2605, 9.05 - u * 8.40, b.baseZ);
+        b.mesh.rotation.set(0, 0, Math.PI);
+        if (b.grainFill) {
+          b.grainFill.visible = false;
+        }
+      } else {
+        const u = (p - 0.94) / 0.06;
+        const theta = -Math.PI * u;
+        b.mesh.position.set(Math.cos(theta) * 0.2605, 0.65 + Math.sin(theta) * 0.26, b.baseZ);
+        b.mesh.rotation.set(0, 0, theta - Math.PI);
+        if (b.grainFill) {
+          b.grainFill.visible = u > 0.45;
+          const fillUp = Math.min(1.0, Math.max(0.1, (u - 0.45) / 0.55));
+          b.grainFill.scale.set(fillUp, fillUp, fillUp);
+        }
+      }
+    }
+  }
+
+  // 3. Advance 7-Stage Instanced 3D Grain Flow deterministically
+  updateInstancedGrainSimulation(effectiveSimTime, true);
+
+  // 4. Ghosted X-Ray Cutaway Modulation during Beat 5 (21-27s) so Unit 02 internals shine clearly
+  if (!isCutawayActive) setCutawayState(true);
+  updateExplodedView(0);
+  const isXrayBeat = elapsed >= 21.0 && elapsed < 27.0;
+  cutawayGlassMeshes.forEach(glassMesh => {
+    if (glassMesh && glassMesh.material) {
+      glassMesh.material.opacity = isXrayBeat ? 0.18 : 0.26;
+    }
+  });
+
+  // 5. Evaluate Catmull-Rom Spline Camera Position & Target
+  const isPortrait = isRecording ? (cinematicState.format === 'portrait') : false;
+  const { pos, target, beat } = evaluateSplineCameraAtTime(elapsed, isPortrait);
+
+  if (camera && controls) {
+    camera.position.copy(pos);
+    controls.target.copy(target);
+    camera.lookAt(controls.target);
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld(true);
+  }
+
+  if (currentLoadedRoot) {
+    currentLoadedRoot.updateMatrixWorld(true);
+  }
+
+  const phaseTag = document.getElementById('cinematicPhaseTag');
+  if (phaseTag && beat) {
+    phaseTag.textContent = beat.scrubberTitle;
+  }
+}
+
+// Project a scheduled callout's verified 3D world anchor onto the fixed stage canvas (w x h)
+function projectScheduledCalloutToStage(schedItem, calloutData, stageW, stageH) {
+  if (!camera) return null;
+  const tempV = new THREE.Vector3();
+
+  if (schedItem && Array.isArray(schedItem.worldAnchor)) {
+    tempV.set(schedItem.worldAnchor[0], schedItem.worldAnchor[1], schedItem.worldAnchor[2]);
+  } else if (currentLoadedRoot && calloutData && calloutData.meshTarget) {
+    const targetObj = currentLoadedRoot.getObjectByName(calloutData.meshTarget);
+    if (targetObj) {
+      targetObj.updateWorldMatrix(true, true);
+      const box = new THREE.Box3().setFromObject(targetObj);
+      if (!box.isEmpty()) {
+        box.getCenter(tempV);
+      }
+    }
+  } else {
+    tempV.set(0, 1.2, 0);
+  }
+
+  tempV.project(camera);
+  if (tempV.z > 1.0) return null;
+
+  return {
+    ax: THREE.MathUtils.clamp((tempV.x * 0.5 + 0.5) * stageW, stageW * 0.08, stageW * 0.92),
+    ay: THREE.MathUtils.clamp((-(tempV.y * 0.5) + 0.5) * stageH, stageH * 0.12, stageH * 0.84)
+  };
+}
+
 // ----------------------------------------------------------------------------
-// FIXED-STAGE 30-SECOND RECORDING PIPELINE (15s ELEVATOR + 15s SATAKE VBF, NO AUDIO)
+// COMPOSITE 2D STAGE RENDERER (CALLOUTS IN EVERY BEAT, FLOW TRACKER, SPEC COUNTERS, INTRO & END CARD)
+// ----------------------------------------------------------------------------
+function renderCompositeVideoFrame(elapsed) {
+  if (!cinematicState.compositeCtx || !cinematicState.compositeCanvas || !renderer) return;
+
+  const ctx = cinematicState.compositeCtx;
+  const webglCanvas = renderer.domElement;
+
+  const w = cinematicState.stageWidth || 1920;
+  const h = cinematicState.stageHeight || 1080;
+  const isPortrait = cinematicState.format === 'portrait';
+  const scale = isPortrait ? (w / 1150) : (w / 1920);
+  const currentBeat = getBeatMetadataAtTime(elapsed);
+  const activeSpecUnit = currentBeat.specUnit || (elapsed < 15.0 ? 1 : 2);
+
+  // 1. Copy fixed-size Three.js WebGL frame onto 2D composite stage
+  ctx.drawImage(webglCanvas, 0, 0, w, h);
+
+  // 2. Subtle Focus-Pull Radial Vignette & Color Grade (Teal Shadows, Warm Amber Highlights)
+  if (currentBeat && Array.isArray(currentBeat.focusWorld) && camera) {
+    const focusV = new THREE.Vector3(currentBeat.focusWorld[0], currentBeat.focusWorld[1], currentBeat.focusWorld[2]);
+    focusV.project(camera);
+    const fx = (focusV.x * 0.5 + 0.5) * w;
+    const fy = (-(focusV.y * 0.5) + 0.5) * h;
+
+    const focusGrad = ctx.createRadialGradient(fx, fy, Math.min(w, h) * 0.18, fx, fy, Math.max(w, h) * 0.72);
+    focusGrad.addColorStop(0.0, 'rgba(0, 0, 0, 0.0)');
+    focusGrad.addColorStop(0.65, 'rgba(6, 14, 20, 0.14)');
+    focusGrad.addColorStop(1.0, 'rgba(4, 10, 16, 0.46)');
+    ctx.fillStyle = focusGrad;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  // Top & Bottom Broadcast Safe-Area Gradient Vignettes
+  const topGrad = ctx.createLinearGradient(0, 0, 0, h * 0.16);
+  topGrad.addColorStop(0, 'rgba(6, 11, 16, 0.76)');
+  topGrad.addColorStop(1, 'rgba(6, 11, 16, 0)');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, w, h * 0.16);
+
+  const botGrad = ctx.createLinearGradient(0, h * 0.72, 0, h);
+  botGrad.addColorStop(0, 'rgba(6, 11, 16, 0)');
+  botGrad.addColorStop(1, 'rgba(6, 11, 16, 0.88)');
+  ctx.fillStyle = botGrad;
+  ctx.fillRect(0, h * 0.72, w, h * 0.28);
+
+  // 3. TOP PROCESS-FLOW TRACKER BAR: INTAKE -> ELEVATE -> DISCHARGE -> DEGERM -> OUTPUT
+  {
+    const stages = ['01 INTAKE', '02 ELEVATE', '03 DISCHARGE', '04 DEGERM', '05 OUTPUT'];
+    const activeIdx = currentBeat ? currentBeat.flowStageIndex : 0;
+    const trackerW = isPortrait ? Math.round(w * 0.90) : Math.round(780 * scale);
+    const trackerH = Math.round(40 * scale);
+    const trackerX = Math.round((w - trackerW) * 0.5);
+    const trackerY = Math.round(28 * scale);
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(8, 15, 22, 0.88)';
+    ctx.strokeStyle = 'rgba(45, 212, 191, 0.45)';
+    ctx.lineWidth = Math.max(1.5, 1.8 * scale);
+    ctx.beginPath();
+    ctx.roundRect(trackerX, trackerY, trackerW, trackerH, Math.round(20 * scale));
+    ctx.fill();
+    ctx.stroke();
+
+    const stepW = trackerW / stages.length;
+    for (let s = 0; s < stages.length; s++) {
+      const isCompleted = s < activeIdx;
+      const isCurrent = s === activeIdx;
+      const sx = trackerX + s * stepW;
+
+      if (isCurrent) {
+        ctx.fillStyle = 'rgba(20, 184, 166, 0.28)';
+        ctx.beginPath();
+        ctx.roundRect(sx + Math.round(4 * scale), trackerY + Math.round(4 * scale), stepW - Math.round(8 * scale), trackerH - Math.round(8 * scale), Math.round(16 * scale));
+        ctx.fill();
+      }
+
+      ctx.font = `700 ${Math.round(12.5 * scale)}px "DM Mono", monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = isCurrent ? '#FBBF24' : (isCompleted ? '#4ADE80' : '#94A3B8');
+      ctx.fillText(stages[s], sx + stepW * 0.5, trackerY + trackerH * 0.5);
+
+      if (s < stages.length - 1) {
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.45)';
+        ctx.font = `600 ${Math.round(11 * scale)}px "DM Mono", monospace`;
+        ctx.fillText('→', sx + stepW, trackerY + trackerH * 0.5);
+      }
+    }
+    ctx.restore();
+  }
+
+  // 4. Top-Left "SAGMA - 3D TRAINING TWIN" Badge (Visible 0-4.2s as requested, then cleanly fades out)
+  if (elapsed < 4.2) {
+    let badgeAlpha = 1.0;
+    if (elapsed < 0.5) badgeAlpha = cubicEaseInOut(elapsed / 0.5);
+    else if (elapsed > 3.2) badgeAlpha = 1.0 - cubicEaseInOut((elapsed - 3.2) / 1.0);
+
+    const padX = Math.round(52 * scale);
+    const padY = Math.round(24 * scale);
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, badgeAlpha));
+    ctx.fillStyle = 'rgba(10, 18, 25, 0.92)';
+    ctx.strokeStyle = 'rgba(74, 222, 128, 0.78)';
+    ctx.lineWidth = Math.max(1.5, 2 * scale);
+    const badgeW = Math.round(355 * scale);
+    const badgeH = Math.round(52 * scale);
+    ctx.beginPath();
+    ctx.roundRect(padX, padY, badgeW, badgeH, Math.round(26 * scale));
+    ctx.fill();
+    ctx.stroke();
+
+    if (cinematicState.logoImg && cinematicState.logoImg.complete && cinematicState.logoImg.naturalWidth > 0) {
+      const logoSize = Math.round(36 * scale);
+      ctx.drawImage(cinematicState.logoImg, padX + Math.round(10 * scale), padY + Math.round(8 * scale), logoSize, logoSize);
+    }
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `700 ${Math.round(15.5 * scale)}px "DM Sans", sans-serif`;
+    ctx.fillText('SAGMA - 3D TRAINING TWIN', padX + Math.round(56 * scale), padY + Math.round(23 * scale));
+
+    ctx.fillStyle = '#4ADE80';
+    ctx.font = `600 ${Math.round(10.5 * scale)}px "DM Mono", monospace`;
+    ctx.fillText('SOUTHERN AFRICAN GRAIN MILLING ACADEMY', padX + Math.round(56 * scale), padY + Math.round(40 * scale));
+    ctx.restore();
+  }
+
+  // 5. TIMED CALLOUT LABELS IN EVERY SINGLE BEAT (0.0s - 30.0s, 3-4 at a time, Zero Overlap, Zero Crossing Lines)
+  const activeItems = [];
+  for (let i = 0; i < MASTER_6BEAT_CALLOUT_SCHEDULE.length; i++) {
+    const sched = MASTER_6BEAT_CALLOUT_SCHEDULE[i];
+    if (elapsed >= sched.start && elapsed <= sched.end) {
+      const catalog = sched.unit === 2 ? SATAKE_CALLOUTS : DIAGRAM_69B_CALLOUTS;
+      const calloutObj = catalog.find(c => c.id === sched.id);
+      if (!calloutObj) continue;
+
+      // Smooth cubic ease-in (0.35s) and ease-out (0.35s)
+      let alpha = 1.0;
+      if (elapsed - sched.start < 0.35) {
+        alpha = cubicEaseInOut((elapsed - sched.start) / 0.35);
+      } else if (sched.end - elapsed < 0.35) {
+        alpha = cubicEaseInOut((sched.end - elapsed) / 0.35);
+      }
+
+      const proj = projectScheduledCalloutToStage(sched, calloutObj, w, h);
+      if (proj) {
+        activeItems.push({
+          sched,
+          callout: calloutObj,
+          alpha,
+          ax: proj.ax,
+          ay: proj.ay
+        });
+      }
+    }
+  }
+
+  if (activeItems.length > 0) {
+    // Sort left and right items by anchor Y coordinate so leader lines NEVER cross each other!
+    const leftGroup = activeItems.filter(it => it.sched.side === 'left').sort((a, b) => a.ay - b.ay);
+    const rightGroup = activeItems.filter(it => it.sched.side === 'right').sort((a, b) => a.ay - b.ay);
+
+    const drawCalloutGroup = (group, side) => {
+      let prevPillY = -999;
+      const minPillGap = Math.round(78 * scale);
+
+      group.forEach((item) => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0.05, Math.min(1, item.alpha));
+
+        const isUnit2 = item.sched.unit === 2;
+        const accentColor = isUnit2 ? '#2DD4BF' : '#4ADE80';
+        const accentBorder = isUnit2 ? 'rgba(45, 212, 191, 0.92)' : 'rgba(74, 222, 128, 0.92)';
+
+        // Slide-in offset during reveal
+        const slideOffset = (1 - item.alpha) * (side === 'left' ? -22 : 22) * scale;
+
+        const fontTag = `700 ${Math.round(17 * scale)}px "DM Mono", monospace`;
+        const fontTitle = `700 ${Math.round(18 * scale)}px "DM Sans", sans-serif`;
+        const fontSub = `600 ${Math.round(12.5 * scale)}px "DM Mono", monospace`;
+
+        const tagText = item.callout.tag || '01';
+        const titleText = item.callout.title; // Keep original authoritative label text!
+        const defaultSub = isUnit2 ? 'UNIT 02 • SATAKE VBF DEGERMER' : 'UNIT 01 • BUCKET ELEVATOR';
+        const subText = (item.callout.section || defaultSub).toUpperCase();
+
+        ctx.font = fontTag;
+        const tagW = ctx.measureText(tagText).width;
+        ctx.font = fontTitle;
+        const titleW = ctx.measureText(titleText).width;
+        ctx.font = fontSub;
+        const subW = ctx.measureText(subText).width;
+
+        const contentW = Math.max(titleW, subW);
+        const padX = Math.round(15 * scale);
+        const badgeBoxW = Math.round(tagW + 16 * scale);
+        const pillW = Math.round(padX + badgeBoxW + 13 * scale + contentW + padX);
+        const pillH = Math.round(60 * scale);
+
+        // Place pill cleanly in outer 5% title-safe margin so it NEVER covers the machines
+        const marginX = isPortrait ? Math.round(36 * scale) : Math.round(58 * scale);
+        const pillX = Math.round((side === 'left' ? marginX : (w - marginX - pillW)) + slideOffset);
+
+        // Clamp Y within safe stage zone and enforce vertical spacing so pills never overlap
+        let targetCenterY = Math.max(Math.round(135 * scale), Math.min(h - Math.round(240 * scale), item.ay));
+        if (targetCenterY - prevPillY < minPillGap) {
+          targetCenterY = prevPillY + minPillGap;
+        }
+        prevPillY = targetCenterY;
+        const pillY = Math.round(targetCenterY - pillH * 0.5);
+
+        // Route 2-segment CAD elbow leader line from machine anchor (ax, ay) to outer margin pill edge
+        const attachX = side === 'left' ? (pillX + pillW) : pillX;
+        const attachY = Math.round(pillY + pillH * 0.5);
+        const elbowX = side === 'left'
+          ? Math.min(item.ax - Math.round(24 * scale), attachX + Math.round(36 * scale))
+          : Math.max(item.ax + Math.round(24 * scale), attachX - Math.round(36 * scale));
+
+        // Leader Line Subtle Bloom & Crisp Stroke
+        ctx.save();
+        ctx.shadowColor = accentColor;
+        ctx.shadowBlur = Math.round(8 * scale);
+        ctx.beginPath();
+        ctx.moveTo(item.ax, item.ay);
+        ctx.lineTo(elbowX, attachY);
+        ctx.lineTo(attachX, attachY);
+        ctx.strokeStyle = accentBorder;
+        ctx.lineWidth = Math.max(2, 2.4 * scale);
+        ctx.stroke();
+        ctx.restore();
+
+        // Animated Pulsing 3D Anchor Ring + Dot on Machine Component
+        const pulseR = (8.0 + Math.sin(elapsed * 6.0) * 2.5) * scale;
+        ctx.beginPath();
+        ctx.arc(item.ax, item.ay, Math.max(6, pulseR), 0, Math.PI * 2);
+        ctx.fillStyle = isUnit2 ? 'rgba(45, 212, 191, 0.32)' : 'rgba(74, 222, 128, 0.32)';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(item.ax, item.ay, Math.max(4, 4.8 * scale), 0, Math.PI * 2);
+        ctx.fillStyle = accentColor;
+        ctx.fill();
+        ctx.lineWidth = Math.max(1.5, 2 * scale);
+        ctx.strokeStyle = '#090D12';
+        ctx.stroke();
+
+        // Frosted-Glass Broadcast Callout Card Background
+        ctx.fillStyle = 'rgba(8, 14, 21, 0.94)';
+        ctx.strokeStyle = accentBorder;
+        ctx.lineWidth = Math.max(1.8, 2.2 * scale);
+        ctx.beginPath();
+        ctx.roundRect(pillX, pillY, pillW, pillH, Math.round(12 * scale));
+        ctx.fill();
+        ctx.stroke();
+
+        // Tag Number Pill Box (01..13)
+        const tagBoxX = pillX + padX;
+        const tagBoxY = pillY + Math.round(11 * scale);
+        const tagBoxH = pillH - Math.round(22 * scale);
+        ctx.fillStyle = isUnit2 ? 'rgba(20, 184, 166, 0.28)' : 'rgba(22, 163, 74, 0.30)';
+        ctx.strokeStyle = accentColor;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(tagBoxX, tagBoxY, badgeBoxW, tagBoxH, Math.round(8 * scale));
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = fontTag;
+        ctx.fillStyle = accentColor;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(tagText, tagBoxX + badgeBoxW * 0.5, tagBoxY + tagBoxH * 0.5);
+
+        // Part Title & Section Subtitle
+        const textStartX = tagBoxX + badgeBoxW + Math.round(13 * scale);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.font = fontTitle;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(titleText, textStartX, pillY + Math.round(24 * scale));
+
+        ctx.font = fontSub;
+        ctx.fillStyle = '#FBBF24';
+        ctx.fillText(subText, textStartX, pillY + Math.round(44 * scale));
+
+        ctx.restore();
+      });
+    };
+
+    drawCalloutGroup(leftGroup, 'left');
+    drawCalloutGroup(rightGroup, 'right');
+  }
+
+  // 6. LOWER-THIRD TITLE BAR + ANIMATED VERIFIED SPEC COUNTERS + PHASE PROGRESS BAR
+  {
+    const beatLocal = elapsed - currentBeat.start;
+    const beatDur = currentBeat.end - currentBeat.start;
+
+    let ltAlpha = 1.0;
+    if (beatLocal < 0.35) ltAlpha = cubicEaseInOut(beatLocal / 0.35);
+    else if (beatDur - beatLocal < 0.35) ltAlpha = cubicEaseInOut((beatDur - beatLocal) / 0.35);
+
+    const slideY = Math.round((1.0 - ltAlpha) * 16 * scale);
+    const padX = isPortrait ? Math.round(36 * scale) : Math.round(58 * scale);
+    const cardH = Math.round(108 * scale);
+    const cardX = padX;
+    const cardY = h - cardH - Math.round(38 * scale) + slideY;
+    const cardW = isPortrait ? (w - padX * 2) : Math.round(1240 * scale);
+
+    ctx.save();
+    ctx.globalAlpha = Math.max(0.05, Math.min(1, ltAlpha));
+
+    // Lower-third glass card background
+    ctx.fillStyle = 'rgba(8, 13, 19, 0.94)';
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.72)';
+    ctx.lineWidth = Math.max(1.8, 2.2 * scale);
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, Math.round(12 * scale));
+    ctx.fill();
+    ctx.stroke();
+
+    // Left Amber/Teal Accent Bar
+    ctx.fillStyle = activeSpecUnit === 2 ? '#2DD4BF' : '#F59E0B';
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, Math.round(10 * scale), cardH, [Math.round(12 * scale), 0, 0, Math.round(12 * scale)]);
+    ctx.fill();
+
+    // Primary Unit Headline
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `700 ${Math.round((isPortrait ? 19 : 23.5) * scale)}px "DM Sans", sans-serif`;
+    ctx.fillText(currentBeat.unitTitle, cardX + Math.round(26 * scale), cardY + Math.round(41 * scale));
+
+    // High-Contrast Amber Phase Line
+    ctx.fillStyle = '#FBBF24';
+    ctx.font = `700 ${Math.round((isPortrait ? 13.5 : 17.5) * scale)}px "DM Mono", monospace`;
+    ctx.fillText(currentBeat.phaseText, cardX + Math.round(26 * scale), cardY + Math.round(76 * scale));
+
+    // Master Timeline Progress Bar along bottom edge of lower-third card
+    const progW = (cardW - Math.round(20 * scale)) * Math.min(1, elapsed / CINEMATIC_TOTAL_DURATION);
+    ctx.fillStyle = activeSpecUnit === 2 ? '#2DD4BF' : '#4ADE80';
+    ctx.fillRect(cardX + Math.round(10 * scale), cardY + cardH - Math.round(5 * scale), progW, Math.round(5 * scale));
+
+    // Animated Verified Telemetry Spec Counter Card on Bottom-Right (Landscape)
+    if (!isPortrait) {
+      const specW = Math.round(510 * scale);
+      const specX = w - padX - specW;
+      const specY = cardY;
+
+      ctx.fillStyle = 'rgba(8, 15, 22, 0.94)';
+      ctx.strokeStyle = activeSpecUnit === 2 ? 'rgba(45, 212, 191, 0.72)' : 'rgba(74, 222, 128, 0.72)';
+      ctx.lineWidth = Math.max(1.8, 2.0 * scale);
+      ctx.beginPath();
+      ctx.roundRect(specX, specY, specW, cardH, Math.round(12 * scale));
+      ctx.fill();
+      ctx.stroke();
+
+      const countUp = cubicEaseInOut(Math.min(1, beatLocal / 1.1));
+      const colW = specW / 3;
+
+      const specs = activeSpecUnit === 1
+        ? [
+            { label: 'NOMINAL THROUGHPUT', val: `${Math.round(35 * countUp)}–${Math.round(120 * countUp)} t/h` },
+            { label: 'BELT VELOCITY', val: `${(1.8 * countUp).toFixed(1)}–${(2.8 * countUp).toFixed(1)} m/s` },
+            { label: 'INSTALLED DRIVE', val: `${(7.5 * countUp).toFixed(1)}–${Math.round(22 * countUp)} kW` }
+          ]
+        : [
+            { label: 'MAIZE THROUGHPUT', val: `${(4.5 * countUp).toFixed(1)}–${(12.0 * countUp).toFixed(1)} t/h` },
+            { label: 'ROTOR SPEED', val: `${Math.round(750 * countUp)}–${Math.round(920 * countUp)} RPM` },
+            { label: '4-POLE DRIVE', val: `${Math.round(37 * countUp)}–${Math.round(75 * countUp)} kW` }
+          ];
+
+      specs.forEach((sp, idx) => {
+        const cx = specX + idx * colW + Math.round(18 * scale);
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = `600 ${Math.round(10.5 * scale)}px "DM Mono", monospace`;
+        ctx.fillText(sp.label, cx, specY + Math.round(36 * scale));
+
+        ctx.fillStyle = activeSpecUnit === 2 ? '#2DD4BF' : '#4ADE80';
+        ctx.font = `700 ${Math.round(20 * scale)}px "DM Mono", monospace`;
+        ctx.fillText(sp.val, cx, specY + Math.round(72 * scale));
+      });
+    }
+
+    ctx.restore();
+  }
+
+  // 7. OPENING INTRO TITLE BANNER (0.2s - 3.4s) & CLOSING BOARDROOM END CARD (27.4s - 30.0s)
+  if (elapsed >= 0.2 && elapsed <= 3.4) {
+    let introAlpha = 1.0;
+    if (elapsed < 0.7) introAlpha = cubicEaseInOut((elapsed - 0.2) / 0.5);
+    else if (elapsed > 2.6) introAlpha = 1.0 - cubicEaseInOut((elapsed - 2.6) / 0.8);
+
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, introAlpha));
+    const pillW = Math.round(680 * scale);
+    const pillH = Math.round(44 * scale);
+    const pillX = Math.round((w - pillW) * 0.5);
+    const pillY = h - Math.round(198 * scale);
+
+    ctx.fillStyle = 'rgba(8, 15, 22, 0.86)';
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.65)';
+    ctx.lineWidth = Math.max(1.5, 1.8 * scale);
+    ctx.beginPath();
+    ctx.roundRect(pillX, pillY, pillW, pillH, Math.round(27 * scale));
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#FBBF24';
+    ctx.font = `700 ${Math.round(15 * scale)}px "DM Mono", monospace`;
+    ctx.fillText('EXECUTIVE BOARDROOM SHOWCASE • UNIT 01 ELEVATOR & UNIT 02 SATAKE VBF', w * 0.5, pillY + pillH * 0.5);
+    ctx.restore();
+  }
+
+  // Closing End Card Overlay (27.4s - 30.0s) with Round SAGMA Logo & [YOUR CALL TO ACTION]
+  // Positioned cleanly in the bottom-left broadcast safe zone so the full 3D process line remains 100% unobstructed above!
+  if (elapsed >= 27.4) {
+    const endAlpha = cubicEaseInOut(Math.min(1, (elapsed - 27.4) / 0.75));
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, endAlpha));
+
+    const padX = isPortrait ? Math.round(36 * scale) : Math.round(58 * scale);
+    const boxW = isPortrait ? (w - padX * 2) : Math.round(1240 * scale);
+    const boxH = Math.round(108 * scale);
+    const boxX = padX;
+    const boxY = h - boxH - Math.round(38 * scale);
+
+    ctx.fillStyle = 'rgba(7, 13, 19, 1.0)';
+    ctx.strokeStyle = 'rgba(45, 212, 191, 0.95)';
+    ctx.lineWidth = Math.max(2, 2.5 * scale);
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, boxW, boxH, Math.round(12 * scale));
+    ctx.fill();
+    ctx.stroke();
+
+    // Left Teal Accent Bar
+    ctx.fillStyle = '#2DD4BF';
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, Math.round(10 * scale), boxH, [Math.round(12 * scale), 0, 0, Math.round(12 * scale)]);
+    ctx.fill();
+
+    if (cinematicState.logoImg && cinematicState.logoImg.complete && cinematicState.logoImg.naturalWidth > 0) {
+      const lSize = Math.round(66 * scale);
+      ctx.drawImage(cinematicState.logoImg, boxX + Math.round(26 * scale), boxY + Math.round((boxH - lSize) * 0.5), lSize, lSize);
+    }
+
+    const tx = boxX + Math.round(112 * scale);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `700 ${Math.round(22 * scale)}px "DM Sans", sans-serif`;
+    ctx.fillText('SOUTHERN AFRICAN GRAIN MILLING ACADEMY • 3D DIGITAL TRAINING TWIN', tx, boxY + Math.round(36 * scale));
+
+    ctx.fillStyle = '#2DD4BF';
+    ctx.font = `600 ${Math.round(14 * scale)}px "DM Mono", monospace`;
+    ctx.fillText('UNIT 01 BUCKET ELEVATOR & UNIT 02 SATAKE VBF DEGERMER • BOARD OF DIRECTORS EDITION', tx, boxY + Math.round(63 * scale));
+
+    ctx.fillStyle = '#FBBF24';
+    ctx.font = `700 ${Math.round(15.5 * scale)}px "DM Mono", monospace`;
+    ctx.fillText('[YOUR CALL TO ACTION] • Interactive 3D Curriculum & Mill Simulation', tx, boxY + Math.round(90 * scale));
+
+    ctx.restore();
+  }
+
+  // 8. Smooth Starting Fade-In (0.0s -> 0.7s) and Ending Fade-Out (29.2s -> 30.0s)
+  let fadeOverlayAlpha = 0.0;
+  if (elapsed < 0.7) {
+    fadeOverlayAlpha = 1.0 - cubicEaseInOut(elapsed / 0.7);
+  } else if (elapsed >= 29.25) {
+    fadeOverlayAlpha = cubicEaseInOut((elapsed - 29.25) / 0.75);
+  }
+
+  if (fadeOverlayAlpha > 0.005) {
+    ctx.save();
+    ctx.fillStyle = `rgba(7, 11, 16, ${Math.min(1, fadeOverlayAlpha).toFixed(3)})`;
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+  }
+}
+
+function triggerBlobDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 8000);
+}
+
+// ----------------------------------------------------------------------------
+// DETERMINISTIC FRAME-BY-FRAME WEBCODECS + MP4-MUXER PIPELINE (NO AUDIO)
+// Produces BOTH Master (~24 Mbps) and Lighter Email Copy (12 Mbps) MP4s!
 // ----------------------------------------------------------------------------
 async function startCinematicShowcase(format = 'landscape') {
   if (cinematicState.active || !renderer || !scene || !camera) return;
 
+  setTimelinePreviewPlaying(false);
+
   const isPortrait = format === 'portrait';
-  const stageW = isPortrait ? 1080 : 1920;
-  const stageH = isPortrait ? 1350 : 1080;
+  const isUltra = currentQualityPreset === 'ultra' && !isPortrait;
+  const stageW = isPortrait ? 1080 : (isUltra ? 3840 : 1920);
+  const stageH = isPortrait ? 1350 : (isUltra ? 2160 : 1080);
 
   cinematicState.format = isPortrait ? 'portrait' : 'landscape';
   cinematicState.stageWidth = stageW;
   cinematicState.stageHeight = stageH;
 
   // Save user state to restore cleanly after showcase
-  cinematicState.savedMachineId = currentMachineMeta ? currentMachineMeta.id : 'elevator_69b';
+  cinematicState.savedMachineId = currentMachineMeta ? currentMachineMeta.id : 'combined_process_line';
   cinematicState.savedCutaway = isCutawayActive;
   cinematicState.savedMotion = isLiveMotionActive;
   cinematicState.savedSpeed = driveSpeedMultiplier;
@@ -3003,43 +4343,40 @@ async function startCinematicShowcase(format = 'landscape') {
   });
   closeMachineDrawer();
 
-  // Enter Cinematic UI Mode (Hides all UI chrome, cursors, and DOM overlays; shows floating status pill)
+  // Enter Cinematic UI Mode
   document.body.classList.add('cinematic-mode');
   const pill = document.getElementById('cinematicStatusPill');
   const ctaBtn = document.getElementById(isPortrait ? 'btnCinematicPortrait' : 'btnCinematicShowcase');
   if (pill) pill.classList.add('active');
   if (ctaBtn) ctaBtn.classList.add('recording');
 
-  // Disable manual OrbitControls during 30s sequence
   if (controls) controls.enabled = false;
 
-  // Start Phase 1 (0.0s - 15.0s) with Unit 01: Industrial Bucket Elevator (Individual Machine)
-  cinematicState.currentPhaseUnit = 1;
-  cinematicState.switchingUnit = false;
-  const elevatorMeta = await EchoDB.get('elevator_69b') || FLEET_CATALOG.find(m => m.id === 'elevator_69b') || FLEET_CATALOG[0];
-  await loadMachineTwin(elevatorMeta, { silent: true, skipCameraReset: true, skipHashUpdate: true });
+  // Always load the Connected Dual-Machine Process Line so Unit 01, the Sight-Glass Transfer Spout, and Unit 02 coexist in one continuous shot!
+  const comboMeta = await EchoDB.get('combined_process_line') || FLEET_CATALOG.find(m => m.id === 'combined_process_line') || FLEET_CATALOG[0];
+  await loadMachineTwin(comboMeta, { silent: true, skipCameraReset: true, skipHashUpdate: true });
+
   if (grainParticleSystem) grainParticleSystem.visible = true;
   if (grainInstancedMesh) {
     grainInstancedMesh.visible = true;
-    activeGrainCount = 650;
+    activeGrainCount = currentQualityPreset === 'safe' ? 360 : 650;
     grainInstancedMesh.count = activeGrainCount;
   }
 
-  // Lock Three.js WebGLRenderer to exact Fixed Stage Size (1920x1080 or 1080x1350) with pixelRatio = 1
+  // Lock Three.js WebGLRenderer to exact Fixed Stage Size with pixelRatio = 1
   renderer.setPixelRatio(1);
   renderer.setSize(stageW, stageH, false);
   camera.aspect = stageW / stageH;
-  camera.fov = isPortrait ? 38 : 34;
+  camera.fov = isPortrait ? 40 : 38;
   camera.updateProjectionMatrix();
 
-  // Pre-warm shaders & geometry so there is ZERO stutter on Frame 1
   renderer.compile(scene, camera);
 
-  // Create Fixed-Size Composite 2D Canvas (1920x1080 or 1080x1350)
+  // Create Fixed-Size Composite 2D Canvas
   const compCanvas = document.createElement('canvas');
   compCanvas.width = stageW;
   compCanvas.height = stageH;
-  const compCtx = compCanvas.getContext('2d');
+  const compCtx = compCanvas.getContext('2d', { alpha: false });
   if (compCtx) {
     compCtx.imageSmoothingEnabled = true;
     compCtx.imageSmoothingQuality = 'high';
@@ -3047,685 +4384,191 @@ async function startCinematicShowcase(format = 'landscape') {
 
   cinematicState.compositeCanvas = compCanvas;
   cinematicState.compositeCtx = compCtx;
-  cinematicState.recordedChunks = [];
   cinematicState.cancelled = false;
-  cinematicState.slowFrameStreak = 0;
-  cinematicState.particleReducedLogged = false;
-  cinematicState.startTime = performance.now();
-  cinematicState.elapsed = 0;
-  cinematicState.lastElapsed = 0;
   cinematicState.active = true;
 
-  // Position camera & pre-populated grain flow at t = 0.0s and render first composite frame before starting recorder
-  updateCinematicChoreography(cinematicState.startTime);
+  const canUseWebCodecs = typeof window.VideoEncoder === 'function' && typeof window.VideoFrame === 'function' && typeof window.Mp4Muxer !== 'undefined';
+
+  if (canUseWebCodecs) {
+    await runDeterministicWebCodecsExport(stageW, stageH, isPortrait);
+  } else {
+    await runFallbackMediaRecorderExport(stageW, stageH, isPortrait);
+  }
+}
+
+async function runDeterministicWebCodecsExport(stageW, stageH, isPortrait) {
+  const totalFrames = CINEMATIC_TOTAL_FRAMES; // 1,800 frames @ 60 fps = 30.00s exact
+  const fps = CINEMATIC_FPS;
+  const codecStr = (stageW > 1920 || stageH > 1080) ? 'avc1.640033' : 'avc1.64002A';
+
+  // 1. Setup Master Muxer & Encoder (24 Mbps)
+  const masterTarget = new Mp4Muxer.ArrayBufferTarget();
+  const masterMuxer = new Mp4Muxer.Muxer({
+    target: masterTarget,
+    video: { codec: 'avc', width: stageW, height: stageH },
+    fastStart: 'in-memory',
+    firstTimestampBehavior: 'offset'
+  });
+
+  // 2. Setup Lighter Email Copy Muxer & Encoder (12 Mbps)
+  const emailTarget = new Mp4Muxer.ArrayBufferTarget();
+  const emailMuxer = new Mp4Muxer.Muxer({
+    target: emailTarget,
+    video: { codec: 'avc', width: stageW, height: stageH },
+    fastStart: 'in-memory',
+    firstTimestampBehavior: 'offset'
+  });
+
+  const masterEncoder = new VideoEncoder({
+    output: (chunk, meta) => masterMuxer.addVideoChunk(chunk, meta),
+    error: (err) => console.error('Master VideoEncoder error:', err)
+  });
+
+  const emailEncoder = new VideoEncoder({
+    output: (chunk, meta) => emailMuxer.addVideoChunk(chunk, meta),
+    error: (err) => console.error('Email VideoEncoder error:', err)
+  });
+
+  masterEncoder.configure({
+    codec: codecStr,
+    width: stageW,
+    height: stageH,
+    bitrate: 24_000_000,
+    framerate: fps
+  });
+
+  emailEncoder.configure({
+    codec: codecStr,
+    width: stageW,
+    height: stageH,
+    bitrate: 12_000_000,
+    framerate: fps
+  });
+
+  const timerEl = document.getElementById('cinematicTimerText');
+  const fmtLabel = `${stageW}×${stageH}`;
+
+  for (let frameIdx = 0; frameIdx < totalFrames; frameIdx++) {
+    if (!cinematicState.active || cinematicState.cancelled) break;
+
+    const elapsed = frameIdx / fps; // Exact deterministic timestamp in seconds (dt = 1/60s)
+    cinematicState.elapsed = elapsed;
+
+    // Step 3D scene, camera spline, buckets, rotors & grain flow deterministically
+    applyMasterTimelinePose(elapsed, true);
+    renderer.render(scene, camera);
+    renderCompositeVideoFrame(elapsed);
+
+    const timestampUs = Math.round(frameIdx * (1_000_000 / fps));
+    const isKeyFrame = (frameIdx % 60 === 0);
+
+    const vfMaster = new VideoFrame(cinematicState.compositeCanvas, { timestamp: timestampUs });
+    masterEncoder.encode(vfMaster, { keyFrame: isKeyFrame });
+    vfMaster.close();
+
+    const vfEmail = new VideoFrame(cinematicState.compositeCanvas, { timestamp: timestampUs });
+    emailEncoder.encode(vfEmail, { keyFrame: isKeyFrame });
+    vfEmail.close();
+
+    // Respect encoder queue backpressure so zero frames are ever dropped
+    if (masterEncoder.encodeQueueSize > 12 || emailEncoder.encodeQueueSize > 12) {
+      await Promise.all([masterEncoder.flush(), emailEncoder.flush()]);
+    }
+
+    if (frameIdx % 6 === 0) {
+      if (timerEl) {
+        const pct = Math.round(((frameIdx + 1) / totalFrames) * 100);
+        timerEl.textContent = `DETERMINISTIC 60FPS EXPORT (${fmtLabel}) • ${formatMMSS(elapsed)} / 00:30 (${pct}%)`;
+      }
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+
+  if (!cinematicState.cancelled) {
+    if (timerEl) timerEl.textContent = 'FINALIZING MASTER (24 Mbps) & EMAIL (12 Mbps) MP4 FILES...';
+    await Promise.all([masterEncoder.flush(), emailEncoder.flush()]);
+    masterEncoder.close();
+    emailEncoder.close();
+    masterMuxer.finalize();
+    emailMuxer.finalize();
+
+    const masterBlob = new Blob([masterTarget.buffer], { type: 'video/mp4' });
+    const emailBlob = new Blob([emailTarget.buffer], { type: 'video/mp4' });
+
+    cinematicState.lastExportedMasterBlob = masterBlob;
+    cinematicState.lastExportedEmailBlob = emailBlob;
+    window.__lastExportedMasterBlob = masterBlob;
+    window.__lastExportedEmailBlob = emailBlob;
+
+    const suffix = isPortrait ? '1080x1350-Vertical' : `${stageW}x${stageH}-60fps`;
+    triggerBlobDownload(masterBlob, `SAGMA-3D-Training-Twin-30s-Master-24Mbps-${suffix}.mp4`);
+    setTimeout(() => {
+      triggerBlobDownload(emailBlob, `SAGMA-3D-Training-Twin-30s-Email-12Mbps-${suffix}.mp4`);
+    }, 650);
+  } else {
+    try { masterEncoder.close(); } catch (e) {}
+    try { emailEncoder.close(); } catch (e) {}
+  }
+
+  await stopCinematicShowcase(cinematicState.cancelled);
+}
+
+async function runFallbackMediaRecorderExport(stageW, stageH, isPortrait) {
+  cinematicState.recordedChunks = [];
+  cinematicState.startTime = performance.now();
+  cinematicState.elapsed = 0;
+
+  applyMasterTimelinePose(0, true);
   renderer.render(scene, camera);
   renderCompositeVideoFrame(0);
 
-  // Initialize Silent MediaRecorder at 60 FPS, 14 Mbps Video (No audio tracks as requested)
   try {
-    const videoStream = compCanvas.captureStream(60);
-
+    const videoStream = cinematicState.compositeCanvas.captureStream(60);
     const mimeTypes = [
       'video/mp4;codecs=avc1.64002A',
-      'video/mp4;codecs=avc1.42E01E',
       'video/mp4;codecs=avc1',
       'video/mp4',
       'video/webm;codecs=vp9',
-      'video/webm;codecs=vp8',
       'video/webm'
     ];
     const selectedMimeType = mimeTypes.find(type => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(type)) || '';
     cinematicState.selectedMimeType = selectedMimeType;
 
-    const recOptions = {
-      videoBitsPerSecond: 14000000 // 14 Mbps (~52 MB for 30s, crisp 1080p detail)
-    };
-    if (selectedMimeType) {
-      recOptions.mimeType = selectedMimeType;
-    }
+    const recOptions = { videoBitsPerSecond: 20_000_000 };
+    if (selectedMimeType) recOptions.mimeType = selectedMimeType;
 
     const recorder = new MediaRecorder(videoStream, recOptions);
     recorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) {
-        cinematicState.recordedChunks.push(e.data);
-      }
+      if (e.data && e.data.size > 0) cinematicState.recordedChunks.push(e.data);
     };
     recorder.onstop = () => {
       if (!cinematicState.cancelled && cinematicState.recordedChunks.length > 0) {
-        exportRecordedShowcaseVideo();
+        const mime = cinematicState.selectedMimeType || 'video/mp4';
+        const ext = mime.includes('webm') ? 'webm' : 'mp4';
+        const blob = new Blob(cinematicState.recordedChunks, { type: mime });
+        const suffix = isPortrait ? '1080x1350-Vertical' : '1920x1080-60fps';
+        triggerBlobDownload(blob, `SAGMA-3D-Training-Twin-30s-Master-${suffix}.${ext}`);
       }
     };
-
     recorder.start(200);
     cinematicState.mediaRecorder = recorder;
   } catch (recErr) {
-    console.warn('MediaRecorder initialization fallback:', recErr);
+    console.warn('MediaRecorder fallback error:', recErr);
   }
-}
-
-// ----------------------------------------------------------------------------
-// MASTER 30-SECOND TIMELINE: 0-15s BUCKET ELEVATOR | 15-30s SATAKE VBF DEGERMER
-// ----------------------------------------------------------------------------
-function updateCinematicChoreography(now) {
-  if (!cinematicState.active) return;
-
-  const elapsed = Math.max(0, (now - cinematicState.startTime) / 1000);
-  const dt = Math.max(0, elapsed - cinematicState.lastElapsed);
-  cinematicState.lastElapsed = elapsed;
-  cinematicState.elapsed = elapsed;
-
-  // Automatic Frame-Drop Guard: if frame delta exceeds 26ms (<38 FPS) for 8 consecutive frames,
-  // dynamically reduce active instanced grain count and log to console so 60 FPS smoothness holds.
-  if (dt > 0.026 && elapsed > 0.5) {
-    cinematicState.slowFrameStreak++;
-    if (cinematicState.slowFrameStreak >= 8 && !cinematicState.particleReducedLogged && grainInstancedMesh) {
-      activeGrainCount = 360;
-      grainInstancedMesh.count = activeGrainCount;
-      cinematicState.particleReducedLogged = true;
-      console.info('[SAGMA 60FPS Guard] Frame delta exceeded threshold during recording; reduced instanced grain count to 360 kernels to preserve smooth playback.');
-    }
-  } else {
-    cinematicState.slowFrameStreak = Math.max(0, cinematicState.slowFrameStreak - 1);
-  }
-
-  const isPortrait = cinematicState.format === 'portrait';
-  const fmtLabel = isPortrait ? '1080×1350' : '1920×1080';
-
-  // Update Floating Status Pill Countdown
-  const timerEl = document.getElementById('cinematicTimerText');
-  if (timerEl) {
-    timerEl.textContent = `REC ${fmtLabel} • ${formatMMSS(elapsed)} / 00:30`;
-  }
-
-  if (elapsed >= CINEMATIC_TOTAL_DURATION) {
-    stopCinematicShowcase(false);
-    return;
-  }
-
-  // At exactly 15.0s (while the midpoint smooth fade-out is at full black), switch from Unit 01 (Bucket Elevator)
-  // to Unit 02 (Satake VBF Vertical Maize Degermer) as an individual standalone machine!
-  if (elapsed >= 15.0 && cinematicState.currentPhaseUnit === 1 && !cinematicState.switchingUnit) {
-    cinematicState.switchingUnit = true;
-    cinematicState.currentPhaseUnit = 2;
-    const satakeMeta = FLEET_CATALOG.find(m => m.id === 'satake_vbf') || FLEET_CATALOG[1];
-    loadMachineTwin(satakeMeta, { silent: true, skipCameraReset: true, skipHashUpdate: true }).then(() => {
-      if (grainParticleSystem) grainParticleSystem.visible = true;
-      if (grainInstancedMesh) grainInstancedMesh.visible = true;
-      if (renderer && scene && camera) {
-        renderer.compile(scene, camera);
-      }
-      cinematicState.switchingUnit = false;
-    });
-  }
-
-  // Drive ALL Mechanical & Instanced Grain Animation Deterministically from Master `elapsed` Time in Seconds
-  const effectiveSimTime = elapsed * 1.25;
-
-  for (let i = 0; i < kinematicRotors.length; i++) {
-    const item = kinematicRotors[i];
-    if (item && item.mesh) {
-      const angle = item.speed * effectiveSimTime;
-      if (item.axis === 'x') item.mesh.rotation.x = angle;
-      else if (item.axis === 'y') item.mesh.rotation.y = angle;
-      else if (item.axis === 'z') item.mesh.rotation.z = angle;
-    }
-  }
-
-  if (kinematicBuckets.length > 0) {
-    for (let i = 0; i < kinematicBuckets.length; i++) {
-      const b = kinematicBuckets[i];
-      if (!b || !b.mesh) continue;
-      const initialPhase = i / kinematicBuckets.length;
-      const p = (initialPhase + 0.14 * effectiveSimTime) % 1.0;
-
-      if (p < 0.44) {
-        // Ascending Up-Leg: Buckets are FULL of grain!
-        const u = p / 0.44;
-        b.mesh.position.set(-0.2605, 0.65 + u * 8.40, b.baseZ);
-        b.mesh.rotation.set(0, 0, 0);
-        if (b.grainFill) {
-          b.grainFill.visible = true;
-          b.grainFill.scale.set(1, 1, 1);
-        }
-      } else if (p < 0.50) {
-        // Centrifugal Discharge Arc over Head Pulley: Grain tips out into spout!
-        const u = (p - 0.44) / 0.06;
-        const theta = Math.PI * (1.0 - u);
-        b.mesh.position.set(Math.cos(theta) * 0.2605, 9.05 + Math.sin(theta) * 0.26, b.baseZ);
-        b.mesh.rotation.set(0, 0, theta - Math.PI);
-        if (b.grainFill) {
-          b.grainFill.visible = u < 0.68;
-          const shrink = Math.max(0.1, 1.0 - u * 1.35);
-          b.grainFill.scale.set(shrink, shrink, shrink);
-        }
-      } else if (p < 0.94) {
-        // Descending Down-Leg: Buckets return inverted and EMPTY!
-        const u = (p - 0.50) / 0.44;
-        b.mesh.position.set(0.2605, 9.05 - u * 8.40, b.baseZ);
-        b.mesh.rotation.set(0, 0, Math.PI);
-        if (b.grainFill) {
-          b.grainFill.visible = false;
-        }
-      } else {
-        // Boot Pulley Scoop Turn: Buckets scoop fresh grain at bottom of boot!
-        const u = (p - 0.94) / 0.06;
-        const theta = -Math.PI * u;
-        b.mesh.position.set(Math.cos(theta) * 0.2605, 0.65 + Math.sin(theta) * 0.26, b.baseZ);
-        b.mesh.rotation.set(0, 0, theta - Math.PI);
-        if (b.grainFill) {
-          b.grainFill.visible = u > 0.45;
-          const fillUp = Math.min(1.0, Math.max(0.1, (u - 0.45) / 0.55));
-          b.grainFill.scale.set(fillUp, fillUp, fillUp);
-        }
-      }
-    }
-  }
-
-  // Advance Instanced 3D Grain Flow inside the active individual machine
-  updateInstancedGrainSimulation(effectiveSimTime, true);
-
-  // Eased 30-Second Camera Choreography (15.0s Bucket Elevator | 15.0s Satake VBF Degermer)
-  const distScale = isPortrait ? 1.14 : 1.0;
-  const phaseTag = document.getElementById('cinematicPhaseTag');
-
-  if (elapsed < 15.0) {
-    // ========================================================================
-    // PART 1 (0.0s - 15.0s): UNIT 01 — INDUSTRIAL BUCKET ELEVATOR (Standalone)
-    // ========================================================================
-    if (!isCutawayActive) setCutawayState(true);
-    updateExplodedView(0);
-
-    if (elapsed < 5.0) {
-      // 0.0s - 5.0s: Boot Intake, Tensioner & Lower Ascension
-      if (phaseTag) phaseTag.textContent = 'UNIT 01 (00–15s) • BOOT INTAKE & TENSIONER';
-      const u = cubicEaseInOut(elapsed / 5.0);
-      const angle = THREE.MathUtils.lerp(-0.28, 0.16, u);
-      const radius = THREE.MathUtils.lerp(0.88, 1.02, u) * distScale;
-      const camY = THREE.MathUtils.lerp(0.32, 0.85, u);
-      const lookY = THREE.MathUtils.lerp(0.30, 0.88, u);
-
-      camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
-      controls.target.set(0, lookY, 0);
-    } else if (elapsed < 10.0) {
-      // 5.0s - 10.0s: Vertical Twin-Leg Casing Climb following Full Ascending Buckets
-      if (phaseTag) phaseTag.textContent = 'UNIT 01 (00–15s) • TWIN-LEG CASING & LOADED BUCKETS';
-      const u = cubicEaseInOut((elapsed - 5.0) / 5.0);
-      const angle = THREE.MathUtils.lerp(0.16, 0.36, u);
-      const radius = THREE.MathUtils.lerp(1.02, 1.08, Math.sin(u * Math.PI)) * distScale;
-      const camY = THREE.MathUtils.lerp(0.85, 2.02, u);
-      const lookY = THREE.MathUtils.lerp(0.88, 2.06, u);
-
-      camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
-      controls.target.set(0, lookY, 0);
-    } else {
-      // 10.0s - 15.0s: Crowned Head Pulley Orbit & Centrifugal Discharge Spout
-      if (phaseTag) phaseTag.textContent = 'UNIT 01 (00–15s) • HEAD PULLEY & CENTRIFUGAL DISCHARGE';
-      const u = cubicEaseInOut((elapsed - 10.0) / 5.0);
-      const angle = THREE.MathUtils.lerp(0.36, -0.45, u);
-      const radius = THREE.MathUtils.lerp(1.02, 0.92, u) * distScale;
-      const camY = THREE.MathUtils.lerp(2.02, 2.22, u);
-      const lookY = THREE.MathUtils.lerp(2.06, 2.14, u);
-
-      camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
-      controls.target.set(0.02, lookY, 0);
-    }
-  } else {
-    // ========================================================================
-    // PART 2 (15.0s - 30.0s): UNIT 02 — SATAKE VBF VERTICAL MAIZE DEGERMER (Standalone)
-    // ========================================================================
-    const p2 = elapsed - 15.0; // 0.0s .. 15.0s local time for Unit 02
-    if (!isCutawayActive) setCutawayState(true);
-    updateExplodedView(0);
-
-    if (p2 < 5.0) {
-      // 15.0s - 20.0s: Top Feed Magnet Hopper, Screw Feeder & Degerming Rotor Entry
-      if (phaseTag) phaseTag.textContent = 'UNIT 02 (15–30s) • SATAKE VBF INLET & SCREW FEEDER';
-      const u = cubicEaseInOut(p2 / 5.0);
-      const angle = THREE.MathUtils.lerp(0.55, 0.12, u);
-      const radius = THREE.MathUtils.lerp(2.05, 1.65, u) * distScale;
-      const camY = THREE.MathUtils.lerp(1.85, 1.48, u);
-      const lookY = THREE.MathUtils.lerp(1.55, 1.32, u);
-
-      camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
-      controls.target.set(0, lookY, 0);
-    } else if (p2 < 10.0) {
-      // 20.0s - 25.0s: Close Cutaway Orbit around Multifaceted Slotted Screen & Swirling Maize Vortex
-      if (phaseTag) phaseTag.textContent = 'UNIT 02 (15–30s) • SLOTTED SCREEN & SCOURING VORTEX';
-      const u = cubicEaseInOut((p2 - 5.0) / 5.0);
-      const angle = THREE.MathUtils.lerp(0.12, -0.52, u);
-      const radius = THREE.MathUtils.lerp(1.65, 1.52, Math.sin(u * Math.PI)) * distScale;
-      const camY = THREE.MathUtils.lerp(1.48, 1.10, u);
-      const lookY = THREE.MathUtils.lerp(1.32, 1.08, u);
-
-      camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
-      controls.target.set(0, lookY, 0);
-    } else {
-      // 25.0s - 30.0s: Lower Aspiration Plinth, V-Belt Drive & Full Hero Pullback before Ending Fade-Out
-      if (phaseTag) phaseTag.textContent = 'UNIT 02 (15–30s) • ASPIRATION DRIVE & FULL SYSTEM';
-      const u = cubicEaseInOut((p2 - 10.0) / 5.0);
-      const angle = THREE.MathUtils.lerp(-0.52, 0.38, u);
-      const radius = THREE.MathUtils.lerp(1.52, 2.25, u) * distScale;
-      const camY = THREE.MathUtils.lerp(1.10, 1.28, u);
-      const lookY = THREE.MathUtils.lerp(1.08, 1.05, u);
-
-      camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
-      controls.target.set(0, lookY, 0);
-    }
-  }
-
-  camera.lookAt(controls.target);
-  camera.updateMatrixWorld(true);
-}
-
-// Helper to project a callout's 3D world position onto the fixed stage canvas (w x h)
-function projectCalloutToStage(calloutData, stageW, stageH) {
-  if (!currentLoadedRoot || !camera) return null;
-  const tempV = new THREE.Vector3();
-  let resolved = false;
-
-  if (calloutData.meshTarget) {
-    const targetObj = currentLoadedRoot.getObjectByName(calloutData.meshTarget);
-    if (targetObj) {
-      const box = new THREE.Box3().setFromObject(targetObj);
-      if (!box.isEmpty()) {
-        box.getCenter(tempV);
-        resolved = true;
-      }
-    }
-  }
-  if (!resolved) {
-    const look = (calloutData.camPreset && calloutData.camPreset.look) || [0, 1.2, 0];
-    tempV.set(look[0], look[1], look[2]);
-  }
-
-  tempV.project(camera);
-  if (tempV.z > 1.0) return null;
-
-  return {
-    ax: (tempV.x * 0.5 + 0.5) * stageW,
-    ay: (-(tempV.y * 0.5) + 0.5) * stageH
-  };
-}
-
-// ----------------------------------------------------------------------------
-// COMPOSITE 2D STAGE RENDERER (TIMED CALLOUTS, LOWER-THIRD & SMOOTH FADE IN/OUTS)
-// ----------------------------------------------------------------------------
-function renderCompositeVideoFrame(elapsed) {
-  if (!cinematicState.active || !cinematicState.compositeCtx || !cinematicState.compositeCanvas || !renderer) return;
-
-  const ctx = cinematicState.compositeCtx;
-  const webglCanvas = renderer.domElement;
-
-  const w = cinematicState.stageWidth || 1920;
-  const h = cinematicState.stageHeight || 1080;
-  const isPortrait = cinematicState.format === 'portrait';
-  const scale = isPortrait ? (w / 1150) : (w / 1920);
-  const activeUnit = elapsed < 15.0 ? 1 : 2;
-
-  // 1. Copy fixed-size Three.js WebGL frame onto 2D composite stage
-  ctx.drawImage(webglCanvas, 0, 0, w, h);
-
-  // 2. Subtle Top & Bottom Cinematic Gradient Vignettes for Broadcast Contrast
-  const topGrad = ctx.createLinearGradient(0, 0, 0, h * 0.18);
-  topGrad.addColorStop(0, 'rgba(7, 11, 16, 0.68)');
-  topGrad.addColorStop(1, 'rgba(7, 11, 16, 0)');
-  ctx.fillStyle = topGrad;
-  ctx.fillRect(0, 0, w, h * 0.18);
-
-  const botGrad = ctx.createLinearGradient(0, h * 0.72, 0, h);
-  botGrad.addColorStop(0, 'rgba(7, 11, 16, 0)');
-  botGrad.addColorStop(1, 'rgba(7, 11, 16, 0.88)');
-  ctx.fillStyle = botGrad;
-  ctx.fillRect(0, h * 0.72, w, h * 0.28);
-
-  // 3. Timed Sequential Callout Labels for the Active Individual Machine (Max 2-3 at once, Zero-Crossing Elbow Lines)
-  const activeItems = [];
-  for (let i = 0; i < INDIVIDUAL_UNITS_CALLOUT_SCHEDULE.length; i++) {
-    const sched = INDIVIDUAL_UNITS_CALLOUT_SCHEDULE[i];
-    if (sched.unit === activeUnit && elapsed >= sched.start && elapsed <= sched.end) {
-      const catalog = sched.unit === 2 ? SATAKE_CALLOUTS : DIAGRAM_69B_CALLOUTS;
-      const calloutObj = catalog.find(c => c.id === sched.id);
-      if (!calloutObj) continue;
-
-      // Calculate smooth cubic ease-in (0.45s) and ease-out (0.45s)
-      let alpha = 1.0;
-      if (elapsed - sched.start < 0.45) {
-        alpha = cubicEaseInOut((elapsed - sched.start) / 0.45);
-      } else if (sched.end - elapsed < 0.45) {
-        alpha = cubicEaseInOut((sched.end - elapsed) / 0.45);
-      }
-
-      const proj = projectCalloutToStage(calloutObj, w, h);
-      if (proj) {
-        activeItems.push({
-          sched,
-          callout: calloutObj,
-          alpha,
-          ax: proj.ax,
-          ay: proj.ay
-        });
-      }
-    }
-  }
-
-  if (activeItems.length > 0) {
-    // Sort left and right items by anchor Y coordinate so leader lines NEVER cross each other!
-    const leftGroup = activeItems.filter(it => it.sched.side === 'left').sort((a, b) => a.ay - b.ay);
-    const rightGroup = activeItems.filter(it => it.sched.side === 'right').sort((a, b) => a.ay - b.ay);
-
-    const drawCalloutGroup = (group, side) => {
-      let prevPillY = -999;
-      const minPillGap = Math.round(76 * scale);
-
-      group.forEach((item) => {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0.02, Math.min(1, item.alpha));
-
-        const isUnit2 = item.sched.unit === 2;
-        const accentColor = isUnit2 ? '#2DD4BF' : '#4ADE80';
-        const accentBorder = isUnit2 ? 'rgba(45, 212, 191, 0.88)' : 'rgba(74, 222, 128, 0.88)';
-
-        // Slide-in offset during reveal
-        const slideOffset = (1 - item.alpha) * (side === 'left' ? -24 : 24) * scale;
-
-        const fontTag = `700 ${Math.round(18 * scale)}px "DM Mono", monospace`;
-        const fontTitle = `700 ${Math.round(19 * scale)}px "DM Sans", sans-serif`;
-        const fontSub = `600 ${Math.round(13 * scale)}px "DM Mono", monospace`;
-
-        const tagText = item.callout.tag || '01';
-        const titleText = item.callout.title; // Keep original authoritative label text!
-        const defaultSub = isUnit2 ? 'UNIT 02 • SATAKE VBF DEGERMER' : 'UNIT 01 • BUCKET ELEVATOR';
-        const subText = (item.callout.section || defaultSub).toUpperCase();
-
-        ctx.font = fontTag;
-        const tagW = ctx.measureText(tagText).width;
-        ctx.font = fontTitle;
-        const titleW = ctx.measureText(titleText).width;
-        ctx.font = fontSub;
-        const subW = ctx.measureText(subText).width;
-
-        const contentW = Math.max(titleW, subW);
-        const padX = Math.round(16 * scale);
-        const badgeBoxW = Math.round(tagW + 18 * scale);
-        const pillW = Math.round(padX + badgeBoxW + 14 * scale + contentW + padX);
-        const pillH = Math.round(62 * scale);
-
-        // Place pill cleanly in outer left or right margin so it NEVER covers the machine
-        const marginX = isPortrait ? Math.round(34 * scale) : Math.round(64 * scale);
-        const pillX = Math.round((side === 'left' ? marginX : (w - marginX - pillW)) + slideOffset);
-
-        // Clamp Y within safe stage zone and enforce vertical spacing so pills never overlap
-        let targetCenterY = Math.max(Math.round(145 * scale), Math.min(h - Math.round(235 * scale), item.ay));
-        if (targetCenterY - prevPillY < minPillGap) {
-          targetCenterY = prevPillY + minPillGap;
-        }
-        prevPillY = targetCenterY;
-        const pillY = Math.round(targetCenterY - pillH * 0.5);
-
-        // Route 2-segment CAD elbow leader line from machine anchor (ax, ay) to outer margin pill edge
-        const attachX = side === 'left' ? (pillX + pillW) : pillX;
-        const attachY = Math.round(pillY + pillH * 0.5);
-        const elbowX = side === 'left'
-          ? Math.min(item.ax - Math.round(28 * scale), attachX + Math.round(42 * scale))
-          : Math.max(item.ax + Math.round(28 * scale), attachX - Math.round(42 * scale));
-
-        // Leader Line Subtle Bloom & Crisp Stroke
-        ctx.save();
-        ctx.shadowColor = accentColor;
-        ctx.shadowBlur = Math.round(8 * scale);
-        ctx.beginPath();
-        ctx.moveTo(item.ax, item.ay);
-        ctx.lineTo(elbowX, attachY);
-        ctx.lineTo(attachX, attachY);
-        ctx.strokeStyle = accentBorder;
-        ctx.lineWidth = Math.max(2, 2.5 * scale);
-        ctx.stroke();
-        ctx.restore();
-
-        // Glowing Anchor Target Ring + Dot on Machine Component
-        ctx.beginPath();
-        ctx.arc(item.ax, item.ay, Math.max(6, 8.5 * scale), 0, Math.PI * 2);
-        ctx.fillStyle = isUnit2 ? 'rgba(45, 212, 191, 0.28)' : 'rgba(74, 222, 128, 0.28)';
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(item.ax, item.ay, Math.max(4, 4.8 * scale), 0, Math.PI * 2);
-        ctx.fillStyle = accentColor;
-        ctx.fill();
-        ctx.lineWidth = Math.max(1.5, 2 * scale);
-        ctx.strokeStyle = '#090D12';
-        ctx.stroke();
-
-        // High-Contrast Broadcast Callout Card Background
-        ctx.fillStyle = 'rgba(9, 15, 22, 0.94)';
-        ctx.strokeStyle = accentBorder;
-        ctx.lineWidth = Math.max(1.8, 2.2 * scale);
-        ctx.beginPath();
-        ctx.roundRect(pillX, pillY, pillW, pillH, Math.round(12 * scale));
-        ctx.fill();
-        ctx.stroke();
-
-        // Tag Number Pill Box (e.g. 01..12)
-        const tagBoxX = pillX + padX;
-        const tagBoxY = pillY + Math.round(12 * scale);
-        const tagBoxH = pillH - Math.round(24 * scale);
-        ctx.fillStyle = isUnit2 ? 'rgba(20, 184, 166, 0.26)' : 'rgba(22, 163, 74, 0.28)';
-        ctx.strokeStyle = accentColor;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(tagBoxX, tagBoxY, badgeBoxW, tagBoxH, Math.round(8 * scale));
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.font = fontTag;
-        ctx.fillStyle = accentColor;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(tagText, tagBoxX + badgeBoxW * 0.5, tagBoxY + tagBoxH * 0.5);
-
-        // Part Title & Section Subtitle
-        const textStartX = tagBoxX + badgeBoxW + Math.round(14 * scale);
-        ctx.textAlign = 'left';
-        ctx.font = fontTitle;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillText(titleText, textStartX, pillY + Math.round(24 * scale));
-
-        ctx.font = fontSub;
-        ctx.fillStyle = '#FBBF24';
-        ctx.fillText(subText, textStartX, pillY + Math.round(45 * scale));
-
-        ctx.restore();
-      });
-    };
-
-    drawCalloutGroup(leftGroup, 'left');
-    drawCalloutGroup(rightGroup, 'right');
-  }
-
-  // 4. Top-Left "SAGMA - 3D TRAINING TWIN" Badge (Smoothly visible at start of Unit 01 and start of Unit 02)
-  const unitLocalTime = elapsed < 15.0 ? elapsed : (elapsed - 15.0);
-  if (unitLocalTime < 4.5) {
-    let badgeAlpha = 1.0;
-    if (unitLocalTime < 0.6) badgeAlpha = cubicEaseInOut(unitLocalTime / 0.6);
-    else if (unitLocalTime > 3.3) badgeAlpha = 1.0 - cubicEaseInOut((unitLocalTime - 3.3) / 1.2);
-
-    const padX = Math.round(48 * scale);
-    const padY = Math.round(38 * scale);
-    ctx.save();
-    ctx.globalAlpha = Math.max(0, Math.min(1, badgeAlpha));
-    ctx.fillStyle = 'rgba(13, 21, 28, 0.90)';
-    ctx.strokeStyle = 'rgba(22, 163, 74, 0.72)';
-    ctx.lineWidth = Math.max(1.5, 2 * scale);
-    const badgeW = Math.round(370 * scale);
-    const badgeH = Math.round(58 * scale);
-    ctx.beginPath();
-    ctx.roundRect(padX, padY, badgeW, badgeH, Math.round(29 * scale));
-    ctx.fill();
-    ctx.stroke();
-
-    if (cinematicState.logoImg && cinematicState.logoImg.complete && cinematicState.logoImg.naturalWidth > 0) {
-      const logoSize = Math.round(40 * scale);
-      ctx.drawImage(cinematicState.logoImg, padX + Math.round(12 * scale), padY + Math.round(9 * scale), logoSize, logoSize);
-    }
-
-    ctx.fillStyle = '#F1F7F3';
-    ctx.font = `700 ${Math.round(17 * scale)}px "DM Sans", sans-serif`;
-    ctx.fillText('SAGMA - 3D TRAINING TWIN', padX + Math.round(62 * scale), padY + Math.round(26 * scale));
-
-    ctx.fillStyle = '#4ADE80';
-    ctx.font = `600 ${Math.round(11.5 * scale)}px "DM Mono", monospace`;
-    ctx.fillText('SOUTHERN AFRICAN GRAIN MILLING ACADEMY', padX + Math.round(62 * scale), padY + Math.round(44 * scale));
-    ctx.restore();
-  }
-
-  // 5. Lower-Third Title Bar (0.0s - 15.0s: Unit 01 Bucket Elevator | 15.0s - 30.0s: Unit 02 Satake VBF Degermer)
-  {
-    const beats = [
-      // Unit 01: Industrial Bucket Elevator (0.0s - 15.0s)
-      {
-        start: 0.0, end: 5.0,
-        unitTitle: 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR | Vertical Grain Conveying System',
-        phaseText: 'PHASE 01 (00–05s) • BOOT INTAKE HOPPER, SCREW TENSIONER & CLEANOUT DOORS'
-      },
-      {
-        start: 5.0, end: 10.0,
-        unitTitle: 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR | DIN 22104 / Diagram 69(b)',
-        phaseText: 'PHASE 02 (05–10s) • TWIN-LEG TRUNKING, ANTISTATIC BELT & LOADED DEEP BUCKETS'
-      },
-      {
-        start: 10.0, end: 15.0,
-        unitTitle: 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR | 35 – 120 t/h • 7.5 – 22 kW Drive',
-        phaseText: 'PHASE 03 (10–15s) • CROWNED HEAD PULLEY, WEAR PLATES & CENTRIFUGAL DISCHARGE'
-      },
-      // Unit 02: Satake VBF Vertical Maize Degermer (15.0s - 30.0s)
-      {
-        start: 15.0, end: 20.0,
-        unitTitle: 'UNIT 02: SATAKE VBF VERTICAL MAIZE DEGERMER | VBF 5A / 7B / 10A',
-        phaseText: 'PHASE 01 (15–20s) • MAGNETIC INLET HOPPER, SCREW FEEDER & DEGERMINATOR ROTOR'
-      },
-      {
-        start: 20.0, end: 25.0,
-        unitTitle: 'UNIT 02: SATAKE VBF VERTICAL MAIZE DEGERMER | 4.5 – 12.0 t/h (Maize)',
-        phaseText: 'PHASE 02 (20–25s) • MULTIFACETED SLOTTED SCREEN, RESISTANCE BARS & EXIT GATE'
-      },
-      {
-        start: 25.0, end: 30.0,
-        unitTitle: 'UNIT 02: SATAKE VBF VERTICAL MAIZE DEGERMER | 750–920 RPM • 37–75 kW',
-        phaseText: 'PHASE 03 (25–30s) • HOLLOW ASPIRATION SHAFT, V-BELT DRIVE & 4-POLE MOTOR'
-      }
-    ];
-    const currentBeat = beats.find(b => elapsed >= b.start && elapsed < b.end) || beats[beats.length - 1];
-    const beatLocal = elapsed - currentBeat.start;
-    const beatDur = currentBeat.end - currentBeat.start;
-
-    // Smoothly animate lower-third in (0.45s) and out (0.45s) per phase
-    let ltAlpha = 1.0;
-    if (beatLocal < 0.45) ltAlpha = cubicEaseInOut(beatLocal / 0.45);
-    else if (beatDur - beatLocal < 0.45) ltAlpha = cubicEaseInOut((beatDur - beatLocal) / 0.45);
-
-    const slideY = Math.round((1.0 - ltAlpha) * 20 * scale);
-    const padX = isPortrait ? Math.round(36 * scale) : Math.round(64 * scale);
-    const cardH = Math.round(108 * scale);
-    const cardX = padX;
-    const cardY = h - cardH - Math.round(42 * scale) + slideY;
-    const cardW = isPortrait ? (w - padX * 2) : Math.min(w - padX * 2, Math.round(1220 * scale));
-
-    ctx.save();
-    ctx.globalAlpha = Math.max(0.02, Math.min(1, ltAlpha));
-
-    // Lower-third glass card background
-    ctx.fillStyle = 'rgba(8, 13, 19, 0.92)';
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.68)';
-    ctx.lineWidth = Math.max(1.8, 2.2 * scale);
-    ctx.beginPath();
-    ctx.roundRect(cardX, cardY, cardW, cardH, Math.round(12 * scale));
-    ctx.fill();
-    ctx.stroke();
-
-    // Left Amber/Teal Accent Bar
-    ctx.fillStyle = activeUnit === 2 ? '#2DD4BF' : '#F59E0B';
-    ctx.beginPath();
-    ctx.roundRect(cardX, cardY, Math.round(10 * scale), cardH, [Math.round(12 * scale), 0, 0, Math.round(12 * scale)]);
-    ctx.fill();
-
-    // Primary Unit Headline
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = `700 ${Math.round((isPortrait ? 20 : 25) * scale)}px "DM Sans", sans-serif`;
-    ctx.fillText(currentBeat.unitTitle, cardX + Math.round(28 * scale), cardY + Math.round(42 * scale));
-
-    // Larger, High-Contrast Amber Phase Line (18.5px bold monospace for 1080p legibility)
-    ctx.fillStyle = '#FBBF24';
-    ctx.font = `700 ${Math.round((isPortrait ? 14.5 : 18.5) * scale)}px "DM Mono", monospace`;
-    ctx.fillText(currentBeat.phaseText, cardX + Math.round(28 * scale), cardY + Math.round(78 * scale));
-
-    // Master Timeline Progress Bar along bottom edge of lower-third card
-    const progW = (cardW - Math.round(20 * scale)) * Math.min(1, elapsed / CINEMATIC_TOTAL_DURATION);
-    ctx.fillStyle = activeUnit === 2 ? '#2DD4BF' : '#4ADE80';
-    ctx.fillRect(cardX + Math.round(10 * scale), cardY + cardH - Math.round(5 * scale), progW, Math.round(5 * scale));
-
-    ctx.restore();
-  }
-
-  // 6. SMOOTH STARTING FADE-IN, 15s MACHINE TRANSITION FADE-OUT/IN, AND 30s ENDING FADE-OUT
-  let fadeOverlayAlpha = 0.0;
-  if (elapsed < 1.2) {
-    // Smooth starting fade-in from black (0.0s -> 1.2s)
-    fadeOverlayAlpha = 1.0 - cubicEaseInOut(elapsed / 1.2);
-  } else if (elapsed >= 14.1 && elapsed < 15.0) {
-    // Smooth fade-out at the end of Unit 01 Bucket Elevator (14.1s -> 15.0s)
-    fadeOverlayAlpha = cubicEaseInOut((elapsed - 14.1) / 0.9);
-  } else if (elapsed >= 15.0 && elapsed < 15.9) {
-    // Smooth fade-in at the start of Unit 02 Satake VBF Degermer (15.0s -> 15.9s)
-    fadeOverlayAlpha = 1.0 - cubicEaseInOut((elapsed - 15.0) / 0.9);
-  } else if (elapsed >= 28.8) {
-    // Smooth ending fade-out to black at the end of the 30-second video (28.8s -> 30.0s)
-    fadeOverlayAlpha = cubicEaseInOut((elapsed - 28.8) / 1.2);
-  }
-
-  if (fadeOverlayAlpha > 0.005) {
-    ctx.save();
-    ctx.fillStyle = `rgba(7, 11, 16, ${Math.min(1, fadeOverlayAlpha).toFixed(3)})`;
-    ctx.fillRect(0, 0, w, h);
-    ctx.restore();
-  }
-}
-
-function exportRecordedShowcaseVideo() {
-  const mime = cinematicState.selectedMimeType || 'video/mp4';
-  const ext = mime.includes('webm') ? 'webm' : 'mp4';
-  const blob = new Blob(cinematicState.recordedChunks, { type: mime });
-  const url = URL.createObjectURL(blob);
-
-  const suffix = cinematicState.format === 'portrait' ? '1080x1350-Vertical' : '1920x1080';
-  const a = document.createElement('a');
-  a.style.display = 'none';
-  a.href = url;
-  a.download = `SAGMA-30s-Showcase-BucketElevator-SatakeVBF-${suffix}.${ext}`;
-  document.body.appendChild(a);
-  a.click();
-
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 5000);
 }
 
 async function stopCinematicShowcase(wasCancelled = false) {
-  if (!cinematicState.active) return;
+  if (!cinematicState.active && !wasCancelled) return;
 
   cinematicState.active = false;
   cinematicState.cancelled = Boolean(wasCancelled);
 
-  // Stop MediaRecorder (triggers onstop -> exportRecordedShowcaseVideo if not cancelled)
   if (cinematicState.mediaRecorder && cinematicState.mediaRecorder.state !== 'inactive') {
     try {
       cinematicState.mediaRecorder.stop();
-    } catch (e) {
-      console.warn('Recorder stop warning:', e);
-    }
+    } catch (e) {}
   }
 
-  // Restore UI, Camera FOV, PixelRatio & OrbitControls immediately
   document.body.classList.remove('cinematic-mode');
   document.getElementById('cinematicStatusPill')?.classList.remove('active');
   document.getElementById('btnCinematicShowcase')?.classList.remove('recording');
@@ -3736,14 +4579,13 @@ async function stopCinematicShowcase(wasCancelled = false) {
     camera.updateProjectionMatrix();
   }
   if (renderer) {
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    applyQualityPreset(currentQualityPreset);
   }
   if (controls) {
     controls.enabled = true;
   }
 
-  // Restore user's previously viewed individual machine & settings
-  const restoreId = cinematicState.savedMachineId || 'elevator_69b';
+  const restoreId = cinematicState.savedMachineId || 'combined_process_line';
   const restoreMeta = await EchoDB.get(restoreId) || FLEET_CATALOG.find(m => m.id === restoreId) || FLEET_CATALOG[0];
   await loadMachineTwin(restoreMeta, { silent: true, skipCameraReset: true, skipHashUpdate: true });
 
@@ -3780,10 +4622,43 @@ function animate() {
     if (hudFPS) hudFPS.textContent = measuredFPS.toFixed(1) + ' FPS';
   }
 
-  // Advance Live Mechanical Kinematics & Particle Streams (if not LOTO locked and not driven by master cinematic timeline)
+  // If deterministic WebCodecs export is running, it steps and renders frames inside its own loop
+  if (cinematicState.active && !cinematicState.mediaRecorder) {
+    return;
+  }
+
+  // If fallback real-time MediaRecorder is active
+  if (cinematicState.active && cinematicState.mediaRecorder) {
+    const elapsed = Math.max(0, (now - cinematicState.startTime) / 1000);
+    cinematicState.elapsed = elapsed;
+    if (elapsed >= CINEMATIC_TOTAL_DURATION) {
+      stopCinematicShowcase(false);
+      return;
+    }
+    applyMasterTimelinePose(elapsed, true);
+    renderer.render(scene, camera);
+    renderCompositeVideoFrame(elapsed);
+    return;
+  }
+
+  // Interactive 30s Timeline Scrubber Preview / Presentation Mode Auto-Loop
+  if (isTimelinePreviewPlaying) {
+    timelinePreviewElapsed += delta;
+    if (timelinePreviewElapsed >= CINEMATIC_TOTAL_DURATION) {
+      timelinePreviewElapsed = 0.0; // Smooth loop in Presentation Mode & Preview
+    }
+    updateScrubberUI(timelinePreviewElapsed);
+    applyMasterTimelinePose(timelinePreviewElapsed, false);
+    updateCalloutPositions();
+    if (renderer && scene && camera) {
+      renderer.render(scene, camera);
+    }
+    return;
+  }
+
+  // Standard Interactive Mode: Advance Live Mechanical Kinematics & Particle Streams
   const isLotoLocked = document.getElementById('lotoIndicator')?.classList.contains('locked');
-  if (!cinematicState.active && isLiveMotionActive && !isLotoLocked && driveSpeedMultiplier > 0) {
-    // 1. Rotate mechanical rotors, pulleys, screw flights, and rolls
+  if (isLiveMotionActive && !isLotoLocked && driveSpeedMultiplier > 0) {
     for (let i = 0; i < kinematicRotors.length; i++) {
       const item = kinematicRotors[i];
       if (item && item.mesh) {
@@ -3794,7 +4669,6 @@ function animate() {
       }
     }
 
-    // 2. Advance closed-loop conveyor buckets (Up-Leg Full -> Head Pulley Tipping -> Down-Leg Empty -> Boot Pulley Scoop)
     if (kinematicBuckets.length > 0 && currentExplodeFactor < 0.02) {
       for (let i = 0; i < kinematicBuckets.length; i++) {
         const b = kinematicBuckets[i];
@@ -3803,7 +4677,6 @@ function animate() {
         const p = b.phase;
 
         if (p < 0.44) {
-          // Up-Leg ascending (carrying grain from boot to head)
           const u = p / 0.44;
           b.mesh.position.set(-0.2605, 0.65 + u * 8.40, b.baseZ);
           b.mesh.rotation.set(0, 0, 0);
@@ -3812,7 +4685,6 @@ function animate() {
             b.grainFill.scale.set(1, 1, 1);
           }
         } else if (p < 0.50) {
-          // Centrifugal discharge arc over Head Pulley (turning clockwise from -X over top to +X)
           const u = (p - 0.44) / 0.06;
           const theta = Math.PI * (1.0 - u);
           b.mesh.position.set(Math.cos(theta) * 0.2605, 9.05 + Math.sin(theta) * 0.26, b.baseZ);
@@ -3823,7 +4695,6 @@ function animate() {
             b.grainFill.scale.set(shrink, shrink, shrink);
           }
         } else if (p < 0.94) {
-          // Down-Leg descending (returning inverted and EMPTY from head to boot)
           const u = (p - 0.50) / 0.44;
           b.mesh.position.set(0.2605, 9.05 - u * 8.40, b.baseZ);
           b.mesh.rotation.set(0, 0, Math.PI);
@@ -3831,7 +4702,6 @@ function animate() {
             b.grainFill.visible = false;
           }
         } else {
-          // Boot Take-Up Pulley scoop turn (bottom arc from +X under boot to -X)
           const u = (p - 0.94) / 0.06;
           const theta = -Math.PI * u;
           b.mesh.position.set(Math.cos(theta) * 0.2605, 0.65 + Math.sin(theta) * 0.26, b.baseZ);
@@ -3845,66 +4715,17 @@ function animate() {
       }
     }
 
-    // 3. Advance Instanced 3D Grain Flow across Both Connected Machines in Interactive Mode
     updateInstancedGrainSimulation(delta, false);
-
-    // 4. Update internal grain & aspiration airflow point streams
-    if (grainParticleSystem && grainParticlesData.length > 0 && grainParticleSystem.geometry) {
-      const posAttr = grainParticleSystem.geometry.attributes.position;
-      const arr = posAttr.array;
-
-      for (let i = 0; i < grainParticlesData.length; i++) {
-        const p = grainParticlesData[i];
-        if (p.mode === 'vortex') {
-          p.angle += p.speed * driveSpeedMultiplier * delta;
-          p.h += (p.isAir ? 0.55 : 0.34) * driveSpeedMultiplier * delta;
-          if (p.h > 1.0) p.h -= 1.0;
-
-          const r = p.radius + Math.sin(p.h * Math.PI * 2 + p.angle) * 0.018;
-          arr[i * 3] = Math.cos(p.angle) * r;
-          arr[i * 3 + 1] = 0.50 + p.h * 1.05;
-          arr[i * 3 + 2] = Math.sin(p.angle) * r;
-        } else if (p.mode === 'elevator') {
-          p.t = (p.t + p.speed * driveSpeedMultiplier * delta) % 1.0;
-          if (p.t < 0.84) {
-            const legFrac = p.t / 0.84;
-            arr[i * 3] = -0.195 + p.jitterX;
-            arr[i * 3 + 1] = 0.45 + legFrac * 8.75;
-            arr[i * 3 + 2] = p.jitterZ;
-          } else {
-            // Centrifugal discharge arc over head pulley into discharge spout
-            const arcFrac = (p.t - 0.84) / 0.16;
-            const theta = Math.PI - arcFrac * Math.PI * 0.88;
-            arr[i * 3] = Math.cos(theta) * 0.24 + arcFrac * 0.28;
-            arr[i * 3 + 1] = 9.15 + Math.sin(theta) * 0.26 - arcFrac * 0.45;
-            arr[i * 3 + 2] = p.jitterZ;
-          }
-        }
-      }
-      posAttr.needsUpdate = true;
-    }
   }
 
-  // Advance 30-Second Cinematic Camera Choreography or Manual OrbitControls
-  if (cinematicState.active) {
-    updateCinematicChoreography(now);
-  } else if (controls) {
+  if (controls) {
     controls.update();
   }
 
-  // Update DOM 3D Callout Positions when in interactive mode (during recording, callouts are rendered directly onto the fixed stage canvas)
-  if (!cinematicState.active) {
-    updateCalloutPositions();
-  }
+  updateCalloutPositions();
 
-  // Render Scene
   if (renderer && scene && camera) {
     renderer.render(scene, camera);
-  }
-
-  // Draw Composite 2D Video Frame (WebGL + 3D Callout Badges + Lower-Third Title Cards) if Recording
-  if (cinematicState.active) {
-    renderCompositeVideoFrame(cinematicState.elapsed);
   }
 }
 
@@ -3926,7 +4747,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // 4. Initialize Client IndexedDB
   await EchoDB.init();
 
-  // 5. Check URL Hash Route or Load Default Unified Process Line (Unit 01 Bucket Elevator + Unit 02 Satake VBF)
+  // 5. Check URL Hash Route or Load Default Connected Process Line (Unit 01 Bucket Elevator + Unit 02 Satake VBF)
   const hash = window.location.hash;
   let initialMachine = null;
   if (hash.startsWith('#machine/')) {
@@ -3935,7 +4756,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (!initialMachine) {
-    initialMachine = await EchoDB.get('elevator_69b') || await EchoDB.get('satake_vbf') || FLEET_CATALOG[0];
+    initialMachine = await EchoDB.get('combined_process_line') || FLEET_CATALOG[0];
   }
 
   // 6. Launch Initial 3D Twin Workspace
