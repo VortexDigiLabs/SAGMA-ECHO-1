@@ -1063,12 +1063,11 @@
       50% { box-shadow: 0 0 22px rgba(248, 113, 113, 0.85); }
     }
 
-    /* Hide non-essential panels while 30s Cinematic Showcase is active */
+    /* Hide non-essential panels while 30s Cinematic Showcase is active (keep 3D Callout Indicators visible!) */
     body.cinematic-mode header,
     body.cinematic-mode .telemetry-hud,
     body.cinematic-mode .viewport-toolbar,
-    body.cinematic-mode .machine-spec-drawer,
-    body.cinematic-mode #callout-overlay-root {
+    body.cinematic-mode .machine-spec-drawer {
       opacity: 0 !important;
       pointer-events: none !important;
       transition: opacity 0.45s ease !important;

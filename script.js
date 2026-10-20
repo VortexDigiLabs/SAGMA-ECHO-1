@@ -557,29 +557,37 @@ let lastTime = performance.now();
 let lastFpsUpdate = performance.now();
 let measuredFPS = 60.0;
 
-function generateStudioEnvironment(rendererInstance) {
+function generateStudioEnvironment(rendererInstance, isDark = true) {
   try {
     const pmremGenerator = new THREE.PMREMGenerator(rendererInstance);
     pmremGenerator.compileEquirectangularShader();
 
     const envScene = new THREE.Scene();
-    envScene.background = new THREE.Color(0x0b1015);
+    envScene.background = new THREE.Color(isDark ? 0x0b1118 : 0xd4dfd8);
 
     // Overhead Softbox Strip
     const topStrip = new THREE.Mesh(
-      new THREE.PlaneGeometry(18, 8),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+      new THREE.PlaneGeometry(22, 10),
+      new THREE.MeshBasicMaterial({ color: isDark ? 0xffffff : 0xf8fafc, side: THREE.DoubleSide })
     );
-    topStrip.position.set(0, 10, 0);
+    topStrip.position.set(0, 11, 0);
     topStrip.rotation.x = Math.PI / 2;
     envScene.add(topStrip);
 
+    // Dark Contrast Horizon Band (crucial in Light Theme so metallic & chrome surfaces have rich dark reflections instead of washing out white!)
+    const horizonBand = new THREE.Mesh(
+      new THREE.CylinderGeometry(16, 16, 5, 36, 1, true),
+      new THREE.MeshBasicMaterial({ color: isDark ? 0x070b10 : 0x1e293b, side: THREE.DoubleSide })
+    );
+    horizonBand.position.set(0, 0, 0);
+    envScene.add(horizonBand);
+
     // Warm Key Studio Strip (Brass/Gold specular enhancer)
     const warmKey = new THREE.Mesh(
-      new THREE.PlaneGeometry(12, 10),
+      new THREE.PlaneGeometry(14, 10),
       new THREE.MeshBasicMaterial({ color: 0xffd699, side: THREE.DoubleSide })
     );
-    warmKey.position.set(12, 4, 10);
+    warmKey.position.set(12, 5, 10);
     warmKey.lookAt(0, 0, 0);
     envScene.add(warmKey);
 
@@ -594,19 +602,42 @@ function generateStudioEnvironment(rendererInstance) {
 
     // SAGMA Emerald Floor Bounce
     const floorBounce = new THREE.Mesh(
-      new THREE.PlaneGeometry(24, 24),
-      new THREE.MeshBasicMaterial({ color: 0x0d3b26, side: THREE.DoubleSide })
+      new THREE.PlaneGeometry(28, 28),
+      new THREE.MeshBasicMaterial({ color: isDark ? 0x0d3b26 : 0x1e3a2f, side: THREE.DoubleSide })
     );
     floorBounce.position.set(0, -8, 0);
     floorBounce.rotation.x = -Math.PI / 2;
     envScene.add(floorBounce);
 
-    const envRT = pmremGenerator.fromScene(envScene, 0.04);
+    const envRT = pmremGenerator.fromScene(envScene, 0.035);
     pmremGenerator.dispose();
     return envRT.texture;
   } catch (e) {
     console.warn('PMREM environment fallback:', e);
     return null;
+  }
+}
+
+function applyViewportThemeLighting(isDark) {
+  if (!scene || !renderer) return;
+  const bgHex = isDark ? 0x090d12 : 0xD8E2DC;
+  scene.background = new THREE.Color(bgHex);
+  scene.fog = new THREE.FogExp2(bgHex, isDark ? 0.028 : 0.018);
+
+  // Adjust exposure & studio light intensities so Light Theme has deep contrast and never washes out
+  renderer.toneMappingExposure = isDark ? 1.22 : 0.96;
+  if (ambientLight) ambientLight.intensity = isDark ? 0.55 : 0.42;
+  if (dirLight) dirLight.intensity = isDark ? 2.3 : 1.85;
+  if (fillLight) fillLight.intensity = isDark ? 1.35 : 1.05;
+  if (rimLight) rimLight.intensity = isDark ? 0.85 : 0.65;
+  if (shadowPlane && shadowPlane.material) {
+    shadowPlane.material.opacity = isDark ? 0.48 : 0.35;
+  }
+
+  if (studioEnvTexture) studioEnvTexture.dispose();
+  studioEnvTexture = generateStudioEnvironment(renderer, isDark);
+  if (studioEnvTexture) {
+    scene.environment = studioEnvTexture;
   }
 }
 
@@ -777,88 +808,104 @@ function clearCurrentScene() {
 // ============================================================================
 function createMuseumPalette() {
   return {
-    sagmaGreen: new THREE.MeshStandardMaterial({
-      color: 0x064E30,
-      metalness: 0.45,
-      roughness: 0.28,
-      envMapIntensity: 1.4,
+    sagmaGreen: new THREE.MeshPhysicalMaterial({
+      color: 0x054B2E,
+      metalness: 0.52,
+      roughness: 0.24,
+      clearcoat: 0.65,
+      clearcoatRoughness: 0.14,
+      reflectivity: 0.85,
+      envMapIntensity: 1.55,
       side: THREE.DoubleSide
     }),
-    gunmetal: new THREE.MeshStandardMaterial({
-      color: 0x1A2129,
-      metalness: 0.85,
-      roughness: 0.26,
-      envMapIntensity: 1.5,
+    gunmetal: new THREE.MeshPhysicalMaterial({
+      color: 0x1D252E,
+      metalness: 0.82,
+      roughness: 0.24,
+      clearcoat: 0.35,
+      clearcoatRoughness: 0.2,
+      envMapIntensity: 1.65,
       side: THREE.DoubleSide
     }),
     darkCastIron: new THREE.MeshStandardMaterial({
-      color: 0x11161B,
+      color: 0x14191F,
       metalness: 0.72,
-      roughness: 0.45,
-      envMapIntensity: 1.2,
+      roughness: 0.42,
+      envMapIntensity: 1.35,
       side: THREE.DoubleSide
     }),
-    machinedSteel: new THREE.MeshStandardMaterial({
-      color: 0xCFD8E3,
-      metalness: 0.96,
-      roughness: 0.14,
-      envMapIntensity: 1.8,
-      side: THREE.DoubleSide
-    }),
-    brushedChrome: new THREE.MeshStandardMaterial({
-      color: 0xE2E8F0,
-      metalness: 0.98,
-      roughness: 0.08,
-      envMapIntensity: 2.0,
-      side: THREE.DoubleSide
-    }),
-    anodizedBrass: new THREE.MeshStandardMaterial({
-      color: 0xD99B26,
-      metalness: 0.94,
+    machinedSteel: new THREE.MeshPhysicalMaterial({
+      color: 0x94A3B8,
+      metalness: 0.86,
       roughness: 0.18,
+      clearcoat: 0.45,
+      clearcoatRoughness: 0.12,
       envMapIntensity: 1.9,
+      side: THREE.DoubleSide
+    }),
+    brushedChrome: new THREE.MeshPhysicalMaterial({
+      color: 0xB8C4D0,
+      metalness: 0.90,
+      roughness: 0.12,
+      clearcoat: 0.6,
+      clearcoatRoughness: 0.08,
+      envMapIntensity: 2.1,
+      side: THREE.DoubleSide
+    }),
+    anodizedBrass: new THREE.MeshPhysicalMaterial({
+      color: 0xD99622,
+      metalness: 0.88,
+      roughness: 0.18,
+      clearcoat: 0.5,
+      clearcoatRoughness: 0.12,
+      envMapIntensity: 2.0,
       side: THREE.DoubleSide
     }),
     bronzeBushing: new THREE.MeshStandardMaterial({
       color: 0xB87333,
-      metalness: 0.88,
+      metalness: 0.86,
       roughness: 0.24,
-      envMapIntensity: 1.6,
+      envMapIntensity: 1.7,
       side: THREE.DoubleSide
     }),
     sensorCyan: new THREE.MeshStandardMaterial({
       color: 0x0EA5E9,
       emissive: 0x0284C7,
-      emissiveIntensity: 0.55,
-      metalness: 0.5,
+      emissiveIntensity: 0.65,
+      metalness: 0.55,
       roughness: 0.2
     }),
-    safetyRed: new THREE.MeshStandardMaterial({
+    safetyRed: new THREE.MeshPhysicalMaterial({
       color: 0xDC2626,
-      metalness: 0.65,
-      roughness: 0.28
+      metalness: 0.58,
+      roughness: 0.26,
+      clearcoat: 0.5,
+      clearcoatRoughness: 0.15
     }),
     opticalGlass: new THREE.MeshPhysicalMaterial({
-      color: 0x93C5FD,
-      transmission: 0.85,
-      opacity: 0.28,
+      color: 0x38BDF8,
+      transmission: 0.78,
+      opacity: 0.36,
       transparent: true,
       roughness: 0.06,
-      metalness: 0.05,
+      metalness: 0.08,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05,
       ior: 1.52,
-      reflectivity: 0.9,
-      envMapIntensity: 2.2,
+      reflectivity: 0.95,
+      envMapIntensity: 2.4,
       depthWrite: false,
       side: THREE.DoubleSide
     }),
     slottedCageGlass: new THREE.MeshPhysicalMaterial({
-      color: 0xA7F3D0,
-      transmission: 0.72,
-      opacity: 0.34,
+      color: 0x34D399,
+      transmission: 0.68,
+      opacity: 0.38,
       transparent: true,
-      roughness: 0.15,
-      metalness: 0.2,
-      envMapIntensity: 1.8,
+      roughness: 0.14,
+      metalness: 0.22,
+      clearcoat: 0.8,
+      envMapIntensity: 1.9,
       depthWrite: false,
       side: THREE.DoubleSide
     })
@@ -987,7 +1034,7 @@ function buildMuseumSatakeVBF() {
   drivePulley.position.set(0.48, 0.28, 0.04);
   drivePulley.rotation.x = Math.PI / 2;
   motorGroup.add(drivePulley);
-  kinematicRotors.push({ mesh: drivePulley, axis: 'z', speed: 6.5 });
+  kinematicRotors.push({ mesh: drivePulley, axis: 'y', speed: -6.5 });
   root.add(motorGroup);
 
   // 4. Air Induction Fan & Central Hollow Rotor Duct (Tag 09)
@@ -1003,7 +1050,7 @@ function buildMuseumSatakeVBF() {
   impellerHub.rotation.x = Math.PI / 2;
   impellerHub.position.set(-0.22, 0.26, 0.27);
   fanGroup.add(impellerHub);
-  kinematicRotors.push({ mesh: impellerHub, axis: 'z', speed: 9.0 });
+  kinematicRotors.push({ mesh: impellerHub, axis: 'y', speed: -9.0 });
 
   // Aspiration Air Manifold Pipe
   const airPipe = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.32, 24), P.machinedSteel);
@@ -1027,7 +1074,7 @@ function buildMuseumSatakeVBF() {
     flight.rotation.x = (i % 2 === 0) ? 0.12 : -0.12;
     scrollGroup.add(flight);
   }
-  kinematicRotors.push({ mesh: scrollGroup, axis: 'y', speed: 4.8 });
+  kinematicRotors.push({ mesh: scrollGroup, axis: 'y', speed: -4.8 });
   root.add(scrollGroup);
 
   // 6. Cylindrical Steel Rotor - Split Segment Design (Tag 04) & Beater Bars (Tag 05)
@@ -1061,7 +1108,7 @@ function buildMuseumSatakeVBF() {
     beaterGroup.add(bar);
   }
   rotorGroup.add(beaterGroup);
-  kinematicRotors.push({ mesh: rotorGroup, axis: 'y', speed: 4.8 });
+  kinematicRotors.push({ mesh: rotorGroup, axis: 'y', speed: -4.8 });
   root.add(rotorGroup);
 
   // 7. Multifaceted Slotted Screen Cartridge & Optical Cutaway Cage (Tag 06 & 07)
@@ -1207,7 +1254,7 @@ function createSatakeParticleStream(root) {
       angle,
       radius,
       h,
-      speed: 2.8 + Math.random() * 2.2
+      speed: -(2.8 + Math.random() * 2.2)
     });
   }
 
@@ -1234,6 +1281,14 @@ function createSatakeParticleStream(root) {
 // ============================================================================
 function enhanceBucketElevatorRoot(gltfRoot) {
   const P = createMuseumPalette();
+  kinematicBuckets = [];
+
+  // Add Museum Instrument Bench Plinth under Bucket Elevator Boot
+  const bootPlinth = createInstrumentBenchPlinth(1.6, 1.3, P);
+  bootPlinth.position.y = -0.06;
+  gltfRoot.add(bootPlinth);
+
+  let bucketIndex = 0;
 
   gltfRoot.traverse(child => {
     if (!child.isMesh) return;
@@ -1242,12 +1297,24 @@ function enhanceBucketElevatorRoot(gltfRoot) {
     if (n.includes('pulley') || n.includes('flange') || n.includes('takeup_screw')) {
       child.material = P.anodizedBrass.clone();
       if (n.includes('pulley')) {
-        kinematicRotors.push({ mesh: child, axis: 'z', speed: 3.5 });
+        //Pulley Cylinder in GLTF has rotation.x = +90 deg so local Y axis is the true horizontal shaft axis!
+        // Rotate around local 'y' with negative speed (-3.8) so top moves from UpLeg (-X) to Discharge (+X)
+        kinematicRotors.push({ mesh: child, axis: 'y', speed: -3.8 });
       }
     } else if (n.includes('bucket_')) {
       child.material = P.brushedChrome.clone();
+      child.userData.noExplode = true;
+      // Register bucket for continuous loop animation along UpLeg -> Head Pulley -> DownLeg -> Boot Pulley
+      kinematicBuckets.push({
+        mesh: child,
+        phase: bucketIndex / 59
+      });
+      bucketIndex++;
     } else if (n.includes('shaft') || n.includes('bearing')) {
       child.material = P.machinedSteel.clone();
+      if (n.includes('shaft')) {
+        kinematicRotors.push({ mesh: child, axis: 'y', speed: -3.8 });
+      }
     } else if (n.includes('viewport') || n.includes('cutaway') || n.includes('grain_flow')) {
       child.material = P.opticalGlass.clone();
       cutawayGlassMeshes.push(child);
@@ -1918,15 +1985,18 @@ function updateCalloutPositions() {
       tempV.set(anchor[0], anchor[1], anchor[2]);
     }
 
-    // Check if behind camera
+    // Save anchor screen projection before de-overlapping for leader lines in video export
     tempV.project(camera);
     const isBehind = tempV.z > 1.0;
 
     if (isBehind) {
       item.el.style.display = 'none';
+      item.screenPos = null;
     } else {
-      let x = (tempV.x * 0.5 + 0.5) * width;
-      let y = (-(tempV.y * 0.5) + 0.5) * height;
+      const anchorX = (tempV.x * 0.5 + 0.5) * width;
+      const anchorY = (-(tempV.y * 0.5) + 0.5) * height;
+      let x = anchorX;
+      let y = anchorY;
 
       // Screen-space collision avoidance so neighboring part labels never stack on top of each other
       for (let pass = 0; pass < 3; pass++) {
@@ -1942,6 +2012,22 @@ function updateCalloutPositions() {
         }
       }
       placedPositions.push({ x, y });
+
+      const tagNum = item.data.tag || ((idx + 1) < 10 ? '0' + (idx + 1) : '' + (idx + 1));
+      const shortName = item.data.shortLabel || (item.data.title ? item.data.title.replace(/\s*\([^)]*\)/g, '').trim() : 'Part');
+
+      item.screenPos = {
+        x,
+        y,
+        anchorX,
+        anchorY,
+        normX: x / Math.max(1, width),
+        normY: y / Math.max(1, height),
+        normAnchorX: anchorX / Math.max(1, width),
+        normAnchorY: anchorY / Math.max(1, height),
+        tagNum,
+        shortName
+      };
 
       item.el.style.display = 'flex';
       item.el.style.left = x + 'px';
@@ -2384,12 +2470,9 @@ function setupDOMListeners() {
   document.getElementById('btnToggleStudioMode')?.addEventListener('click', () => {
     document.body.classList.toggle('studio-dark-mode');
     const isDark = document.body.classList.contains('studio-dark-mode');
-    if (scene) {
-      scene.background = new THREE.Color(isDark ? 0x090D11 : 0xEAF0EB);
-      scene.fog.color = new THREE.Color(isDark ? 0x090D11 : 0xEAF0EB);
-    }
+    applyViewportThemeLighting(isDark);
     if (groundGrid && groundGrid.material) {
-      groundGrid.material.opacity = isDark ? 0.35 : 0.55;
+      groundGrid.material.opacity = isDark ? 0.35 : 0.65;
     }
   });
 
@@ -2621,12 +2704,21 @@ async function startCinematicShowcase() {
   }
   renderer.render(scene, camera);
 
-  // Create Composite 2D Canvas matching WebGL canvas pixel dimensions for 60 FPS capture + lower-third titles
+  // Create Composite 2D Canvas at minimum Full HD (1080p+) resolution for boardroom-grade 60 FPS video capture
   const webglCanvas = renderer.domElement;
   const compCanvas = document.createElement('canvas');
-  compCanvas.width = webglCanvas.width;
-  compCanvas.height = webglCanvas.height;
+  const minTargetWidth = 1920;
+  const resBoost = webglCanvas.width < minTargetWidth ? (minTargetWidth / Math.max(1, webglCanvas.width)) : 1.0;
+  compCanvas.width = Math.round(webglCanvas.width * resBoost);
+  compCanvas.height = Math.round(webglCanvas.height * resBoost);
+  // Ensure even pixel dimensions for H.264 hardware encoders
+  if (compCanvas.width % 2 !== 0) compCanvas.width += 1;
+  if (compCanvas.height % 2 !== 0) compCanvas.height += 1;
   const compCtx = compCanvas.getContext('2d');
+  if (compCtx) {
+    compCtx.imageSmoothingEnabled = true;
+    compCtx.imageSmoothingQuality = 'high';
+  }
 
   cinematicState.compositeCanvas = compCanvas;
   cinematicState.compositeCtx = compCtx;
@@ -2638,13 +2730,15 @@ async function startCinematicShowcase() {
   cinematicState.elapsed = 0;
   cinematicState.active = true;
 
-  // Draw first composite frame before starting stream
+  // Update callouts & draw first composite frame before starting stream
+  updateCalloutPositions();
   renderCompositeVideoFrame(0);
 
   // Initialize MediaRecorder at 60 FPS with highest supported MP4 H.264/AVC codec first
   try {
     const stream = compCanvas.captureStream(60);
     const mimeTypes = [
+      'video/mp4;codecs=avc1.64002A,mp4a.40.2',
       'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
       'video/mp4;codecs=avc1',
       'video/mp4',
@@ -2654,7 +2748,7 @@ async function startCinematicShowcase() {
     const selectedMimeType = mimeTypes.find(type => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(type)) || '';
     cinematicState.selectedMimeType = selectedMimeType;
 
-    const recOptions = { videoBitsPerSecond: 16000000 }; // 16 Mbps high-bitrate studio capture
+    const recOptions = { videoBitsPerSecond: 25000000 }; // 25 Mbps ultra-crisp boardroom master bitrate
     if (selectedMimeType) {
       recOptions.mimeType = selectedMimeType;
     }
@@ -2684,15 +2778,15 @@ async function triggerPhase2SatakeTransition() {
   cinematicState.phase = 2;
 
   const phaseTag = document.getElementById('cinematicPhaseTag');
-  if (phaseTag) phaseTag.textContent = 'UNIT 02: SATAKE VBF DEGERMER (STATIC)';
+  if (phaseTag) phaseTag.textContent = 'UNIT 02: SATAKE VBF DEGERMER (LIVE OPERATION)';
 
   const satakeMeta = await EchoDB.get('satake_vbf') || FLEET_CATALOG.find(m => m.id === 'satake_vbf') || FLEET_CATALOG[0];
   await loadMachineTwin(satakeMeta, { silent: true, skipCameraReset: true, skipHashUpdate: true });
 
-  // Keep Satake VBF in a stopped/static position during cinematic video recording
-  isLiveMotionActive = false;
-  driveSpeedMultiplier = 0;
-  if (grainParticleSystem) grainParticleSystem.visible = false;
+  // Ensure Satake VBF mechanical movement & grain/air vortex are actively running during Phase 2 recording
+  isLiveMotionActive = true;
+  driveSpeedMultiplier = 1.25;
+  if (grainParticleSystem) grainParticleSystem.visible = true;
 
   // Start Hero Orbit (15s-20s) with solid emerald casing, then activate cutaway at 20s
   setCutawayState(false);
@@ -2721,8 +2815,8 @@ function updateCinematicChoreography(now) {
   // ==========================================================================
   if (elapsed < 15.0) {
     const phaseTag = document.getElementById('cinematicPhaseTag');
-    if (phaseTag && phaseTag.textContent !== 'UNIT 01: BUCKET ELEVATOR') {
-      phaseTag.textContent = 'UNIT 01: BUCKET ELEVATOR';
+    if (phaseTag && phaseTag.textContent !== 'UNIT 01: BUCKET ELEVATOR (LIVE OPERATION)') {
+      phaseTag.textContent = 'UNIT 01: BUCKET ELEVATOR (LIVE OPERATION)';
     }
 
     if (elapsed < 5.0) {
@@ -2785,17 +2879,19 @@ function updateCinematicChoreography(now) {
       camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
       controls.target.set(0, lookY, 0);
     } else if (p2Time < 10.0) {
-      // 20s - 25s (Close-Up Internal Inspection): Dolly in toward cylindrical screen & decorticating rotor assembly, activating cutaway view (machine remains still)
+      // 20s - 25s (Close-Up Internal Inspection): Dolly in toward cylindrical screen & spinning decorticating rotor assembly, activating cutaway view
       if (!isCutawayActive) {
         setCutawayState(true);
       }
       const u = cubicEaseInOut((p2Time - 5.0) / 5.0);
       const angle = THREE.MathUtils.lerp(1.35, 0.25, u);
-      const radius = THREE.MathUtils.lerp(2.45, 1.32, u);
+      const radius = THREE.MathUtils.lerp(2.45, 1.38, u);
       const camY = THREE.MathUtils.lerp(1.82, 1.18, u);
       const lookY = THREE.MathUtils.lerp(1.08, 1.02, u);
 
-      updateExplodedView(0);
+      // Subtle 18% radial separation of screen halves to clearly showcase spinning rotor & maize vortex
+      const explodeAmt = Math.sin(u * Math.PI) * 0.18;
+      updateExplodedView(explodeAmt);
 
       camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
       controls.target.set(0, lookY, 0);
@@ -2808,7 +2904,7 @@ function updateCinematicChoreography(now) {
       const pullProgress = Math.min(1.0, (p2Time - 10.0) / 3.8);
       const u = cubicEaseInOut(pullProgress);
       const angle = THREE.MathUtils.lerp(0.25, 0.68, u);
-      const radius = THREE.MathUtils.lerp(1.32, 2.75, u);
+      const radius = THREE.MathUtils.lerp(1.38, 2.75, u);
       const camY = THREE.MathUtils.lerp(1.18, 1.72, u);
       const lookY = THREE.MathUtils.lerp(1.02, 1.05, u);
 
@@ -2829,33 +2925,114 @@ function renderCompositeVideoFrame(elapsed) {
   const canvas = cinematicState.compositeCanvas;
   const webglCanvas = renderer.domElement;
 
-  if (canvas.width !== webglCanvas.width || canvas.height !== webglCanvas.height) {
-    canvas.width = webglCanvas.width;
-    canvas.height = webglCanvas.height;
+  const minTargetWidth = 1920;
+  const resBoost = webglCanvas.width < minTargetWidth ? (minTargetWidth / Math.max(1, webglCanvas.width)) : 1.0;
+  let targetW = Math.round(webglCanvas.width * resBoost);
+  let targetH = Math.round(webglCanvas.height * resBoost);
+  if (targetW % 2 !== 0) targetW += 1;
+  if (targetH % 2 !== 0) targetH += 1;
+
+  if (canvas.width !== targetW || canvas.height !== targetH) {
+    canvas.width = targetW;
+    canvas.height = targetH;
   }
 
   const w = canvas.width;
   const h = canvas.height;
-  const scale = Math.max(0.75, Math.min(w / 1920, 1.5));
+  const scale = Math.max(0.75, Math.min(w / 1920, 1.6));
 
   // 1. Copy live Three.js WebGL frame onto 2D composite canvas
   ctx.drawImage(webglCanvas, 0, 0, w, h);
 
-  // 2. Subtle Cinematic Vignette & Bottom Gradient for Typography Legibility
+  // 2. Render 3D Spatial Part Indicator Badges, Leader Lines & Anchor Dots onto Video Frame
+  if (calloutElements && calloutElements.length > 0) {
+    ctx.save();
+    const fontTag = `700 ${Math.round(12 * scale)}px "DM Mono", monospace`;
+    const fontName = `600 ${Math.round(12.5 * scale)}px "DM Sans", sans-serif`;
+    const pillH = Math.round(28 * scale);
+    const pillRadius = Math.round(14 * scale);
+
+    for (let i = 0; i < calloutElements.length; i++) {
+      const item = calloutElements[i];
+      const sp = item.screenPos;
+      if (!sp) continue;
+
+      const bx = sp.normX * w;
+      const by = sp.normY * h;
+      const ax = sp.normAnchorX * w;
+      const ay = sp.normAnchorY * h;
+
+      // Avoid overlapping the top-left brand header or bottom lower-third title card
+      if (by < 98 * scale || by > h - 140 * scale || bx < 50 * scale || bx > w - 120 * scale) continue;
+
+      // Leader line from 3D mechanical anchor point to indicator pill
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      ctx.strokeStyle = 'rgba(74, 222, 128, 0.72)';
+      ctx.lineWidth = Math.max(1.5, 1.8 * scale);
+      ctx.stroke();
+
+      // Glowing anchor dot on the 3D machine component
+      ctx.beginPath();
+      ctx.arc(ax, ay, Math.max(3, 4.2 * scale), 0, Math.PI * 2);
+      ctx.fillStyle = '#4ADE80';
+      ctx.fill();
+      ctx.lineWidth = Math.max(1, 1.5 * scale);
+      ctx.strokeStyle = '#090D12';
+      ctx.stroke();
+
+      // Measure text to size the indicator badge pill
+      ctx.font = fontTag;
+      const tagW = ctx.measureText(sp.tagNum).width;
+      ctx.font = fontName;
+      const nameW = ctx.measureText(sp.shortName).width;
+
+      const padLeft = Math.round(10 * scale);
+      const gap = Math.round(8 * scale);
+      const padRight = Math.round(12 * scale);
+      const pillW = Math.round(padLeft + tagW + gap + nameW + padRight);
+      const pillX = Math.round(bx - pillW * 0.15);
+      const pillY = Math.round(by - pillH * 0.5);
+
+      // Dark glassmorphic pill background with emerald border
+      ctx.fillStyle = 'rgba(11, 18, 25, 0.90)';
+      ctx.strokeStyle = 'rgba(34, 197, 94, 0.80)';
+      ctx.lineWidth = Math.max(1.2, 1.6 * scale);
+      ctx.beginPath();
+      ctx.roundRect(pillX, pillY, pillW, pillH, pillRadius);
+      ctx.fill();
+      ctx.stroke();
+
+      // Tag Number (01, 02...)
+      ctx.font = fontTag;
+      ctx.fillStyle = '#4ADE80';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(sp.tagNum, pillX + padLeft, pillY + pillH / 2);
+
+      // Part Name Label
+      ctx.font = fontName;
+      ctx.fillStyle = '#F8FAFC';
+      ctx.fillText(sp.shortName, pillX + padLeft + tagW + gap, pillY + pillH / 2);
+    }
+    ctx.restore();
+  }
+
+  // 3. Subtle Cinematic Vignette & Bottom Gradient for Typography Legibility
   const grad = ctx.createLinearGradient(0, h * 0.72, 0, h);
   grad.addColorStop(0, 'rgba(9, 13, 18, 0)');
-  grad.addColorStop(1, 'rgba(9, 13, 18, 0.78)');
+  grad.addColorStop(1, 'rgba(9, 13, 18, 0.80)');
   ctx.fillStyle = grad;
   ctx.fillRect(0, h * 0.72, w, h * 0.28);
 
-  // 3. Top-Left SAGMA Brand Watermark Badge
+  // 4. Top-Left SAGMA Brand Watermark Badge
   const padX = Math.round(36 * scale);
   const padY = Math.round(32 * scale);
   ctx.save();
-  ctx.fillStyle = 'rgba(13, 21, 28, 0.82)';
-  ctx.strokeStyle = 'rgba(22, 163, 74, 0.55)';
+  ctx.fillStyle = 'rgba(13, 21, 28, 0.88)';
+  ctx.strokeStyle = 'rgba(22, 163, 74, 0.65)';
   ctx.lineWidth = Math.max(1.5, 2 * scale);
-  const badgeW = Math.round(340 * scale);
+  const badgeW = Math.round(355 * scale);
   const badgeH = Math.round(54 * scale);
   ctx.beginPath();
   ctx.roundRect(padX, padY, badgeW, badgeH, Math.round(27 * scale));
@@ -2876,7 +3053,7 @@ function renderCompositeVideoFrame(elapsed) {
   ctx.fillText('SOUTHERN AFRICAN GRAIN MILLING ACADEMY', padX + Math.round(58 * scale), padY + Math.round(42 * scale));
   ctx.restore();
 
-  // 4. Lower-Third Title Card (0s-15s Bucket Elevator | 15s-30s Satake VBF Degermer)
+  // 5. Lower-Third Title Card (0s-15s Bucket Elevator | 15s-30s Satake VBF Degermer)
   const isPhase1 = elapsed < 15.0;
   const localT = isPhase1 ? elapsed : (elapsed - 15.0);
   // Smooth fade-in during first 0.7s and fade-out during last 0.6s of each 15s phase
@@ -2909,8 +3086,8 @@ function renderCompositeVideoFrame(elapsed) {
   const cardW = Math.min(w - padX * 2, Math.round(920 * scale));
 
   // Lower-third glass card background
-  ctx.fillStyle = 'rgba(9, 14, 20, 0.86)';
-  ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
+  ctx.fillStyle = 'rgba(9, 14, 20, 0.88)';
+  ctx.strokeStyle = 'rgba(251, 191, 36, 0.50)';
   ctx.lineWidth = Math.max(1.5, 2 * scale);
   ctx.beginPath();
   ctx.roundRect(cardX, cardY, cardW, cardH, Math.round(10 * scale));
@@ -2940,7 +3117,7 @@ function renderCompositeVideoFrame(elapsed) {
 
   ctx.restore();
 
-  // 5. Transition Flash at 15.0s Whip-Pan Cut
+  // 6. Transition Flash at 15.0s Whip-Pan Cut
   const distToCut = Math.abs(elapsed - 15.0);
   if (distToCut < 0.35) {
     const flashAlpha = (1 - distToCut / 0.35) * 0.45;
@@ -3040,7 +3217,41 @@ function animate() {
       }
     }
 
-    // 2. Update internal grain & aspiration airflow particle streams
+    // 2. Advance closed-loop conveyor buckets (Up-Leg -> Head Pulley Arc -> Down-Leg -> Boot Pulley Arc)
+    if (kinematicBuckets.length > 0 && currentExplodeFactor < 0.02) {
+      for (let i = 0; i < kinematicBuckets.length; i++) {
+        const b = kinematicBuckets[i];
+        if (!b || !b.mesh) continue;
+        b.phase = (b.phase + 0.14 * driveSpeedMultiplier * delta) % 1.0;
+        const p = b.phase;
+
+        if (p < 0.44) {
+          // Up-Leg ascending (carrying grain from boot to head)
+          const u = p / 0.44;
+          b.mesh.position.set(-0.2605, 0.65 + u * 8.40, b.baseZ);
+          b.mesh.rotation.set(0, 0, 0);
+        } else if (p < 0.50) {
+          // Centrifugal discharge arc over Head Pulley (turning clockwise from -X over top to +X)
+          const u = (p - 0.44) / 0.06;
+          const theta = Math.PI * (1.0 - u);
+          b.mesh.position.set(Math.cos(theta) * 0.2605, 9.05 + Math.sin(theta) * 0.26, b.baseZ);
+          b.mesh.rotation.set(0, 0, theta - Math.PI);
+        } else if (p < 0.94) {
+          // Down-Leg descending (returning inverted from head to boot)
+          const u = (p - 0.50) / 0.44;
+          b.mesh.position.set(0.2605, 9.05 - u * 8.40, b.baseZ);
+          b.mesh.rotation.set(0, 0, Math.PI);
+        } else {
+          // Boot Take-Up Pulley scoop turn (bottom arc from +X under boot to -X)
+          const u = (p - 0.94) / 0.06;
+          const theta = -Math.PI * u;
+          b.mesh.position.set(Math.cos(theta) * 0.2605, 0.65 + Math.sin(theta) * 0.26, b.baseZ);
+          b.mesh.rotation.set(0, 0, theta - Math.PI);
+        }
+      }
+    }
+
+    // 3. Update internal grain & aspiration airflow particle streams
     if (grainParticleSystem && grainParticlesData.length > 0 && grainParticleSystem.geometry) {
       const posAttr = grainParticleSystem.geometry.attributes.position;
       const arr = posAttr.array;
@@ -3084,17 +3295,15 @@ function animate() {
     controls.update();
   }
 
-  // Update 3D Callout Positions in Viewport
-  if (!cinematicState.active) {
-    updateCalloutPositions();
-  }
+  // Always update 3D Callout Positions so both viewport badges and recorded video callouts track the camera
+  updateCalloutPositions();
 
   // Render Scene
   if (renderer && scene && camera) {
     renderer.render(scene, camera);
   }
 
-  // Draw Composite 2D Video Frame (WebGL + Lower-Third Title Cards) if Recording
+  // Draw Composite 2D Video Frame (WebGL + 3D Callout Badges + Lower-Third Title Cards) if Recording
   if (cinematicState.active) {
     renderCompositeVideoFrame(cinematicState.elapsed);
   }
