@@ -1318,10 +1318,11 @@ function enhanceBucketElevatorRoot(gltfRoot, options = {}) {
   });
   const bucketGrainGeo = new THREE.BoxGeometry(0.11, 0.055, 0.16);
 
-  let bucketIndex = 0;
+  const bucketMeshes = [];
 
   gltfRoot.traverse(child => {
     if (!child.isMesh) return;
+    if (child.userData && child.userData.isGrainFill) return;
     const n = (child.name || '').toLowerCase();
 
     if (n.includes('pulley') || n.includes('flange') || n.includes('takeup_screw')) {
@@ -1334,23 +1335,7 @@ function enhanceBucketElevatorRoot(gltfRoot, options = {}) {
     } else if (n.includes('bucket_')) {
       child.material = P.brushedChrome.clone();
       child.userData.noExplode = true;
-
-      // Attach a visible grain fill mound inside each bucket (visible when rising on Up-Leg, hidden when empty on return Down-Leg!)
-      const fillMesh = new THREE.Mesh(bucketGrainGeo, bucketGrainMat);
-      fillMesh.name = 'Bucket_Grain_Fill_Mound';
-      fillMesh.position.set(0, 0.032, 0);
-      fillMesh.userData.noExplode = true;
-      fillMesh.userData.isGrainFill = true;
-      child.add(fillMesh);
-
-      // Register bucket for continuous loop animation along UpLeg -> Head Pulley -> DownLeg -> Boot Pulley
-      kinematicBuckets.push({
-        mesh: child,
-        grainFill: fillMesh,
-        phase: bucketIndex / 59,
-        baseZ: child.position.z || 0
-      });
-      bucketIndex++;
+      bucketMeshes.push(child);
     } else if (n.includes('shaft') || n.includes('bearing')) {
       child.material = P.machinedSteel.clone();
       if (n.includes('shaft')) {
@@ -1374,6 +1359,24 @@ function enhanceBucketElevatorRoot(gltfRoot, options = {}) {
         child.material = P.gunmetal.clone();
       }
     }
+  });
+
+  // Attach a visible grain fill mound inside each bucket AFTER traversal so child.add() never mutates an active traverse() walk!
+  const totalBuckets = Math.max(1, bucketMeshes.length);
+  bucketMeshes.forEach((bMesh, idx) => {
+    const fillMesh = new THREE.Mesh(bucketGrainGeo, bucketGrainMat);
+    fillMesh.name = 'Bucket_Grain_Fill_Mound';
+    fillMesh.position.set(0, 0.032, 0);
+    fillMesh.userData.noExplode = true;
+    fillMesh.userData.isGrainFill = true;
+    bMesh.add(fillMesh);
+
+    kinematicBuckets.push({
+      mesh: bMesh,
+      grainFill: fillMesh,
+      phase: idx / totalBuckets,
+      baseZ: bMesh.position.z || 0
+    });
   });
 
   if (!options.skipInternalParticles) {
