@@ -364,36 +364,10 @@ const TRANSLATIONS = {
   }
 };
 
-// 4. FLEET CATALOG - AUTHORITATIVE VERIFIED 3D TRAINING UNITS (BUCKET ELEVATOR, SATAKE VBF & CONNECTED PROCESS LINE)
+// 4. FLEET CATALOG - AUTHORITATIVE VERIFIED 3D TRAINING UNITS (BUCKET ELEVATOR & SATAKE VBF)
 const FLEET_CATALOG = [
   // --------------------------------------------------------------------------
-  // CONNECTED PROCESS LINE: Unit 01 Bucket Elevator -> Spout -> Unit 02 Satake VBF
-  // --------------------------------------------------------------------------
-  {
-    id: "combined_process_line",
-    name: "Connected Milling Process Line (Unit 01 + Unit 02)",
-    sub: "Bucket Elevator Feeding Satake VBF Degermer via Sight-Glass Transfer Spout",
-    category: "06_conveying",
-    categoryName: "01 & 06 - Integrated Conveying & Degerming Process",
-    oem: "DIN Standard / Satake / SAGMA",
-    model: "Diagram 69(b) + Satake VBF 10A",
-    throughput: "35 - 120 t/h Elevator • 4.5 - 12.0 t/h Degermer",
-    speed: "1.8 - 2.8 m/s Belt • 750 - 920 RPM Rotor",
-    power: "7.5 - 22 kW + 37 - 75 kW",
-    syllabus: "SAGMA Maize Mod 4 & 5 / Wheat Mod 2 & 5",
-    sourceFile: "assets/elevator_full_diagram69b.glb",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Bucket_elevator.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 186,
-    callouts: DIAGRAM_69B_CALLOUTS,
-    defaultCam: { pos: [0.58, 1.32, 3.38], target: [0.56, 1.16, 0] },
-    defaultShader: "default",
-    isDefault: true
-  },
-
-  // --------------------------------------------------------------------------
-  // CATEGORY 06: Conveying, Dust Handling & Packing
+  // CATEGORY 06: Conveying, Dust Handling & Packing (UNIT 01)
   // --------------------------------------------------------------------------
   {
     id: "elevator_69b",
@@ -414,11 +388,12 @@ const FLEET_CATALOG = [
     partsCount: 99,
     callouts: DIAGRAM_69B_CALLOUTS,
     defaultCam: { pos: [2.5, 2.0, 3.2], target: [0, 1.2, 0] },
-    defaultShader: "default"
+    defaultShader: "default",
+    isDefault: true
   },
 
   // --------------------------------------------------------------------------
-  // CATEGORY 01: Degerming, Debranning & Decortication
+  // CATEGORY 01: Degerming, Debranning & Decortication (UNIT 02)
   // --------------------------------------------------------------------------
   {
     id: "satake_vbf",
@@ -445,7 +420,7 @@ const FLEET_CATALOG = [
 
 // 5. CLIENT INDEXEDDB PERSISTENCE (ECHO_STUDIO_DB)
 const DB_NAME = 'ECHO_STUDIO_DB';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 const STORE_NAME = 'machines';
 
 const EchoDB = {
@@ -3091,15 +3066,7 @@ function togglePresentationMode() {
     if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});
     }
-    // Ensure connected dual-machine process line is loaded and start smooth 30s loop
-    if (!currentMachineMeta || currentMachineMeta.id !== 'combined_process_line') {
-      const combo = FLEET_CATALOG.find(m => m.id === 'combined_process_line') || FLEET_CATALOG[0];
-      loadMachineTwin(combo, { silent: true, skipCameraReset: true, skipHashUpdate: true }).then(() => {
-        setTimelinePreviewPlaying(true);
-      });
-    } else {
-      setTimelinePreviewPlaying(true);
-    }
+    setTimelinePreviewPlaying(true);
   } else {
     if (document.fullscreenElement && document.exitFullscreen) {
       document.exitFullscreen().catch(() => {});
@@ -3116,11 +3083,6 @@ function setTimelinePreviewPlaying(playing) {
   if (btn) btn.classList.toggle('active', isTimelinePreviewPlaying);
   if (icon) icon.textContent = isTimelinePreviewPlaying ? '⏸' : '▶';
   if (txt) txt.textContent = isTimelinePreviewPlaying ? 'Pause 30s Preview' : 'Play 30s Preview';
-
-  if (isTimelinePreviewPlaying && (!currentMachineMeta || currentMachineMeta.id !== 'combined_process_line')) {
-    const combo = FLEET_CATALOG.find(m => m.id === 'combined_process_line') || FLEET_CATALOG[0];
-    loadMachineTwin(combo, { silent: true, skipCameraReset: true, skipHashUpdate: true });
-  }
 }
 
 function seekMasterTimeline(sec) {
@@ -3554,9 +3516,388 @@ const CINEMATIC_BEATS_METADATA = [
   }
 ];
 
+// ----------------------------------------------------------------------------
+// DEDICATED 30-SECOND 6-BEAT CHOREOGRAPHY FOR EACH INDIVIDUAL MACHINE & PROCESS LINE
+// ----------------------------------------------------------------------------
+function getActiveCinematicMode() {
+  if (cinematicState.active && cinematicState.recordingMode) {
+    return cinematicState.recordingMode;
+  }
+  const id = currentMachineMeta ? currentMachineMeta.id : 'elevator_69b';
+  if (id === 'satake_vbf') return 'satake_vbf';
+  if (id === 'combined_process_line') return 'combined_process_line';
+  return 'elevator_69b';
+}
+
+// 1A. UNIT 01 ONLY (INDUSTRIAL BUCKET ELEVATOR) — 30-Second 6-Beat Choreography
+const ELEVATOR_ONLY_BEATS_METADATA = [
+  {
+    beatIndex: 1,
+    start: 0.0,
+    end: 4.0,
+    flowStageIndex: 0, // 01 INTAKE
+    scrubberTitle: 'BEAT 01 (00–04s) • UNIT 01 HERO FULL-HEIGHT ESTABLISHING SHOT',
+    unitTitle: 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR | DIN 22104 / SAGMA Diagram 69(b)',
+    phaseText: 'BEAT 01 (00–04s) • FULL-HEIGHT ESTABLISHING SHOT & BOOT GRAIN INTAKE',
+    specUnit: 1,
+    focusWorld: [0.0, 1.05, 0.0],
+    camKeyframes: [
+      [0.0, 1.12, 4.85],
+      [0.18, 1.10, 4.75],
+      [0.08, 1.06, 4.35]
+    ],
+    lookKeyframes: [
+      [0.0, 0.98, 0.0],
+      [0.0, 0.98, 0.0],
+      [0.0, 0.92, 0.0]
+    ]
+  },
+  {
+    beatIndex: 2,
+    start: 4.0,
+    end: 10.0,
+    flowStageIndex: 0, // 01 INTAKE & TENSIONING
+    scrubberTitle: 'BEAT 02 (04–10s) • BOOT INTAKE SPOUT, TENSIONER & CLEANOUT DOORS',
+    unitTitle: 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR | Boot Assembly & Down-Leg Infeed',
+    phaseText: 'BEAT 02 (04–10s) • DOWN-LEG BOOT FEED SPOUT, ACME SCREW TENSIONER & CLEANOUT DOORS',
+    specUnit: 1,
+    focusWorld: [0.0, 0.32, 0.0],
+    camKeyframes: [
+      [0.08, 1.06, 4.35],
+      [-0.48, 0.38, 1.38],
+      [0.42, 0.42, 1.42],
+      [0.26, 0.82, 1.62]
+    ],
+    lookKeyframes: [
+      [0.0, 0.92, 0.0],
+      [-0.06, 0.28, 0.0],
+      [0.04, 0.28, 0.0],
+      [0.0, 0.78, 0.0]
+    ]
+  },
+  {
+    beatIndex: 3,
+    start: 10.0,
+    end: 15.0,
+    flowStageIndex: 1, // 02 ELEVATE
+    scrubberTitle: 'BEAT 03 (10–15s) • TWIN-LEG TRUNKING, ANTISTATIC BELT & BUCKET CLIMB',
+    unitTitle: 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR | Twin-Leg Casing & 58 Deep Buckets',
+    phaseText: 'BEAT 03 (10–15s) • DIN 22104 ANTISTATIC BELT, 300 MM BUCKET PITCH & ROTATION FRAME',
+    specUnit: 1,
+    focusWorld: [-0.05, 1.25, 0.0],
+    camKeyframes: [
+      [0.26, 0.82, 1.62],
+      [-0.32, 1.15, 1.52],
+      [0.28, 1.48, 1.56],
+      [0.32, 1.88, 1.65]
+    ],
+    lookKeyframes: [
+      [0.0, 0.78, 0.0],
+      [-0.04, 1.12, 0.0],
+      [0.0, 1.45, 0.0],
+      [0.0, 1.92, 0.0]
+    ]
+  },
+  {
+    beatIndex: 4,
+    start: 15.0,
+    end: 21.0,
+    flowStageIndex: 2, // 03 DRIVE & HEAD
+    scrubberTitle: 'BEAT 04 (15–21s) • HEAD DRIVE PULLEY, GEARMOTOR & SLIP SENSOR',
+    unitTitle: 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR | 391 mm Crowned Pulley & Drive Assembly',
+    phaseText: 'BEAT 04 (15–21s) • SPLIT REMOVABLE HOOD, CROWNED DRIVE PULLEY & THERMAL SLIP SENSOR',
+    specUnit: 1,
+    focusWorld: [0.0, 2.18, 0.0],
+    camKeyframes: [
+      [0.32, 1.88, 1.65],
+      [-0.46, 2.15, 1.52],
+      [-0.12, 2.22, 1.48],
+      [0.38, 2.14, 1.54]
+    ],
+    lookKeyframes: [
+      [0.0, 1.92, 0.0],
+      [-0.06, 2.12, 0.0],
+      [0.0, 2.18, 0.0],
+      [0.06, 2.10, 0.0]
+    ]
+  },
+  {
+    beatIndex: 5,
+    start: 21.0,
+    end: 27.0,
+    flowStageIndex: 3, // 04 CENTRIFUGAL DISCHARGE
+    scrubberTitle: 'BEAT 05 (21–27s) • CENTRIFUGAL DISCHARGE SADDLE & WEAR PLATES',
+    unitTitle: 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR | Centrifugal Discharge & Wear Liners',
+    phaseText: 'BEAT 05 (21–27s) • TANGENTIAL GRAIN THROW, DISCHARGE SADDLE & RUBBER DEFLECTOR',
+    specUnit: 1,
+    focusWorld: [0.14, 2.10, 0.0],
+    camKeyframes: [
+      [0.38, 2.14, 1.54],
+      [0.56, 2.06, 1.42],
+      [0.35, 1.95, 1.62],
+      [0.24, 1.52, 2.85]
+    ],
+    lookKeyframes: [
+      [0.06, 2.10, 0.0],
+      [0.14, 2.06, 0.0],
+      [0.10, 1.98, 0.0],
+      [0.0, 1.35, 0.0]
+    ]
+  },
+  {
+    beatIndex: 6,
+    start: 27.0,
+    end: 30.0,
+    flowStageIndex: 4, // 05 OUTPUT SUMMARY
+    scrubberTitle: 'BEAT 06 (27–30s) • FULL ELEVATOR WIDE PULLBACK & BOARDROOM END CARD',
+    unitTitle: 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR | Complete Vertical Conveying System',
+    phaseText: 'BEAT 06 (27–30s) • FULL-HEIGHT OVERVIEW, TELEMETRY SUMMARY & CLOSING END CARD',
+    specUnit: 1,
+    focusWorld: [0.0, 1.18, 0.0],
+    camKeyframes: [
+      [0.24, 1.52, 2.85],
+      [0.06, 1.12, 4.75],
+      [0.0, 1.12, 4.85]
+    ],
+    lookKeyframes: [
+      [0.0, 1.35, 0.0],
+      [0.0, 0.98, 0.0],
+      [0.0, 0.98, 0.0]
+    ]
+  }
+];
+
+const ELEVATOR_ONLY_CALLOUT_SCHEDULE = [
+  // Beat 1 (0-4s): Full Elevator Wide Shot
+  { id: 'split_hood',      unit: 1, start: 0.1, end: 3.9, side: 'left',  worldAnchor: [0.0, 2.28, 0.0] },
+  { id: 'trunking_legs',   unit: 1, start: 0.2, end: 3.9, side: 'left',  worldAnchor: [-0.06, 1.22, 0.0] },
+  { id: 'discharge_saddle',unit: 1, start: 0.3, end: 3.9, side: 'right', worldAnchor: [0.12, 2.10, 0.0] },
+  { id: 'boot_feed',       unit: 1, start: 0.4, end: 3.9, side: 'right', worldAnchor: [-0.11, 0.24, 0.0] },
+
+  // Beat 2 (4-10s): Boot Intake, Tensioner & Cleanout Doors
+  { id: 'boot_feed',       unit: 1, start: 4.0, end: 9.95, side: 'left',  worldAnchor: [-0.11, 0.24, 0.0] },
+  { id: 'boot_takeup',     unit: 1, start: 4.1, end: 9.95, side: 'right', worldAnchor: [0.05, 0.18, 0.0] },
+  { id: 'cleanout_doors',  unit: 1, start: 4.2, end: 9.95, side: 'right', worldAnchor: [0.06, 0.34, 0.0] },
+
+  // Beat 3 (10-15s): Twin-Leg Trunking, Antistatic Belt, Deep Buckets & Tie Frame
+  { id: 'trunking_legs',   unit: 1, start: 10.0, end: 14.95, side: 'left',  worldAnchor: [-0.06, 1.18, 0.0] },
+  { id: 'antistatic_belt', unit: 1, start: 10.1, end: 14.95, side: 'left',  worldAnchor: [-0.06, 1.48, 0.0] },
+  { id: 'deep_buckets',    unit: 1, start: 10.2, end: 14.95, side: 'right', worldAnchor: [-0.05, 1.32, 0.0] },
+  { id: 'rotation_frame',  unit: 1, start: 10.3, end: 14.95, side: 'right', worldAnchor: [0.05, 1.05, 0.0] },
+
+  // Beat 4 (15-21s): Split Hood, Drive Motor, Crowned Pulley & Thermal Slip Sensor
+  { id: 'split_hood',      unit: 1, start: 15.0, end: 20.95, side: 'left',  worldAnchor: [0.0, 2.30, 0.0] },
+  { id: 'drive_motor',     unit: 1, start: 15.1, end: 20.95, side: 'left',  worldAnchor: [-0.12, 2.14, 0.0] },
+  { id: 'crowned_pulley',  unit: 1, start: 15.2, end: 20.95, side: 'right', worldAnchor: [0.0, 2.22, 0.0] },
+  { id: 'head_sensor',     unit: 1, start: 15.3, end: 20.95, side: 'right', worldAnchor: [0.06, 2.16, 0.0] },
+
+  // Beat 5 (21-27s): Centrifugal Discharge Saddle, Wear Plates & Crowned Pulley
+  { id: 'crowned_pulley',   unit: 1, start: 21.0, end: 26.95, side: 'left',  worldAnchor: [0.0, 2.22, 0.0] },
+  { id: 'head_sensor',      unit: 1, start: 21.1, end: 26.95, side: 'left',  worldAnchor: [-0.06, 2.14, 0.0] },
+  { id: 'discharge_saddle', unit: 1, start: 21.2, end: 26.95, side: 'right', worldAnchor: [0.12, 2.12, 0.0] },
+  { id: 'wear_plates',      unit: 1, start: 21.3, end: 26.95, side: 'right', worldAnchor: [0.18, 2.04, 0.0] },
+
+  // Beat 6 (27-30s): Full Pullback Wide Shot
+  { id: 'split_hood',       unit: 1, start: 27.0, end: 30.0, side: 'left',  worldAnchor: [0.0, 2.28, 0.0] },
+  { id: 'boot_feed',        unit: 1, start: 27.1, end: 30.0, side: 'left',  worldAnchor: [-0.11, 0.24, 0.0] },
+  { id: 'discharge_saddle', unit: 1, start: 27.1, end: 30.0, side: 'right', worldAnchor: [0.12, 2.12, 0.0] },
+  { id: 'boot_takeup',      unit: 1, start: 27.2, end: 30.0, side: 'right', worldAnchor: [0.05, 0.18, 0.0] }
+];
+
+// 1B. UNIT 02 ONLY (SATAKE VBF VERTICAL MAIZE DEGERMER) — 30-Second 6-Beat Choreography
+const SATAKE_ONLY_BEATS_METADATA = [
+  {
+    beatIndex: 1,
+    start: 0.0,
+    end: 4.0,
+    flowStageIndex: 0, // 01 INTAKE
+    scrubberTitle: 'BEAT 01 (00–04s) • UNIT 02 SATAKE VBF HERO ESTABLISHING SHOT',
+    unitTitle: 'UNIT 02: SATAKE VBF VERTICAL MAIZE DEGERMER | VBF 5A / 7B / 10A Series',
+    phaseText: 'BEAT 01 (00–04s) • FULL MACHINE ESTABLISHING SHOT & CONDITIONED MAIZE INTAKE',
+    specUnit: 2,
+    focusWorld: [0.0, 0.92, 0.0],
+    camKeyframes: [
+      [0.0, 1.02, 4.15],
+      [0.22, 1.04, 4.05],
+      [0.36, 1.18, 3.65]
+    ],
+    lookKeyframes: [
+      [0.0, 0.88, 0.0],
+      [0.02, 0.88, 0.0],
+      [0.08, 1.02, 0.0]
+    ]
+  },
+  {
+    beatIndex: 2,
+    start: 4.0,
+    end: 10.0,
+    flowStageIndex: 1, // 02 SCREW FEED
+    scrubberTitle: 'BEAT 02 (04–10s) • RARE-EARTH MAGNET TRAP & MOTORIZED SCREW FEEDER',
+    unitTitle: 'UNIT 02: SATAKE VBF VERTICAL MAIZE DEGERMER | Top Inlet & Screw Feeder',
+    phaseText: 'BEAT 02 (04–10s) • >10,000 GAUSS MAGNET TRAP, MOTORIZED FEED SCREW & DISTRIBUTION SCROLL',
+    specUnit: 2,
+    focusWorld: [0.28, 1.68, 0.0],
+    camKeyframes: [
+      [0.36, 1.18, 3.65],
+      [0.72, 1.78, 1.65],
+      [0.45, 1.25, 1.72],
+      [0.18, 1.12, 1.68]
+    ],
+    lookKeyframes: [
+      [0.08, 1.02, 0.0],
+      [0.28, 1.72, 0.0],
+      [0.12, 1.15, 0.0],
+      [0.0, 1.08, 0.0]
+    ]
+  },
+  {
+    beatIndex: 3,
+    start: 10.0,
+    end: 15.0,
+    flowStageIndex: 2, // 03 ROTOR SCOURING
+    scrubberTitle: 'BEAT 03 (10–15s) • X-RAY CUTAWAY: SPLIT STEEL ROTOR & BEATER BARS',
+    unitTitle: 'UNIT 02: SATAKE VBF VERTICAL MAIZE DEGERMER | 465 RPM Split Steel Rotor',
+    phaseText: 'BEAT 03 (10–15s) • VERTICAL DISTRIBUTION SCROLL, SPLIT ROTOR DRUM & HARDENED BEATER BARS',
+    specUnit: 2,
+    focusWorld: [0.0, 1.12, 0.0],
+    camKeyframes: [
+      [0.18, 1.12, 1.68],
+      [-0.36, 1.14, 1.58],
+      [0.0, 1.08, 1.54],
+      [0.42, 1.16, 1.62]
+    ],
+    lookKeyframes: [
+      [0.0, 1.08, 0.0],
+      [0.0, 1.08, 0.0],
+      [0.0, 1.06, 0.0],
+      [0.05, 1.12, 0.0]
+    ]
+  },
+  {
+    beatIndex: 4,
+    start: 15.0,
+    end: 21.0,
+    flowStageIndex: 3, // 04 SCREEN & ASPIRATION
+    scrubberTitle: 'BEAT 04 (15–21s) • SLOTTED SCREEN CARTRIDGE & RESISTANCE BARS',
+    unitTitle: 'UNIT 02: SATAKE VBF VERTICAL MAIZE DEGERMER | 8-Segment Polygonal Screen Cage',
+    phaseText: 'BEAT 04 (15–21s) • 1.0×12.0 MM SLOTTED SCREENS, RIB CAGE & ADJUSTABLE RESISTANCE BARS',
+    specUnit: 2,
+    focusWorld: [0.0, 1.15, 0.0],
+    camKeyframes: [
+      [0.42, 1.16, 1.62],
+      [0.64, 1.22, 1.68],
+      [-0.48, 1.38, 1.72],
+      [-0.32, 0.85, 1.85]
+    ],
+    lookKeyframes: [
+      [0.05, 1.12, 0.0],
+      [0.08, 1.16, 0.0],
+      [-0.18, 1.38, 0.0],
+      [0.0, 0.65, 0.0]
+    ]
+  },
+  {
+    beatIndex: 5,
+    start: 21.0,
+    end: 27.0,
+    flowStageIndex: 3, // 04 ASPIRATION & 75KW DRIVE
+    scrubberTitle: 'BEAT 05 (21–27s) • AIR INDUCTION FAN, 75 KW MOTOR & OVERTAILS FLAP',
+    unitTitle: 'UNIT 02: SATAKE VBF VERTICAL MAIZE DEGERMER | Aspiration & 75 kW Main Drive',
+    phaseText: 'BEAT 05 (21–27s) • HOLLOW SHAFT AIR INDUCTION, 75 KW V-BELT DRIVE & WEIGHTED RETENTION FLAP',
+    specUnit: 2,
+    focusWorld: [0.0, 0.45, 0.0],
+    camKeyframes: [
+      [-0.32, 0.85, 1.85],
+      [-0.45, 0.48, 1.68],
+      [0.52, 0.52, 1.74],
+      [0.28, 1.05, 2.65]
+    ],
+    lookKeyframes: [
+      [0.0, 0.65, 0.0],
+      [-0.12, 0.34, 0.0],
+      [0.22, 0.36, 0.0],
+      [0.0, 1.02, 0.0]
+    ]
+  },
+  {
+    beatIndex: 6,
+    start: 27.0,
+    end: 30.0,
+    flowStageIndex: 4, // 05 OUTPUT SUMMARY
+    scrubberTitle: 'BEAT 06 (27–30s) • FULL SATAKE VBF PULLBACK & BOARDROOM END CARD',
+    unitTitle: 'UNIT 02: SATAKE VBF VERTICAL MAIZE DEGERMER | Complete Degerming System',
+    phaseText: 'BEAT 06 (27–30s) • FULL MACHINE OVERVIEW, TELEMETRY SUMMARY & CLOSING END CARD',
+    specUnit: 2,
+    focusWorld: [0.0, 1.05, 0.0],
+    camKeyframes: [
+      [0.28, 1.05, 2.65],
+      [0.06, 1.02, 4.05],
+      [0.0, 1.02, 4.15]
+    ],
+    lookKeyframes: [
+      [0.0, 1.02, 0.0],
+      [0.0, 0.88, 0.0],
+      [0.0, 0.88, 0.0]
+    ]
+  }
+];
+
+const SATAKE_ONLY_CALLOUT_SCHEDULE = [
+  // Beat 1 (0-4s): Full Satake VBF Wide Shot
+  { id: '2.1',  unit: 2, start: 0.1, end: 3.9, side: 'right', worldAnchor: [0.38, 1.92, 0.0] },
+  { id: '2.8',  unit: 2, start: 0.2, end: 3.9, side: 'left',  worldAnchor: [-0.35, 1.65, 0.03] },
+  { id: '2.6',  unit: 2, start: 0.3, end: 3.9, side: 'right', worldAnchor: [0.31, 1.12, 0.0] },
+  { id: '2.10', unit: 2, start: 0.4, end: 3.9, side: 'left',  worldAnchor: [0.42, 0.28, -0.18] },
+
+  // Beat 2 (4-10s): Magnet Trap, Motorized Screw Feeder & Distribution Scroll
+  { id: '2.1',  unit: 2, start: 4.0, end: 9.95, side: 'right', worldAnchor: [0.38, 1.92, 0.0] },
+  { id: '2.2',  unit: 2, start: 4.1, end: 9.95, side: 'right', worldAnchor: [0.28, 1.66, 0.0] },
+  { id: '2.8',  unit: 2, start: 4.2, end: 9.95, side: 'left',  worldAnchor: [-0.35, 1.65, 0.03] },
+  { id: '2.3',  unit: 2, start: 4.3, end: 9.95, side: 'left',  worldAnchor: [0.0, 0.56, 0.0] },
+
+  // Beat 3 (10-15s): Split Steel Rotor, Beater Bars & Distribution Scroll
+  { id: '2.4',  unit: 2, start: 10.0, end: 14.95, side: 'left',  worldAnchor: [0.0, 1.12, 0.0] },
+  { id: '2.3',  unit: 2, start: 10.1, end: 14.95, side: 'left',  worldAnchor: [0.0, 0.56, 0.0] },
+  { id: '2.5',  unit: 2, start: 10.2, end: 14.95, side: 'right', worldAnchor: [0.21, 1.12, 0.0] },
+  { id: '2.6',  unit: 2, start: 10.3, end: 14.95, side: 'right', worldAnchor: [0.31, 0.96, 0.0] },
+
+  // Beat 4 (15-21s): Multifaceted Slotted Screen Cartridge, Resistance Bars & Weighted Flap
+  { id: '2.6',  unit: 2, start: 15.0, end: 20.95, side: 'right', worldAnchor: [0.31, 1.12, 0.0] },
+  { id: '2.7',  unit: 2, start: 15.1, end: 20.95, side: 'right', worldAnchor: [0.33, 1.25, 0.0] },
+  { id: '2.8',  unit: 2, start: 15.2, end: 20.95, side: 'left',  worldAnchor: [-0.35, 1.65, 0.03] },
+  { id: '2.4',  unit: 2, start: 15.3, end: 20.95, side: 'left',  worldAnchor: [0.0, 1.12, 0.0] },
+
+  // Beat 5 (21-27s): Air Induction Fan, 75 kW Main Belt Drive & Base Frame
+  { id: '2.9',  unit: 2, start: 21.0, end: 26.95, side: 'left',  worldAnchor: [-0.22, 0.26, 0.26] },
+  { id: '2.3',  unit: 2, start: 21.1, end: 26.95, side: 'left',  worldAnchor: [0.0, 0.56, 0.0] },
+  { id: '2.10', unit: 2, start: 21.2, end: 26.95, side: 'right', worldAnchor: [0.42, 0.28, -0.18] },
+  { id: '2.7',  unit: 2, start: 21.3, end: 26.95, side: 'right', worldAnchor: [0.33, 1.25, 0.0] },
+
+  // Beat 6 (27-30s): Full Satake VBF Wide Pullback
+  { id: '2.1',  unit: 2, start: 27.0, end: 30.0, side: 'right', worldAnchor: [0.38, 1.92, 0.0] },
+  { id: '2.6',  unit: 2, start: 27.1, end: 30.0, side: 'right', worldAnchor: [0.31, 1.12, 0.0] },
+  { id: '2.8',  unit: 2, start: 27.1, end: 30.0, side: 'left',  worldAnchor: [-0.35, 1.65, 0.03] },
+  { id: '2.9',  unit: 2, start: 27.2, end: 30.0, side: 'left',  worldAnchor: [-0.22, 0.26, 0.26] }
+];
+
+function getActiveBeatsCatalog() {
+  const mode = getActiveCinematicMode();
+  if (mode === 'elevator_69b') return ELEVATOR_ONLY_BEATS_METADATA;
+  if (mode === 'satake_vbf') return SATAKE_ONLY_BEATS_METADATA;
+  return CINEMATIC_BEATS_METADATA;
+}
+
+function getActiveCalloutSchedule() {
+  const mode = getActiveCinematicMode();
+  if (mode === 'elevator_69b') return ELEVATOR_ONLY_CALLOUT_SCHEDULE;
+  if (mode === 'satake_vbf') return SATAKE_ONLY_CALLOUT_SCHEDULE;
+  return MASTER_6BEAT_CALLOUT_SCHEDULE;
+}
+
 function getBeatMetadataAtTime(elapsed) {
+  const catalog = getActiveBeatsCatalog();
   const clamped = Math.max(0, Math.min(CINEMATIC_TOTAL_DURATION - 0.001, elapsed));
-  return CINEMATIC_BEATS_METADATA.find(b => clamped >= b.start && clamped < b.end) || CINEMATIC_BEATS_METADATA[CINEMATIC_BEATS_METADATA.length - 1];
+  return catalog.find(b => clamped >= b.start && clamped < b.end) || catalog[catalog.length - 1];
 }
 
 // Guaranteed Callout Schedule across ALL 6 BEATS (0.0s to 30.0s) so every single second of every beat has 3-4 clear callouts!
@@ -3742,10 +4083,13 @@ function applyMasterTimelinePose(elapsed, isRecording = false) {
   // 3. Advance 7-Stage Instanced 3D Grain Flow deterministically
   updateInstancedGrainSimulation(effectiveSimTime, true);
 
-  // 4. Ghosted X-Ray Cutaway Modulation during Beat 5 (21-27s) so Unit 02 internals shine clearly
+  // 4. Ghosted X-Ray Cutaway Modulation so internal rotors, beaters & buckets shine clearly
   if (!isCutawayActive) setCutawayState(true);
   updateExplodedView(0);
-  const isXrayBeat = elapsed >= 21.0 && elapsed < 27.0;
+  const recMode = getActiveCinematicMode();
+  const isXrayBeat = recMode === 'satake_vbf'
+    ? (elapsed >= 10.0 && elapsed < 21.0)
+    : (elapsed >= 21.0 && elapsed < 27.0);
   cutawayGlassMeshes.forEach(glassMesh => {
     if (glassMesh && glassMesh.material) {
       glassMesh.material.opacity = isXrayBeat ? 0.18 : 0.26;
@@ -3850,9 +4194,14 @@ function renderCompositeVideoFrame(elapsed) {
   ctx.fillStyle = botGrad;
   ctx.fillRect(0, h * 0.72, w, h * 0.28);
 
-  // 3. TOP PROCESS-FLOW TRACKER BAR: INTAKE -> ELEVATE -> DISCHARGE -> DEGERM -> OUTPUT
+  // 3. TOP PROCESS-FLOW TRACKER BAR (Adapts dynamically to Unit 01, Unit 02, or Combined Process Line)
   {
-    const stages = ['01 INTAKE', '02 ELEVATE', '03 DISCHARGE', '04 DEGERM', '05 OUTPUT'];
+    const recMode = getActiveCinematicMode();
+    const stages = recMode === 'elevator_69b'
+      ? ['01 INTAKE', '02 TENSION', '03 ELEVATE', '04 HEAD DRIVE', '05 DISCHARGE']
+      : recMode === 'satake_vbf'
+      ? ['01 MAGNET IN', '02 SCREW FEED', '03 ROTOR SCOUR', '04 SCREEN/AIR', '05 OVERTAILS']
+      : ['01 INTAKE', '02 ELEVATE', '03 DISCHARGE', '04 DEGERM', '05 OUTPUT'];
     const activeIdx = currentBeat ? currentBeat.flowStageIndex : 0;
     const trackerW = isPortrait ? Math.round(w * 0.90) : Math.round(780 * scale);
     const trackerH = Math.round(40 * scale);
@@ -3935,8 +4284,9 @@ function renderCompositeVideoFrame(elapsed) {
 
   // 5. TIMED CALLOUT LABELS IN EVERY SINGLE BEAT (0.0s - 30.0s, 3-4 at a time, Zero Overlap, Zero Crossing Lines)
   const activeItems = [];
-  for (let i = 0; i < MASTER_6BEAT_CALLOUT_SCHEDULE.length; i++) {
-    const sched = MASTER_6BEAT_CALLOUT_SCHEDULE[i];
+  const activeSchedule = getActiveCalloutSchedule();
+  for (let i = 0; i < activeSchedule.length; i++) {
+    const sched = activeSchedule[i];
     if (elapsed >= sched.start && elapsed <= sched.end) {
       const catalog = sched.unit === 2 ? SATAKE_CALLOUTS : DIAGRAM_69B_CALLOUTS;
       const calloutObj = catalog.find(c => c.id === sched.id);
@@ -4219,12 +4569,18 @@ function renderCompositeVideoFrame(elapsed) {
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#FBBF24';
     ctx.font = `700 ${Math.round(15 * scale)}px "DM Mono", monospace`;
-    ctx.fillText('EXECUTIVE BOARDROOM SHOWCASE • UNIT 01 ELEVATOR & UNIT 02 SATAKE VBF', w * 0.5, pillY + pillH * 0.5);
+    const recMode = getActiveCinematicMode();
+    const introBannerText = recMode === 'elevator_69b'
+      ? 'EXECUTIVE BOARDROOM SHOWCASE • UNIT 01: INDUSTRIAL BUCKET ELEVATOR'
+      : recMode === 'satake_vbf'
+      ? 'EXECUTIVE BOARDROOM SHOWCASE • UNIT 02: SATAKE VBF MAIZE DEGERMER'
+      : 'EXECUTIVE BOARDROOM SHOWCASE • UNIT 01 ELEVATOR & UNIT 02 SATAKE VBF';
+    ctx.fillText(introBannerText, w * 0.5, pillY + pillH * 0.5);
     ctx.restore();
   }
 
   // Closing End Card Overlay (27.4s - 30.0s) with Round SAGMA Logo & [YOUR CALL TO ACTION]
-  // Positioned cleanly in the bottom-left broadcast safe zone so the full 3D process line remains 100% unobstructed above!
+  // Positioned cleanly in the bottom-left broadcast safe zone so the full 3D machine remains 100% unobstructed above!
   if (elapsed >= 27.4) {
     const endAlpha = cubicEaseInOut(Math.min(1, (elapsed - 27.4) / 0.75));
     ctx.save();
@@ -4262,9 +4618,15 @@ function renderCompositeVideoFrame(elapsed) {
     ctx.font = `700 ${Math.round(22 * scale)}px "DM Sans", sans-serif`;
     ctx.fillText('SOUTHERN AFRICAN GRAIN MILLING ACADEMY • 3D DIGITAL TRAINING TWIN', tx, boxY + Math.round(36 * scale));
 
+    const recMode = getActiveCinematicMode();
+    const endSubText = recMode === 'elevator_69b'
+      ? 'UNIT 01: INDUSTRIAL BUCKET ELEVATOR (DIN 22104) • BOARD OF DIRECTORS EDITION'
+      : recMode === 'satake_vbf'
+      ? 'UNIT 02: SATAKE VBF VERTICAL MAIZE DEGERMER • BOARD OF DIRECTORS EDITION'
+      : 'UNIT 01 BUCKET ELEVATOR & UNIT 02 SATAKE VBF DEGERMER • BOARD OF DIRECTORS EDITION';
     ctx.fillStyle = '#2DD4BF';
     ctx.font = `600 ${Math.round(14 * scale)}px "DM Mono", monospace`;
-    ctx.fillText('UNIT 01 BUCKET ELEVATOR & UNIT 02 SATAKE VBF DEGERMER • BOARD OF DIRECTORS EDITION', tx, boxY + Math.round(63 * scale));
+    ctx.fillText(endSubText, tx, boxY + Math.round(63 * scale));
 
     ctx.fillStyle = '#FBBF24';
     ctx.font = `700 ${Math.round(15.5 * scale)}px "DM Mono", monospace`;
@@ -4321,8 +4683,12 @@ async function startCinematicShowcase(format = 'landscape') {
   cinematicState.stageWidth = stageW;
   cinematicState.stageHeight = stageH;
 
-  // Save user state to restore cleanly after showcase
-  cinematicState.savedMachineId = currentMachineMeta ? currentMachineMeta.id : 'combined_process_line';
+  // Save user state & keep the currently selected machine active (never jump away from the user's selected machine!)
+  const activeMachineId = currentMachineMeta ? currentMachineMeta.id : 'elevator_69b';
+  cinematicState.savedMachineId = activeMachineId;
+  cinematicState.recordingMode = (activeMachineId === 'satake_vbf')
+    ? 'satake_vbf'
+    : (activeMachineId === 'combined_process_line' ? 'combined_process_line' : 'elevator_69b');
   cinematicState.savedCutaway = isCutawayActive;
   cinematicState.savedMotion = isLiveMotionActive;
   cinematicState.savedSpeed = driveSpeedMultiplier;
@@ -4352,9 +4718,11 @@ async function startCinematicShowcase(format = 'landscape') {
 
   if (controls) controls.enabled = false;
 
-  // Always load the Connected Dual-Machine Process Line so Unit 01, the Sight-Glass Transfer Spout, and Unit 02 coexist in one continuous shot!
-  const comboMeta = await EchoDB.get('combined_process_line') || FLEET_CATALOG.find(m => m.id === 'combined_process_line') || FLEET_CATALOG[0];
-  await loadMachineTwin(comboMeta, { silent: true, skipCameraReset: true, skipHashUpdate: true });
+  // Ensure the user's currently selected machine is loaded in the 3D scene
+  if (!currentLoadedRoot) {
+    const targetMeta = await EchoDB.get(activeMachineId) || FLEET_CATALOG.find(m => m.id === activeMachineId) || FLEET_CATALOG[0];
+    await loadMachineTwin(targetMeta, { silent: true, skipCameraReset: true, skipHashUpdate: true });
+  }
 
   if (grainParticleSystem) grainParticleSystem.visible = true;
   if (grainInstancedMesh) {
@@ -4500,10 +4868,16 @@ async function runDeterministicWebCodecsExport(stageW, stageH, isPortrait) {
     window.__lastExportedMasterBlob = masterBlob;
     window.__lastExportedEmailBlob = emailBlob;
 
+    const recMode = getActiveCinematicMode();
+    const unitSlug = recMode === 'elevator_69b'
+      ? 'Unit01-Bucket-Elevator'
+      : recMode === 'satake_vbf'
+      ? 'Unit02-Satake-VBF-Degermer'
+      : 'Connected-Process-Line';
     const suffix = isPortrait ? '1080x1350-Vertical' : `${stageW}x${stageH}-60fps`;
-    triggerBlobDownload(masterBlob, `SAGMA-3D-Training-Twin-30s-Master-24Mbps-${suffix}.mp4`);
+    triggerBlobDownload(masterBlob, `SAGMA-${unitSlug}-30s-Master-24Mbps-${suffix}.mp4`);
     setTimeout(() => {
-      triggerBlobDownload(emailBlob, `SAGMA-3D-Training-Twin-30s-Email-12Mbps-${suffix}.mp4`);
+      triggerBlobDownload(emailBlob, `SAGMA-${unitSlug}-30s-Email-12Mbps-${suffix}.mp4`);
     }, 650);
   } else {
     try { masterEncoder.close(); } catch (e) {}
@@ -4585,9 +4959,11 @@ async function stopCinematicShowcase(wasCancelled = false) {
     controls.enabled = true;
   }
 
-  const restoreId = cinematicState.savedMachineId || 'combined_process_line';
-  const restoreMeta = await EchoDB.get(restoreId) || FLEET_CATALOG.find(m => m.id === restoreId) || FLEET_CATALOG[0];
-  await loadMachineTwin(restoreMeta, { silent: true, skipCameraReset: true, skipHashUpdate: true });
+  const restoreId = cinematicState.savedMachineId || 'elevator_69b';
+  if (!currentMachineMeta || currentMachineMeta.id !== restoreId) {
+    const restoreMeta = await EchoDB.get(restoreId) || FLEET_CATALOG.find(m => m.id === restoreId) || FLEET_CATALOG[0];
+    await loadMachineTwin(restoreMeta, { silent: true, skipCameraReset: true, skipHashUpdate: true });
+  }
 
   isLiveMotionActive = cinematicState.savedMotion !== undefined ? cinematicState.savedMotion : true;
   driveSpeedMultiplier = cinematicState.savedSpeed || 1.0;
@@ -4756,7 +5132,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (!initialMachine) {
-    initialMachine = await EchoDB.get('combined_process_line') || FLEET_CATALOG[0];
+    initialMachine = await EchoDB.get('elevator_69b') || FLEET_CATALOG[0];
   }
 
   // 6. Launch Initial 3D Twin Workspace
