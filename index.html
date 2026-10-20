@@ -1063,14 +1063,18 @@
       50% { box-shadow: 0 0 22px rgba(248, 113, 113, 0.85); }
     }
 
-    /* Hide non-essential panels while 30s Cinematic Showcase is active (keep 3D Callout Indicators visible!) */
+    /* Hide all UI chrome, cursors and debug/DOM overlays while 30s Cinematic Showcase is recording */
+    body.cinematic-mode {
+      cursor: none !important;
+    }
     body.cinematic-mode header,
     body.cinematic-mode .telemetry-hud,
     body.cinematic-mode .viewport-toolbar,
-    body.cinematic-mode .machine-spec-drawer {
+    body.cinematic-mode .machine-spec-drawer,
+    body.cinematic-mode #callout-overlay-root {
       opacity: 0 !important;
       pointer-events: none !important;
-      transition: opacity 0.45s ease !important;
+      transition: opacity 0.35s ease !important;
     }
     body.cinematic-mode #viewport-container {
       top: 0 !important;
@@ -1179,9 +1183,12 @@
         </select>
       </div>
 
-      <!-- 30s Cinematic Showcase & MP4 Video Exporter Button -->
-      <button id="btnCinematicShowcase" class="btn btn-cinematic" title="Run 30-Second Automated Flythrough across Bucket Elevator & Satake VBF and Export MP4 Video">
-        <span>🎬 30s Cinematic Showcase (Export MP4)</span>
+      <!-- 30s Cinematic Showcase & MP4 Video Exporter Buttons (16:9 1080p & 4:5 Portrait) -->
+      <button id="btnCinematicShowcase" class="btn btn-cinematic" title="Run 30-Second Automated Showcase (1920x1080 16:9) and Export MP4 Video with Audio">
+        <span>🎬 30s Showcase (1920×1080)</span>
+      </button>
+      <button id="btnCinematicPortrait" class="btn btn-header" style="border-color: rgba(251, 191, 36, 0.45); color: #FBBF24;" title="Run 30-Second Vertical Showcase (1080x1350 4:5 Portrait) Re-Composed for Social & Mobile">
+        <span>📱 1080×1350 Vertical</span>
       </button>
 
       <!-- Equipment Library Hub Button -->
