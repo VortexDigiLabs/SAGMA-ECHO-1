@@ -1011,6 +1011,117 @@
       color: var(--brand-green);
       font-family: 'DM Mono', monospace;
     }
+
+    /* ============================================================
+       CINEMATIC 30S SHOWCASE & MP4 EXPORTER UI
+       ============================================================ */
+    .btn-cinematic {
+      background: linear-gradient(135deg, #D97706 0%, #B45309 50%, #0D6E45 100%);
+      color: #FFFFFF;
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      box-shadow: 0 2px 14px rgba(217, 119, 6, 0.38);
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    .btn-cinematic:hover {
+      box-shadow: 0 4px 20px rgba(251, 191, 36, 0.55);
+      transform: translateY(-1px);
+      border-color: #FBBF24;
+    }
+    .btn-cinematic.recording {
+      background: linear-gradient(135deg, #DC2626, #991B1B);
+      border-color: #F87171;
+      animation: recPulse 1.4s ease-in-out infinite;
+    }
+    @keyframes recPulse {
+      0%, 100% { box-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
+      50% { box-shadow: 0 0 22px rgba(248, 113, 113, 0.85); }
+    }
+
+    /* Hide non-essential panels while 30s Cinematic Showcase is active */
+    body.cinematic-mode header,
+    body.cinematic-mode .telemetry-hud,
+    body.cinematic-mode .viewport-toolbar,
+    body.cinematic-mode .machine-spec-drawer,
+    body.cinematic-mode #callout-overlay-root {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity 0.45s ease !important;
+    }
+    body.cinematic-mode #viewport-container {
+      top: 0 !important;
+    }
+
+    /* Floating Status Pill during 30s Recording */
+    .cinematic-status-pill {
+      position: fixed;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(9, 13, 18, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      border-radius: 9999px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      z-index: 200;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: 'DM Mono', monospace;
+      color: #F1F7F3;
+    }
+    .cinematic-status-pill.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .rec-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #EF4444;
+      box-shadow: 0 0 10px #EF4444;
+      animation: recBlink 1s infinite;
+    }
+    @keyframes recBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .cinematic-timer-text {
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #FBBF24;
+    }
+    .cinematic-phase-tag {
+      font-size: 0.72rem;
+      color: #9DB2A6;
+      border-left: 1px solid rgba(255, 255, 255, 0.15);
+      padding-left: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+    }
+    .btn-cancel-cinematic {
+      background: rgba(220, 38, 38, 0.22);
+      color: #FCA5A5;
+      border: 1px solid rgba(248, 113, 113, 0.45);
+      border-radius: 9999px;
+      padding: 4px 12px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s ease;
+    }
+    .btn-cancel-cinematic:hover {
+      background: #DC2626;
+      color: #FFFFFF;
+    }
   </style>
 </head>
 <body class="studio-dark-mode">
@@ -1043,6 +1154,11 @@
           <option value="pt-MZ">Português (MZ)</option>
         </select>
       </div>
+
+      <!-- 30s Cinematic Showcase & MP4 Video Exporter Button -->
+      <button id="btnCinematicShowcase" class="btn btn-cinematic" title="Run 30-Second Automated Flythrough across Bucket Elevator & Satake VBF and Export MP4 Video">
+        <span>🎬 30s Cinematic Showcase (Export MP4)</span>
+      </button>
 
       <!-- Equipment Library Hub Button -->
       <button id="btnOpenLibrary" class="btn btn-header">
@@ -1179,6 +1295,14 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
         <span data-i18n="tools.specs">Specs & PDF</span>
       </button>
+    </div>
+
+    <!-- Floating Status Pill for 30s Cinematic Showcase Recording -->
+    <div id="cinematicStatusPill" class="cinematic-status-pill">
+      <div class="rec-dot"></div>
+      <span id="cinematicTimerText" class="cinematic-timer-text">Recording Showcase: 00:00 / 00:30</span>
+      <span id="cinematicPhaseTag" class="cinematic-phase-tag">UNIT 01: BUCKET ELEVATOR</span>
+      <button id="btnCancelCinematic" class="btn-cancel-cinematic" title="Cancel & Stop Showcase">Cancel / Stop</button>
     </div>
 
     <!-- Dedicated Machine Space Side Drawer -->
