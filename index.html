@@ -949,31 +949,56 @@
       font-weight: 600;
     }
 
-    /* 3D Callout Badges */
+    /* 3D Callout Badges (Number + Part Name Pill) */
     .callout-badge {
       position: absolute;
       transform: translate(-50%, -50%);
-      background: var(--brand-green);
-      color: #FFFFFF;
-      font-family: 'DM Mono', monospace;
+      background: rgba(9, 16, 22, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #F1F7F3;
+      font-family: 'DM Sans', sans-serif;
       font-size: 0.72rem;
-      font-weight: 700;
-      padding: 4px 8px;
+      font-weight: 600;
+      padding: 3px 10px 3px 4px;
       border-radius: var(--radius-full);
-      box-shadow: 0 4px 12px rgba(0, 90, 54, 0.4);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 6px;
       pointer-events: auto;
-      border: 1.5px solid #FFFFFF;
+      border: 1.5px solid rgba(74, 222, 128, 0.55);
       z-index: 15;
-      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s;
+      white-space: nowrap;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s, border-color 0.2s;
+    }
+    .callout-tag-num {
+      background: #16A34A;
+      color: #FFFFFF;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.66rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 9999px;
+      line-height: 1.2;
+    }
+    .callout-tag-label {
+      color: #F1F7F3;
+      font-size: 0.71rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
     }
     .callout-badge:hover, .callout-badge.active {
-      transform: translate(-50%, -50%) scale(1.15);
-      background: #16A34A;
-      box-shadow: 0 6px 18px rgba(22, 163, 74, 0.6);
+      transform: translate(-50%, -50%) scale(1.08);
+      background: rgba(13, 110, 69, 0.95);
+      border-color: #FBBF24;
+      box-shadow: 0 6px 20px rgba(22, 163, 74, 0.65);
+      z-index: 25;
+    }
+    .callout-badge:hover .callout-tag-num, .callout-badge.active .callout-tag-num {
+      background: #F59E0B;
+      color: #090D12;
     }
 
     /* Loading Overlay */
@@ -1396,7 +1421,7 @@
         </div>
 
         <div class="category-pills">
-          <button class="cat-pill active" data-cat="all" data-i18n="cat.all">All Machinery (24)</button>
+          <button class="cat-pill active" data-cat="all" data-i18n="cat.all">All Machinery (2)</button>
           <button class="cat-pill" data-cat="01_degerming" data-i18n="cat.c1">01 - Degerming & Debranning</button>
           <button class="cat-pill" data-cat="02_roller_mills" data-i18n="cat.c2">02 - Roller Mills</button>
           <button class="cat-pill" data-cat="03_plansifters" data-i18n="cat.c3">03 - Plansifters & Sifting</button>

@@ -60,7 +60,7 @@ const TRANSLATIONS = {
     "lib.title": "SAGMA Equipment Library",
     "lib.sub": "Browse 6 authoritative grain milling machinery categories with dedicated 3D twin workspaces.",
     "lib.searchPlaceholder": "Search machines, models, OEMs (e.g. Bühler, Satake, MDDK, plansifter)...",
-    "cat.all": "All Machinery (24)",
+    "cat.all": "All Machinery (2)",
     "cat.c1": "01 - Degerming & Debranning",
     "cat.c2": "02 - Roller Mills",
     "cat.c3": "03 - Plansifters & Sifting",
@@ -129,7 +129,7 @@ const TRANSLATIONS = {
     "lib.title": "SAGMA Toerusting Biblioteek",
     "lib.sub": "Blaai deur 6 gesaghebbende graanmaalmasjinerie kategorieë met interaktiewe 3D-ruimtes.",
     "lib.searchPlaceholder": "Soek masjiene, modelle, vervaardigers...",
-    "cat.all": "Alle Masjinerie (24)",
+    "cat.all": "Alle Masjinerie (2)",
     "cat.c1": "01 - Ontkieming & Ontsemeling",
     "cat.c2": "02 - Walsmeule",
     "cat.c3": "03 - Plansifters & Sif",
@@ -198,7 +198,7 @@ const TRANSLATIONS = {
     "lib.title": "Umtapo Wemishini we-SAGMA",
     "lib.sub": "Bheka imikhakha engu-6 yemishini yokugaya okusanhlamvu enezindawo ze-3D.",
     "lib.searchPlaceholder": "Sesha imishini, amagama, abenzi...",
-    "cat.all": "Yonke Imishini (24)",
+    "cat.all": "Yonke Imishini (2)",
     "cat.c1": "01 - Ukususa Inhliziyo Nesikhumba",
     "cat.c2": "02 - Imishini Yokugaya Yamarola",
     "cat.c3": "03 - Amapulensifta Nesihlungo",
@@ -267,7 +267,7 @@ const TRANSLATIONS = {
     "lib.title": "Laeborari ya Mechini ya SAGMA",
     "lib.sub": "Sheba mekgahlelo e 6 ya mechini ya ho sila dithoro ka pono ya 3D.",
     "lib.searchPlaceholder": "Batla mechini, mabitso, baetsi...",
-    "cat.all": "Mechini Yohle (24)",
+    "cat.all": "Mechini Yohle (2)",
     "cat.c1": "01 - Ho Tlosa Bokahare le Letlalo",
     "cat.c2": "02 - Mechini ya ho Sila ya Dithupa",
     "cat.c3": "03 - Dihloli tsa Mabele",
@@ -336,7 +336,7 @@ const TRANSLATIONS = {
     "lib.title": "Biblioteca de Equipamentos SAGMA",
     "lib.sub": "Explore 6 categorias essenciais de moagem com espaços 3D interativos dedicados.",
     "lib.searchPlaceholder": "Pesquise máquinas, modelos, fabricantes...",
-    "cat.all": "Todo Maquinário (24)",
+    "cat.all": "Todo Maquinário (2)",
     "cat.c1": "01 - Degerminação e Descasque",
     "cat.c2": "02 - Moinhos de Rolos",
     "cat.c3": "03 - Plansifters e Peneiramento",
@@ -364,406 +364,8 @@ const TRANSLATIONS = {
   }
 };
 
-// 4. FLEET CATALOG - 24 AUTHORITATIVE MACHINES ACROSS 6 MILLING CATEGORIES
+// 4. FLEET CATALOG - AUTHORITATIVE VERIFIED 3D TRAINING UNITS (BUCKET ELEVATOR & SATAKE VBF)
 const FLEET_CATALOG = [
-  // --------------------------------------------------------------------------
-  // CATEGORY 01: Degerming, Debranning & Decortication
-  // --------------------------------------------------------------------------
-  {
-    id: "satake_vbf",
-    name: "Satake VBF Vertical Maize Degermer",
-    sub: "Vertical Beater & Screen Cone Maize Degerminator",
-    category: "01_degerming",
-    categoryName: "01 - Degerming & Debranning",
-    oem: "Satake Corporation",
-    model: "VBF 5A / 7B / 10A",
-    throughput: "4.5 - 12.0 t/h (Maize)",
-    speed: "750 - 920 RPM",
-    power: "37 - 75 kW 4-Pole",
-    syllabus: "SAGMA Maize Milling Module 4 & 5",
-    sourceFile: "assets/satake_vbf.glb",
-    previewImg: "assets/satake_preview.png",
-    specPdf: "specs/Buhler_02_Maize_Degermer_Plansifter_Puromat.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 87,
-    callouts: SATAKE_CALLOUTS,
-    defaultCam: { pos: [2.2, 2.2, 2.8], target: [0, 1.2, 0] },
-    defaultShader: "default"
-  },
-  {
-    id: "buhler_mhxl",
-    name: "Bühler MHXL Flotation Debranner",
-    sub: "Continuous Surface Decortication for Durum & Wheat",
-    category: "01_degerming",
-    categoryName: "01 - Degerming & Debranning",
-    oem: "Bühler Group",
-    model: "MHXL-30 / MHXL-60",
-    throughput: "6.0 - 18.0 t/h",
-    speed: "1150 RPM",
-    power: "55 - 110 kW",
-    syllabus: "SAGMA Advanced Wheat Debranning Mod 3",
-    sourceFile: "procedural:debranner",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_03_MHXM_Degermer_CombiCleaner_MTKB.pdf",
-    statusBadge: "Mesh Twin",
-    partsCount: 42,
-    callouts: [],
-    defaultCam: { pos: [2.8, 1.8, 2.4], target: [0, 1.0, 0] },
-    defaultShader: "stainless"
-  },
-  {
-    id: "buhler_mhxm",
-    name: "Bühler MHXM Intensive Debranner",
-    sub: "High-Shear Grain Hull Peeler and Bran Stripper",
-    category: "01_degerming",
-    categoryName: "01 - Degerming & Debranning",
-    oem: "Bühler Group",
-    model: "MHXM-100",
-    throughput: "8.0 - 24.0 t/h",
-    speed: "1200 RPM",
-    power: "90 - 132 kW",
-    syllabus: "SAGMA Cereal Processing Mod 4",
-    sourceFile: "procedural:debranner_intensive",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_03_MHXM_Degermer_CombiCleaner_MTKB.pdf",
-    statusBadge: "Mesh Twin",
-    partsCount: 48,
-    callouts: [],
-    defaultCam: { pos: [2.6, 2.0, 2.6], target: [0, 1.1, 0] },
-    defaultShader: "sagma_paint"
-  },
-
-  // --------------------------------------------------------------------------
-  // CATEGORY 02: Roller Mills
-  // --------------------------------------------------------------------------
-  {
-    id: "buhler_mddk",
-    name: "Bühler MDDK Four-Roller Mill",
-    sub: "Industry Benchmark 4-Roller Grinding Machine",
-    category: "02_roller_mills",
-    categoryName: "02 - Roller Mills",
-    oem: "Bühler Group",
-    model: "MDDK 250/1000 & 250/1250",
-    throughput: "15 - 35 t/h (Break / Reduction)",
-    speed: "Roll Differential 1:2.5 / 1:1.5",
-    power: "15 - 30 kW per Pair",
-    syllabus: "SAGMA Wheat & Maize Rollermill Technology Ch 3-6",
-    sourceFile: "procedural:rollermill_4",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_05_RollerMills_MDDK_MDDM_MDDO_Specs.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 64,
-    callouts: [],
-    defaultCam: { pos: [2.5, 1.8, 2.5], target: [0, 0.9, 0] },
-    defaultShader: "castiron"
-  },
-  {
-    id: "buhler_mddb",
-    name: "Bühler MDDB Eight-Roller Mill",
-    sub: "Two-Tier Double Break / Reduction Roller Mill",
-    category: "02_roller_mills",
-    categoryName: "02 - Roller Mills",
-    oem: "Bühler Group",
-    model: "MDDB 250/1000 Double Deck",
-    throughput: "25 - 60 t/h",
-    speed: "Differential 1:2.5",
-    power: "2x 22 - 37 kW",
-    syllabus: "SAGMA Commercial Milling Practice Mod 5",
-    sourceFile: "procedural:rollermill_8",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_06_RollerMills_MDDK_MDDM_MDDO_Scrapers.pdf",
-    statusBadge: "Mesh Twin",
-    partsCount: 78,
-    callouts: [],
-    defaultCam: { pos: [3.0, 2.4, 3.0], target: [0, 1.2, 0] },
-    defaultShader: "castiron"
-  },
-  {
-    id: "buhler_antares",
-    name: "Bühler Antares MDDR / MDDT",
-    sub: "Sensored Intelligent Rollermill with Direct Drive",
-    category: "02_roller_mills",
-    categoryName: "02 - Roller Mills",
-    oem: "Bühler Group",
-    model: "MDDR / MDDT Antares",
-    throughput: "20 - 45 t/h",
-    speed: "Variable Servo Drive",
-    power: "18.5 - 45 kW Direct",
-    syllabus: "SAGMA Modern Milling Automation Mod 6",
-    sourceFile: "procedural:rollermill_antares",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_04_Antares_MDDR_MDDT_RollerMill.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 72,
-    callouts: [],
-    defaultCam: { pos: [2.6, 2.0, 2.6], target: [0, 1.0, 0] },
-    defaultShader: "stainless"
-  },
-  {
-    id: "simon_type_h",
-    name: "Henry Simon Type H Rollermill",
-    sub: "Heavy-Duty Heritage Precision Milling Machine",
-    category: "02_roller_mills",
-    categoryName: "02 - Roller Mills",
-    oem: "Henry Simon (Satake Group)",
-    model: "Type H 1000/1250",
-    throughput: "12 - 30 t/h",
-    speed: "Fluid Drive Differential",
-    power: "18.5 - 30 kW",
-    syllabus: "SAGMA Historical & Classical Mill Design",
-    sourceFile: "procedural:rollermill_simon",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_07_RollerMills_MDDR_MDDM_MDDO_GapControl.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 58,
-    callouts: [],
-    defaultCam: { pos: [2.4, 1.8, 2.4], target: [0, 0.9, 0] },
-    defaultShader: "castiron"
-  },
-
-  // --------------------------------------------------------------------------
-  // CATEGORY 03: Plansifters & Sifting
-  // --------------------------------------------------------------------------
-  {
-    id: "buhler_mpag",
-    name: "Bühler Quadrostar MPAG Plansifter",
-    sub: "Square Plansifter with High Sifting Capacity",
-    category: "03_plansifters",
-    categoryName: "03 - Plansifters & Sifting",
-    oem: "Bühler Group",
-    model: "MPAG 418 / 622 / 828",
-    throughput: "10 - 75 t/h",
-    speed: "220 - 260 RPM (Circle 60-70mm)",
-    power: "4.0 - 7.5 kW Underslung",
-    syllabus: "SAGMA Sifting Dynamics & Sieve Flow Schemes",
-    sourceFile: "procedural:plansifter_quadrostar",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_09_Plansifter_Sieve_Dims_MPAG_MPAJ_Sangati.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 68,
-    callouts: [],
-    defaultCam: { pos: [3.2, 2.4, 3.2], target: [0, 1.3, 0] },
-    defaultShader: "sagma_paint"
-  },
-  {
-    id: "buhler_mpaj",
-    name: "Bühler NovaStar MPAJ Plansifter",
-    sub: "Compact Composite-Frame Square Plansifter",
-    category: "03_plansifters",
-    categoryName: "03 - Plansifters & Sifting",
-    oem: "Bühler Group",
-    model: "NovaStar MPAJ-2 / MPAJ-4",
-    throughput: "4 - 20 t/h",
-    speed: "240 RPM",
-    power: "2.2 - 4.0 kW",
-    syllabus: "SAGMA Maize Mill Sifting & Degerming Screening",
-    sourceFile: "procedural:plansifter_novastar",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_08_NovaStar_MPAJ_Square_Plansifter.pdf",
-    statusBadge: "Mesh Twin",
-    partsCount: 52,
-    callouts: [],
-    defaultCam: { pos: [2.6, 2.0, 2.6], target: [0, 1.1, 0] },
-    defaultShader: "stainless"
-  },
-  {
-    id: "sangati_gqt",
-    name: "Sangati Berga GQT-GS Sifter",
-    sub: "Suspended Dynamic Multi-Compartment Plansifter",
-    category: "03_plansifters",
-    categoryName: "03 - Plansifters & Sifting",
-    oem: "Sangati Berga",
-    model: "GQT-GS 4/6/8 Channels",
-    throughput: "12 - 65 t/h",
-    speed: "235 RPM",
-    power: "5.5 kW Foot Mount",
-    syllabus: "SAGMA Sifting Performance Analysis Mod 4",
-    sourceFile: "procedural:plansifter_sangati",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_09_Plansifter_Sieve_Dims_MPAG_MPAJ_Sangati.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 60,
-    callouts: [],
-    defaultCam: { pos: [3.0, 2.2, 3.0], target: [0, 1.2, 0] },
-    defaultShader: "castiron"
-  },
-  {
-    id: "simon_flowmaster",
-    name: "Henry Simon Flowmaster Plansifter",
-    sub: "Sanitary Aluminum Sieve Deck Sifting System",
-    category: "03_plansifters",
-    categoryName: "03 - Plansifters & Sifting",
-    oem: "Henry Simon",
-    model: "Flowmaster MK III",
-    throughput: "15 - 50 t/h",
-    speed: "240 RPM",
-    power: "5.5 kW",
-    syllabus: "SAGMA Flour Dressing and Semolina Grading",
-    sourceFile: "procedural:plansifter_flowmaster",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Satake_11_ST_Rotary_Sifter_Dimensions.pdf",
-    statusBadge: "Mesh Twin",
-    partsCount: 56,
-    callouts: [],
-    defaultCam: { pos: [2.8, 2.2, 2.8], target: [0, 1.2, 0] },
-    defaultShader: "sagma_paint"
-  },
-
-  // --------------------------------------------------------------------------
-  // CATEGORY 04: Purifiers, Detachers & Finishing
-  // --------------------------------------------------------------------------
-  {
-    id: "buhler_mqrf",
-    name: "Bühler Puromat MQRF Purifier",
-    sub: "High-Efficiency Aerodynamic Semolina Purifier",
-    category: "04_purifiers",
-    categoryName: "04 - Purifiers & Finishing",
-    oem: "Bühler Group",
-    model: "MQRF 46/200 & 50/200",
-    throughput: "2.0 - 5.5 t/h (Semolina / Middlings)",
-    speed: "450 - 520 Stroke/min Vibratory",
-    power: "2x 0.35 kW Vibro-Motors",
-    syllabus: "SAGMA Purifier Adjustment & Air Distribution",
-    sourceFile: "procedural:purifier_mqrf",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_10_Puromat_MQRF_Semolina_Purifier.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 62,
-    callouts: [],
-    defaultCam: { pos: [2.5, 1.6, 2.5], target: [0, 0.8, 0] },
-    defaultShader: "stainless"
-  },
-  {
-    id: "simon_entoleter",
-    name: "Simon Centrifugal Impact Detacher",
-    sub: "High-Speed Pin Rotor Flour Flake Disrupter",
-    category: "04_purifiers",
-    categoryName: "04 - Purifiers & Finishing",
-    oem: "Henry Simon",
-    model: "Entoleter Infestation & Flake Buster",
-    throughput: "5.0 - 25.0 t/h",
-    speed: "2850 RPM Direct Drive",
-    power: "11 - 22 kW",
-    syllabus: "SAGMA Endosperm Detachment & Disruption",
-    sourceFile: "procedural:entoleter",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_02_Maize_Degermer_Plansifter_Puromat.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 36,
-    callouts: [],
-    defaultCam: { pos: [1.8, 1.4, 1.8], target: [0, 0.7, 0] },
-    defaultShader: "castiron"
-  },
-  {
-    id: "buhler_mkzg",
-    name: "Bühler Turbo Star MKZG Impact Machine",
-    sub: "Intense Mechanical Destruction of Insect Life & Agglomerates",
-    category: "04_purifiers",
-    categoryName: "04 - Purifiers & Finishing",
-    oem: "Bühler Group",
-    model: "MKZG 40 / 60",
-    throughput: "8.0 - 35.0 t/h",
-    speed: "3000 RPM",
-    power: "15 - 30 kW",
-    syllabus: "SAGMA Sanitation and Food Safety Standards",
-    sourceFile: "procedural:mkzg_turbo",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_02_Maize_Degermer_Plansifter_Puromat.pdf",
-    statusBadge: "Mesh Twin",
-    partsCount: 38,
-    callouts: [],
-    defaultCam: { pos: [2.0, 1.5, 2.0], target: [0, 0.8, 0] },
-    defaultShader: "sagma_paint"
-  },
-
-  // --------------------------------------------------------------------------
-  // CATEGORY 05: Screenroom & Cleaning
-  // --------------------------------------------------------------------------
-  {
-    id: "buhler_combi",
-    name: "Bühler Combi-Cleaner MTKB / MTKC",
-    sub: "Combined Separator, Concentrator and Destoner",
-    category: "05_screenroom",
-    categoryName: "05 - Screenroom & Cleaning",
-    oem: "Bühler Group",
-    model: "MTKB 60/120 & MTKC 120/120",
-    throughput: "6 - 24 t/h (Grain Intake)",
-    speed: "Eccentric Counterweight Drive",
-    power: "5.5 - 9.2 kW",
-    syllabus: "SAGMA Grain Intake, Pre-Cleaning and Destoning",
-    sourceFile: "procedural:combi_cleaner",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_03_MHXM_Degermer_CombiCleaner_MTKB.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 70,
-    callouts: [],
-    defaultCam: { pos: [2.8, 2.2, 2.8], target: [0, 1.1, 0] },
-    defaultShader: "sagma_paint"
-  },
-  {
-    id: "buhler_myfa",
-    name: "Bühler MYFA Automatic Grain Dampener",
-    sub: "Microwave Moisture Measurement & Water Proportioner",
-    category: "05_screenroom",
-    categoryName: "05 - Screenroom & Cleaning",
-    oem: "Bühler Group",
-    model: "MYFA / MYFC Intelligent Dampening",
-    throughput: "10 - 50 t/h",
-    speed: "Microprocessor Flow Controller",
-    power: "1.5 kW Metering Unit",
-    syllabus: "SAGMA Conditioning, Conditioning Times and Moisture Control",
-    sourceFile: "procedural:water_meter",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Satake_12_PH_Grain_Cleaner_Dimensions.pdf",
-    statusBadge: "Mesh Twin",
-    partsCount: 34,
-    callouts: [],
-    defaultCam: { pos: [2.0, 1.6, 2.0], target: [0, 0.8, 0] },
-    defaultShader: "stainless"
-  },
-  {
-    id: "buhler_moxg",
-    name: "Bühler Intensive Dampener MOXG",
-    sub: "High-Speed Paddle Rotor for Rapid Water Penetration",
-    category: "05_screenroom",
-    categoryName: "05 - Screenroom & Cleaning",
-    oem: "Bühler Group",
-    model: "MOXG 30/150",
-    throughput: "15 - 45 t/h",
-    speed: "950 RPM Mixing Shaft",
-    power: "15 - 22 kW",
-    syllabus: "SAGMA Conditioning Physics & Water Penetration",
-    sourceFile: "procedural:intensive_dampener",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Satake_12_PH_Grain_Cleaner_Dimensions.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 46,
-    callouts: [],
-    defaultCam: { pos: [2.6, 1.6, 2.6], target: [0, 0.8, 0] },
-    defaultShader: "stainless"
-  },
-  {
-    id: "buhler_tarara",
-    name: "Bühler Tarara Air Separator MTRA",
-    sub: "Recirculating Aspiration Channel for Dust & Chaff",
-    category: "05_screenroom",
-    categoryName: "05 - Screenroom & Cleaning",
-    oem: "Bühler Group",
-    model: "MTRA 100/150",
-    throughput: "20 - 100 t/h",
-    speed: "Integral Centrifugal Blower",
-    power: "4.0 - 7.5 kW",
-    syllabus: "SAGMA Terminal Velocity & Aerodynamic Grain Cleaning",
-    sourceFile: "procedural:tarara_air",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_03_MHXM_Degermer_CombiCleaner_MTKB.pdf",
-    statusBadge: "Mesh Twin",
-    partsCount: 40,
-    callouts: [],
-    defaultCam: { pos: [2.4, 2.0, 2.4], target: [0, 1.0, 0] },
-    defaultShader: "castiron"
-  },
-
   // --------------------------------------------------------------------------
   // CATEGORY 06: Conveying, Dust Handling & Packing
   // --------------------------------------------------------------------------
@@ -789,116 +391,36 @@ const FLEET_CATALOG = [
     defaultShader: "default",
     isDefault: true
   },
+
+  // --------------------------------------------------------------------------
+  // CATEGORY 01: Degerming, Debranning & Decortication
+  // --------------------------------------------------------------------------
   {
-    id: "elevator_cad",
-    name: "SolidWorks CAD Bucket Elevator",
-    sub: "High-Poly Parametric SolidWorks Mechanical Twin",
-    category: "06_conveying",
-    categoryName: "06 - Conveying & Dust",
-    oem: "SolidWorks Assembly",
-    model: "Heavy Industrial Grain Leg",
-    throughput: "50 - 180 t/h",
-    speed: "2.4 m/s",
-    power: "18.5 - 37 kW",
-    syllabus: "SolidWorks Mechanical Assembly Inspection",
-    sourceFile: "assets/elevator_highpoly.glb",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Bucket_Elevator_Manual_and_Specs.pdf",
+    id: "satake_vbf",
+    name: "Satake VBF Vertical Maize Degermer",
+    sub: "Vertical Beater & Screen Cone Maize Degerminator",
+    category: "01_degerming",
+    categoryName: "01 - Degerming & Debranning",
+    oem: "Satake Corporation",
+    model: "VBF 5A / 7B / 10A",
+    throughput: "4.5 - 12.0 t/h (Maize)",
+    speed: "750 - 920 RPM",
+    power: "37 - 75 kW 4-Pole",
+    syllabus: "SAGMA Maize Milling Module 4 & 5",
+    sourceFile: "assets/satake_vbf.glb",
+    previewImg: "assets/satake_preview.png",
+    specPdf: "specs/Buhler_02_Maize_Degermer_Plansifter_Puromat.pdf",
     statusBadge: "3D CAD Ready",
-    partsCount: 511,
-    callouts: DIAGRAM_69B_CALLOUTS,
-    defaultCam: { pos: [3.5, 3.0, 4.5], target: [0, 1.5, 0] },
-    defaultShader: "stainless"
-  },
-  {
-    id: "screw_conveyor",
-    name: "Trough Screw Conveyor DIN 15261",
-    sub: "Continuous Helical Auger for Mill Stock Transfer",
-    category: "06_conveying",
-    categoryName: "06 - Conveying & Dust",
-    oem: "Screw Conveyor Corp",
-    model: "SC-250 / SC-315 Trough",
-    throughput: "15 - 45 t/h",
-    speed: "65 - 90 RPM",
-    power: "3.0 - 7.5 kW Helical Gearmotor",
-    syllabus: "SAGMA Horizontal Mechanical Conveying Mod 4",
-    sourceFile: "procedural:screw_conveyor",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Screw-Conveyor-Corporation-Bucket-Elevators-597A.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 38,
-    callouts: [],
-    defaultCam: { pos: [3.2, 1.4, 2.2], target: [0, 0.4, 0] },
-    defaultShader: "stainless"
-  },
-  {
-    id: "pneumatic_airlock",
-    name: "Rotary Airlock Feeder MPSN",
-    sub: "Explosion-Proof Positive Pressure Rotary Valve",
-    category: "06_conveying",
-    categoryName: "06 - Conveying & Dust",
-    oem: "Bühler Group",
-    model: "MPSN-22 / MPSJ-28",
-    throughput: "5 - 30 t/h",
-    speed: "18 - 32 RPM Rotor",
-    power: "0.75 - 1.5 kW Flameproof",
-    syllabus: "SAGMA Pneumatic Conveying Systems & Airlocks",
-    sourceFile: "procedural:rotary_airlock",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_01_Corn_Maize_Milling_Line.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 32,
-    callouts: [],
-    defaultCam: { pos: [1.8, 1.4, 1.8], target: [0, 0.6, 0] },
-    defaultShader: "castiron"
-  },
-  {
-    id: "mvrp_filter",
-    name: "Bühler MVRP Low-Pressure Dust Filter",
-    sub: "Reverse-Jet Compressed Air Fabric Bag Collector",
-    category: "06_conveying",
-    categoryName: "06 - Conveying & Dust",
-    oem: "Bühler Group",
-    model: "MVRP 48/24 & 78/30",
-    throughput: "Aspiration 120 - 450 m³/min",
-    speed: "Jet Cleaning Cycle 0.5 bar",
-    power: "1.1 kW Rotary Valve Drive",
-    syllabus: "SAGMA Dust Explosion Prevention & Aspiration",
-    sourceFile: "procedural:filter_mvrp",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/Buhler_Corn_Maize_Milling_Brochure.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 54,
-    callouts: [],
-    defaultCam: { pos: [2.8, 2.6, 2.8], target: [0, 1.5, 0] },
-    defaultShader: "sagma_paint"
-  },
-  {
-    id: "lambton_elevator",
-    name: "Lambton Heavy Grain Bucket Elevator",
-    sub: "Commercial High-Capacity Grain Terminal Leg",
-    category: "06_conveying",
-    categoryName: "06 - Conveying & Dust",
-    oem: "Lambton Conveyor",
-    model: "LE-36 Series Industrial",
-    throughput: "150 - 350 t/h (Maize / Soy)",
-    speed: "3.2 m/s",
-    power: "45 - 90 kW Right-Angle Drive",
-    syllabus: "SAGMA Bulk Terminal Receiving & Elevation",
-    sourceFile: "procedural:lambton_elevator",
-    previewImg: "assets/preview_render.png",
-    specPdf: "specs/LAMBTON-BUCKET-ELEVATOR-OWNERS-MANUAL-2020.pdf",
-    statusBadge: "3D CAD Ready",
-    partsCount: 88,
-    callouts: [],
-    defaultCam: { pos: [3.8, 3.2, 4.0], target: [0, 1.6, 0] },
-    defaultShader: "castiron"
+    partsCount: 87,
+    callouts: SATAKE_CALLOUTS,
+    defaultCam: { pos: [2.2, 2.2, 2.8], target: [0, 1.2, 0] },
+    defaultShader: "default"
   }
 ];
 
 // 5. CLIENT INDEXEDDB PERSISTENCE (ECHO_STUDIO_DB)
 const DB_NAME = 'ECHO_STUDIO_DB';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const STORE_NAME = 'machines';
 
 const EchoDB = {
@@ -912,6 +434,10 @@ const EchoDB = {
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
           store.createIndex('category', 'category', { unique: false });
+        } else {
+          // Clear legacy placeholder machines on upgrade to v4 so only verified units + user uploads remain
+          const store = e.target.transaction.objectStore(STORE_NAME);
+          store.clear();
         }
       };
       req.onsuccess = e => {
@@ -928,11 +454,23 @@ const EchoDB = {
   async seedInitialFleet() {
     if (!this.db) return;
     try {
+      const allowedIds = new Set(FLEET_CATALOG.map(m => m.id));
       const writeTx = this.db.transaction([STORE_NAME], 'readwrite');
       const writeStore = writeTx.objectStore(STORE_NAME);
-      for (const m of FLEET_CATALOG) {
-        writeStore.put(m);
-      }
+
+      // Remove any old procedural placeholder records while preserving custom user-uploaded CADs
+      const allReq = writeStore.getAll();
+      allReq.onsuccess = () => {
+        const existing = allReq.result || [];
+        for (const rec of existing) {
+          if (!allowedIds.has(rec.id) && !rec.customBlob) {
+            writeStore.delete(rec.id);
+          }
+        }
+        for (const m of FLEET_CATALOG) {
+          writeStore.put(m);
+        }
+      };
     } catch (err) {
       console.warn('Seeding check error:', err);
     }
@@ -2322,8 +1860,11 @@ function initCalloutBadges(callouts) {
   callouts.forEach((c, idx) => {
     const badge = document.createElement('div');
     badge.className = 'callout-badge';
-    badge.textContent = c.tag || ((idx + 1) < 10 ? '0' + (idx + 1) : '' + (idx + 1));
-    badge.title = c.title;
+    const tagNum = c.tag || ((idx + 1) < 10 ? '0' + (idx + 1) : '' + (idx + 1));
+    // Strip parenthetical technical suffixes for a crisp on-model pill label, while keeping full title in tooltip/inspector
+    const shortName = (c.shortLabel || (c.title ? c.title.replace(/\s*\([^)]*\)/g, '').trim() : 'Part'));
+    badge.innerHTML = `<span class="callout-tag-num">${tagNum}</span><span class="callout-tag-label">${shortName}</span>`;
+    badge.title = `${tagNum} — ${c.title}`;
 
     badge.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -2344,10 +1885,25 @@ function updateCalloutPositions() {
   const width = container.clientWidth;
   const height = container.clientHeight;
   const tempV = new THREE.Vector3();
+  const placedPositions = [];
 
-  calloutElements.forEach(item => {
+  calloutElements.forEach((item, idx) => {
     let resolved = false;
-    if (currentLoadedRoot && item.data.meshTarget) {
+    // Prefer explicit 3D anchor if defined (prevents concentric meshes like rotor/beaters/screens from collapsing onto one point)
+    if (item.data.anchor && Array.isArray(item.data.anchor) && item.data.anchor.length === 3) {
+      tempV.set(item.data.anchor[0], item.data.anchor[1], item.data.anchor[2]);
+      // If model is exploded, offset anchor slightly with the target mesh displacement
+      if (currentLoadedRoot && item.data.meshTarget) {
+        const targetObj = currentLoadedRoot.getObjectByName(item.data.meshTarget);
+        if (targetObj) {
+          const saved = meshOriginalPositions.get(targetObj);
+          if (saved && targetObj.position) {
+            tempV.add(targetObj.position.clone().sub(saved.pos));
+          }
+        }
+      }
+      resolved = true;
+    } else if (currentLoadedRoot && item.data.meshTarget) {
       const targetObj = currentLoadedRoot.getObjectByName(item.data.meshTarget);
       if (targetObj) {
         const box = new THREE.Box3().setFromObject(targetObj);
@@ -2358,7 +1914,7 @@ function updateCalloutPositions() {
       }
     }
     if (!resolved) {
-      const anchor = item.data.anchor || (item.data.camPreset && item.data.camPreset.look) || [0, 1.2, 0];
+      const anchor = (item.data.camPreset && item.data.camPreset.look) || [0, 1.2, 0];
       tempV.set(anchor[0], anchor[1], anchor[2]);
     }
 
@@ -2369,8 +1925,23 @@ function updateCalloutPositions() {
     if (isBehind) {
       item.el.style.display = 'none';
     } else {
-      const x = (tempV.x * 0.5 + 0.5) * width;
-      const y = (-(tempV.y * 0.5) + 0.5) * height;
+      let x = (tempV.x * 0.5 + 0.5) * width;
+      let y = (-(tempV.y * 0.5) + 0.5) * height;
+
+      // Screen-space collision avoidance so neighboring part labels never stack on top of each other
+      for (let pass = 0; pass < 3; pass++) {
+        for (let j = 0; j < placedPositions.length; j++) {
+          const other = placedPositions[j];
+          const dx = x - other.x;
+          const dy = y - other.y;
+          if (Math.abs(dx) < 130 && Math.abs(dy) < 28) {
+            const pushY = (dy >= 0 ? 1 : -1) * (29 - Math.abs(dy));
+            y += pushY;
+            x += (idx % 2 === 0 ? -12 : 12);
+          }
+        }
+      }
+      placedPositions.push({ x, y });
 
       item.el.style.display = 'flex';
       item.el.style.left = x + 'px';
@@ -3113,11 +2684,16 @@ async function triggerPhase2SatakeTransition() {
   cinematicState.phase = 2;
 
   const phaseTag = document.getElementById('cinematicPhaseTag');
-  if (phaseTag) phaseTag.textContent = 'UNIT 02: SATAKE VBF DEGERMER';
+  if (phaseTag) phaseTag.textContent = 'UNIT 02: SATAKE VBF DEGERMER (STATIC)';
 
   const satakeMeta = await EchoDB.get('satake_vbf') || FLEET_CATALOG.find(m => m.id === 'satake_vbf') || FLEET_CATALOG[0];
   await loadMachineTwin(satakeMeta, { silent: true, skipCameraReset: true, skipHashUpdate: true });
-  if (grainParticleSystem) grainParticleSystem.visible = true;
+
+  // Keep Satake VBF in a stopped/static position during cinematic video recording
+  isLiveMotionActive = false;
+  driveSpeedMultiplier = 0;
+  if (grainParticleSystem) grainParticleSystem.visible = false;
+
   // Start Hero Orbit (15s-20s) with solid emerald casing, then activate cutaway at 20s
   setCutawayState(false);
   updateExplodedView(0);
@@ -3209,7 +2785,7 @@ function updateCinematicChoreography(now) {
       camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
       controls.target.set(0, lookY, 0);
     } else if (p2Time < 10.0) {
-      // 20s - 25s (Close-Up Internal Inspection): Dolly in toward cylindrical screen & decorticating rotor assembly, activating cutaway view
+      // 20s - 25s (Close-Up Internal Inspection): Dolly in toward cylindrical screen & decorticating rotor assembly, activating cutaway view (machine remains still)
       if (!isCutawayActive) {
         setCutawayState(true);
       }
@@ -3219,9 +2795,7 @@ function updateCinematicChoreography(now) {
       const camY = THREE.MathUtils.lerp(1.82, 1.18, u);
       const lookY = THREE.MathUtils.lerp(1.08, 1.02, u);
 
-      // Subtle radial screen separation to expose spinning beater bars & maize vortex
-      const explodeAmt = Math.sin(u * Math.PI) * 0.22;
-      updateExplodedView(explodeAmt);
+      updateExplodedView(0);
 
       camera.position.set(Math.sin(angle) * radius, camY, Math.cos(angle) * radius);
       controls.target.set(0, lookY, 0);
@@ -3419,8 +2993,13 @@ async function stopCinematicShowcase(wasCancelled = false) {
     controls.enabled = true;
   }
 
-  // Restore user's speed & cutaway settings
+  // Restore user's motion, speed & cutaway settings
+  isLiveMotionActive = cinematicState.savedMotion !== undefined ? cinematicState.savedMotion : true;
   driveSpeedMultiplier = cinematicState.savedSpeed || 1.0;
+  const motionBtn = document.getElementById('btnToggleMotion');
+  if (motionBtn) motionBtn.classList.toggle('active', isLiveMotionActive);
+  if (grainParticleSystem) grainParticleSystem.visible = isLiveMotionActive;
+
   setCutawayState(cinematicState.savedCutaway);
   updateExplodedView(0);
   onWindowResize();
